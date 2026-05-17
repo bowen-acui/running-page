@@ -6,7 +6,7 @@ on:
     - cron: '0 0 * * *'
   push:
     branches:
-      - master
+      - main
     paths:
       - run_page/nike_sync.py
       - run_page/nike_to_strava_sync.py
@@ -25,6 +25,7 @@ on:
       - requirements.txt
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
   # please change to your own config.
   RUN_TYPE: strava # support strava/nike/garmin/coros/garmin_cn/garmin_sync_cn_global/keep/only_gpx/only_fit/nike_to_strava/strava_to_garmin/tcx_to_garmin/strava_to_garmin_cn/garmin_to_strava/garmin_to_strava_cn/oppo/intervals_icu/db_updater, Please change the 'pass' it to your own
   ATHLETE: 阿崔
@@ -56,14 +57,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           persist-credentials: true
 
       - name: Set up Python
         id: setup_python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: pip
