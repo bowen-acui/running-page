@@ -47,8 +47,8 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
         with:
-          # if your default branches is not master, please change it here
-          ref: master
+          # This repository now uses `main` as the default branch.
+          ref: main
           fetch-depth: 0
           persist-credentials: false
 
