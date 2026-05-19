@@ -30,4 +30,5 @@ pycryptodome
 duckdb
 openai==1.88.0
 # cairosvg
+
 certifi==2025.1.31
