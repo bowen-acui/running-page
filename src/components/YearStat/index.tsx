@@ -1,8 +1,14 @@
 import useActivities from '@/hooks/useActivities';
 import type { Activity } from '@/utils/utils';
-import { formatPace, intComma } from '@/utils/utils';
+import {
+  DIST_UNIT,
+  formatPace,
+  intComma,
+  isRunActivity,
+  M_TO_DIST,
+  M_TO_ELEV,
+} from '@/utils/utils';
 import { SHOW_ELEVATION_GAIN } from '@/utils/const';
-import { DIST_UNIT, M_TO_DIST, M_TO_ELEV } from '@/utils/utils';
 
 interface YearStatAccumulator {
   averageHeartRateTotal: number;
@@ -97,7 +103,7 @@ const getYearStatSummaries = (activityData: Activity[]) => {
   const accumulators = new Map<string, YearStatAccumulator>();
   accumulators.set('Total', createAccumulator());
 
-  activityData.forEach((run) => {
+  activityData.filter(isRunActivity).forEach((run) => {
     const year = run.start_date_local.slice(0, 4);
     if (!accumulators.has(year)) {
       accumulators.set(year, createAccumulator());
@@ -117,16 +123,16 @@ const getYearStatSummaries = (activityData: Activity[]) => {
 };
 
 const Metric = ({ label, unit, value }: MetricProps) => (
-  <div className="flex min-h-[6.25rem] flex-col justify-between rounded-[1.15rem] border border-[color:var(--color-hr-primary)]/10 bg-[color:var(--color-background)]/35 px-3.5 py-3 sm:min-h-[6.75rem] sm:px-4">
-    <span className="text-xs font-bold tracking-[0.18em] text-[color:var(--color-run-date)] uppercase not-italic">
+  <div className="flex min-h-[5.25rem] flex-col justify-between rounded-2xl border border-[color:var(--color-hr-primary)]/10 bg-[color:var(--color-background)]/35 px-3 py-2.5 sm:min-h-[5.75rem] sm:px-3.5">
+    <span className="text-[0.68rem] font-bold tracking-[0.14em] text-[color:var(--color-run-date)] uppercase not-italic">
       {label}
     </span>
     <div className="flex items-baseline gap-1.5 whitespace-nowrap">
-      <span className="font-mono text-[clamp(2.1rem,9vw,3.85rem)] leading-none font-black tracking-[-0.08em] text-[color:var(--color-text-primary)] not-italic">
+      <span className="text-[clamp(1.65rem,7vw,2.85rem)] leading-none font-black tracking-[-0.04em] text-[color:var(--color-text-primary)] not-italic">
         {intComma(value.toString())}
       </span>
       {unit && (
-        <span className="font-mono text-base font-black tracking-[-0.04em] text-[color:var(--color-text-primary)]/80 uppercase sm:text-lg">
+        <span className="text-xs font-black tracking-[-0.02em] text-[color:var(--color-text-primary)]/75 uppercase sm:text-sm">
           {unit}
         </span>
       )}
@@ -155,18 +161,18 @@ const YearStat = ({
       <section className="space-y-4">
         <div className="flex items-end justify-between gap-4 px-1">
           <div>
-            <p className="text-xs font-bold tracking-[0.22em] text-[color:var(--color-run-date)] uppercase">
+            <p className="text-[0.68rem] font-bold tracking-[0.18em] text-[color:var(--color-run-date)] uppercase">
               {titleLabel}
             </p>
-            <h2 className="font-mono text-[clamp(2.6rem,11vw,5rem)] leading-none font-black tracking-[-0.09em] text-[color:var(--color-text-primary)]">
+            <h2 className="text-[clamp(2.2rem,9vw,3.8rem)] leading-none font-black tracking-[-0.05em] text-[color:var(--color-text-primary)]">
               {year}
             </h2>
           </div>
           <div className="pb-1 text-right">
-            <p className="text-xs font-bold tracking-[0.22em] text-[color:var(--color-run-date)] uppercase">
+            <p className="text-[0.68rem] font-bold tracking-[0.18em] text-[color:var(--color-run-date)] uppercase">
               Runs
             </p>
-            <p className="font-mono text-[clamp(2rem,8vw,3.5rem)] leading-none font-black tracking-[-0.08em] text-[color:var(--color-text-primary)]">
+            <p className="text-[clamp(1.85rem,7vw,3rem)] leading-none font-black tracking-[-0.04em] text-[color:var(--color-text-primary)]">
               {intComma(summary.runCount.toString())}
             </p>
           </div>
