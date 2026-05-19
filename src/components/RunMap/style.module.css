@@ -18,11 +18,7 @@
   overflow-x: auto;
   padding: 6px;
   border-radius: 9999px;
-  background: color-mix(
-    in srgb,
-    var(--color-background) 82%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--color-background) 82%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-hr-primary) 20%, transparent);
   backdrop-filter: blur(14px);
   scrollbar-width: none;
@@ -76,11 +72,7 @@
   bottom: 18px;
   max-width: min(72%, 40rem);
   border-radius: 9999px;
-  background: color-mix(
-    in srgb,
-    var(--color-background) 84%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--color-background) 84%, transparent);
   padding: 0.55rem 0.95rem;
   font-family: var(--font-mono);
   font-size: 0.82rem;

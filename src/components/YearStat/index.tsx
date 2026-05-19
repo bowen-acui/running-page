@@ -167,10 +167,7 @@ const YearStat = ({
         <Stat value={summary.averagePace} description="Avg Pace" />
         <Stat value={`${summary.streak} day`} description="Streak" />
         {summary.hasHeartRate && (
-          <Stat
-            value={summary.averageHeartRate}
-            description="Avg Heart Rate"
-          />
+          <Stat value={summary.averageHeartRate} description="Avg Heart Rate" />
         )}
       </section>
       {year !== 'Total' && hovered && YearSVG && GithubYearSVG && (

@@ -24,10 +24,12 @@ const Stat = ({
 
   return (
     <div className={className} onClick={onClick}>
-      <span className={`${valueSizeClass} block font-black italic leading-none tracking-tight`}>
+      <span
+        className={`${valueSizeClass} block leading-none font-black tracking-tight italic`}
+      >
         {intComma(value.toString())}
       </span>
-      <span className="mt-1 block text-sm font-semibold italic text-[color:var(--color-run-date)] md:text-base">
+      <span className="mt-1 block text-sm font-semibold text-[color:var(--color-run-date)] italic md:text-base">
         {description}
       </span>
     </div>

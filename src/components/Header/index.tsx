@@ -70,7 +70,7 @@ const Header = () => {
           <div className="min-w-0">
             <Link
               to="/"
-              className="block truncate text-xl font-black italic text-[color:var(--color-text-primary)] lg:text-2xl"
+              className="block truncate text-xl font-black text-[color:var(--color-text-primary)] italic lg:text-2xl"
             >
               {siteTitle}
             </Link>

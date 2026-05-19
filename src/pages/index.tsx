@@ -412,7 +412,7 @@ const Index = () => {
       </Helmet>
       <div className="grid w-full gap-6 lg:grid-cols-[minmax(18rem,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
         <section className="w-full lg:sticky lg:top-8">
-          <h1 className="mb-6 text-3xl font-black italic text-[color:var(--color-text-primary)] sm:text-4xl">
+          <h1 className="mb-6 text-3xl font-black text-[color:var(--color-text-primary)] italic sm:text-4xl">
             {siteTitle}
           </h1>
           {(viewState.zoom ?? 0) <= 3 && IS_CHINESE ? (
