@@ -117,6 +117,35 @@
       color 0.1s ease;
     font-family: var(--font-sans);
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100vh;
+    background-image:
+      radial-gradient(
+        circle at top left,
+        color-mix(in srgb, var(--color-primary) 8%, transparent),
+        transparent 28%
+      ),
+      radial-gradient(
+        circle at top right,
+        color-mix(in srgb, var(--color-hr-primary) 8%, transparent),
+        transparent 24%
+      );
+  }
+
+  a,
+  button,
+  select {
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      transform 0.2s ease;
+  }
 }
 
 img::selection {
@@ -131,6 +160,11 @@ body {
   text-rendering: optimizeLegibility;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-primary) 35%, transparent);
+  color: var(--color-background);
 }
 
 iframe {
@@ -194,5 +228,9 @@ hr {
   /* Ensure mobile layout doesn't require min-width */
   body {
     overflow-x: hidden;
+  }
+
+  html {
+    font-size: 15px;
   }
 }

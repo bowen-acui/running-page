@@ -9,57 +9,99 @@
 .buttons {
   font-family: var(--font-mono);
   position: absolute;
-  top: 0px;
-  left: 10px;
-  margin: 0 auto;
-  padding-right: 70px;
+  top: 12px;
+  left: 12px;
+  right: 72px;
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  overflow-x: auto;
+  padding: 6px;
+  border-radius: 9999px;
+  background: color-mix(
+    in srgb,
+    var(--color-background) 82%,
+    transparent
+  );
+  border: 1px solid color-mix(in srgb, var(--color-hr-primary) 20%, transparent);
+  backdrop-filter: blur(14px);
+  scrollbar-width: none;
 }
 
-@media only screen and (max-width: 768px) {
-  .buttons {
-    padding-right: 10px;
-    flex-wrap: wrap;
-  }
+.buttons::-webkit-scrollbar {
+  display: none;
 }
 
 .button {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
   cursor: pointer;
-  padding: 0.5rem 0.4rem;
-  margin-top: 0.1rem;
-  font-size: 1rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-align: center;
   color: var(--color-run-date);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
-@media only screen and (max-width: 768px) {
-  .button {
-    padding: 0.8rem 0.3rem;
-    font-size: 0.9rem;
-  }
+.button:hover {
+  background: color-mix(
+    in srgb,
+    var(--color-run-row-hover-background) 84%,
+    transparent
+  );
+  transform: translateY(-1px);
 }
 
 .selected {
   color: var(--color-primary);
+  background: color-mix(
+    in srgb,
+    var(--color-run-row-hover-background) 90%,
+    transparent
+  );
 }
 
 .runTitle {
-  height: 29px;
-  width: 710px;
   position: absolute;
-  bottom: 0px;
-  left: 120px;
-  cursor: pointer;
+  right: 16px;
+  bottom: 18px;
+  max-width: min(72%, 40rem);
+  border-radius: 9999px;
+  background: color-mix(
+    in srgb,
+    var(--color-background) 84%,
+    transparent
+  );
+  padding: 0.55rem 0.95rem;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.4;
   color: var(--color-primary);
+  backdrop-filter: blur(12px);
 }
 
 @media only screen and (max-width: 768px) {
+  .buttons {
+    right: 58px;
+    top: 10px;
+    left: 10px;
+    gap: 4px;
+  }
+
   .runTitle {
-    width: calc(100% - 40px);
-    left: 20px;
     font-size: 0.8rem;
-    bottom: 5px;
+    right: 12px;
+    bottom: 12px;
+    max-width: calc(100% - 24px);
   }
 }
 
@@ -92,7 +134,7 @@
 
 .mapErrorNotification {
   position: absolute;
-  top: 20px;
+  top: 72px;
   left: 50%;
   transform: translateX(-50%);
   background: #ff4444;
@@ -102,6 +144,8 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 1000;
   display: flex;
+  max-width: min(92vw, 42rem);
+  flex-wrap: wrap;
   gap: 12px;
   align-items: center;
   font-size: 14px;

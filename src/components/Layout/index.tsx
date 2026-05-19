@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import DataStatusBar from '@/components/DataStatusBar';
 import Header from '@/components/Header';
 import getSiteMetadata from '@/hooks/useSiteMetadata';
 
@@ -19,9 +20,10 @@ const Layout = ({ children }: React.PropsWithChildren) => {
         />
       </Helmet>
       <Header />
-      <div className="mx-auto mb-16 max-w-screen-2xl p-4 lg:flex lg:p-16">
+      <DataStatusBar />
+      <main className="mx-auto mb-16 mt-6 max-w-screen-2xl px-4 pb-10 lg:mt-8 lg:px-16">
         {children}
-      </div>
+      </main>
     </>
   );
 };

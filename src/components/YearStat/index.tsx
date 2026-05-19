@@ -147,33 +147,38 @@ const YearStat = ({
   if (!summary) return null;
 
   return (
-    <div className="cursor-pointer" onClick={() => onClick(year)}>
-      <section {...eventHandlers}>
-        <Stat value={year} description=" Journey" />
-        <Stat value={summary.runCount} description=" Runs" />
-        <Stat value={summary.totalDistance} description={` ${DIST_UNIT}`} />
+    <div
+      className="cursor-pointer rounded-[1.7rem] border border-[color:var(--color-hr-primary)]/20 bg-[color:var(--color-run-row-hover-background)]/18 px-4 py-5 transition-transform duration-200 hover:-translate-y-0.5"
+      onClick={() => onClick(year)}
+    >
+      <section
+        {...eventHandlers}
+        className="grid grid-cols-2 gap-x-4 gap-y-5 md:grid-cols-3"
+      >
+        <Stat value={year} description="Journey" />
+        <Stat value={summary.runCount} description="Runs" />
+        <Stat value={summary.totalDistance} description={DIST_UNIT} />
         {SHOW_ELEVATION_GAIN && (
           <Stat
             value={summary.totalElevationGain}
-            description=" Elevation Gain"
+            description="Elevation Gain"
           />
         )}
-        <Stat value={summary.averagePace} description=" Avg Pace" />
-        <Stat value={`${summary.streak} day`} description=" Streak" />
+        <Stat value={summary.averagePace} description="Avg Pace" />
+        <Stat value={`${summary.streak} day`} description="Streak" />
         {summary.hasHeartRate && (
           <Stat
             value={summary.averageHeartRate}
-            description=" Avg Heart Rate"
+            description="Avg Heart Rate"
           />
         )}
       </section>
       {year !== 'Total' && hovered && YearSVG && GithubYearSVG && (
         <Suspense fallback="loading...">
-          <YearSVG className="year-svg my-4 h-4/6 w-4/6 border-0 p-0" />
+          <YearSVG className="year-svg my-6 h-auto w-full max-w-sm border-0 p-0" />
           <GithubYearSVG className="github-year-svg my-4 h-auto w-full border-0 p-0" />
         </Suspense>
       )}
-      <hr />
     </div>
   );
 };

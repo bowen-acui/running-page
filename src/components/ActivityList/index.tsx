@@ -19,7 +19,7 @@ import { DIST_UNIT, M_TO_DIST } from '@/utils/utils';
 import type { Activity } from '@/utils/utils';
 import useActivities from '@/hooks/useActivities';
 // Layout constants (avoid magic numbers)
-const ITEM_WIDTH = 280;
+const ITEM_WIDTH = 260;
 const ITEM_GAP = 20;
 
 const VIRTUAL_LIST_STYLES = {

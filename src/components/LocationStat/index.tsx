@@ -18,9 +18,12 @@ const LocationStat = ({
   changeCity,
   changeTitle,
 }: ILocationStatProps) => (
-  <div className="w-full pb-16 lg:w-full lg:pr-16">
-    <section className="pb-0">
-      <p className="leading-relaxed">
+  <div className="w-full pb-10 lg:pr-12">
+    <section className="rounded-[2rem] border border-[color:var(--color-hr-primary)]/30 bg-[color:var(--color-run-row-hover-background)]/24 px-5 py-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+      <p className="font-mono text-[0.72rem] uppercase tracking-[0.28em] text-[color:var(--color-run-date)]">
+        Atlas
+      </p>
+      <p className="mt-3 leading-7 text-[color:var(--color-text-primary)]">
         {CHINESE_LOCATION_INFO_MESSAGE_FIRST}
         .
         <br />
@@ -31,7 +34,7 @@ const LocationStat = ({
         Yesterday you said tomorrow.
       </p>
     </section>
-    <hr />
+    <hr className="my-6" />
     <LocationSummary />
     <CitiesStat onClick={changeCity} />
     <PeriodStat onClick={changeTitle} />
