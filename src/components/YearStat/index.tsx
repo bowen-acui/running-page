@@ -1,26 +1,8 @@
-import { lazy, Suspense } from 'react';
 import useActivities from '@/hooks/useActivities';
 import type { Activity } from '@/utils/utils';
 import { formatPace, intComma } from '@/utils/utils';
-import useHover from '@/hooks/useHover';
-import { yearStats, githubYearStats } from '@assets/index';
-import { loadSvgComponent } from '@/utils/svgUtils';
 import { SHOW_ELEVATION_GAIN } from '@/utils/const';
 import { DIST_UNIT, M_TO_DIST, M_TO_ELEV } from '@/utils/utils';
-
-const yearSvgs = Object.fromEntries(
-  Object.keys(yearStats).map((path) => [
-    path,
-    lazy(() => loadSvgComponent(yearStats, path)),
-  ])
-);
-
-const githubYearSvgs = Object.fromEntries(
-  Object.keys(githubYearStats).map((path) => [
-    path,
-    lazy(() => loadSvgComponent(githubYearStats, path)),
-  ])
-);
 
 interface YearStatAccumulator {
   averageHeartRateTotal: number;
@@ -160,11 +142,6 @@ const YearStat = ({
   onClick: (_year: string) => void;
 }) => {
   const { activities } = useActivities();
-  // for hover
-  const [hovered, eventHandlers] = useHover();
-  // lazy Component
-  const YearSVG = yearSvgs[`./year_${year}.svg`];
-  const GithubYearSVG = githubYearSvgs[`./github_${year}.svg`];
   const summary = getYearStatSummaries(activities).get(year);
   const titleLabel = year === 'Total' ? 'All Time' : 'Journey';
 
@@ -175,7 +152,7 @@ const YearStat = ({
       className="cursor-pointer rounded-[1.7rem] border border-[color:var(--color-hr-primary)]/20 bg-[color:var(--color-run-row-hover-background)]/18 p-4 transition-transform duration-200 hover:-translate-y-0.5 sm:p-5"
       onClick={() => onClick(year)}
     >
-      <section {...eventHandlers} className="space-y-4">
+      <section className="space-y-4">
         <div className="flex items-end justify-between gap-4 px-1">
           <div>
             <p className="text-xs font-bold tracking-[0.22em] text-[color:var(--color-run-date)] uppercase">
@@ -214,12 +191,6 @@ const YearStat = ({
           <Metric value={summary.totalElevationGain} label="Elevation" />
         )}
       </section>
-      {year !== 'Total' && hovered && YearSVG && GithubYearSVG && (
-        <Suspense fallback="loading...">
-          <YearSVG className="year-svg my-6 h-auto w-full max-w-sm border-0 p-0" />
-          <GithubYearSVG className="github-year-svg my-4 h-auto w-full border-0 p-0" />
-        </Suspense>
-      )}
     </div>
   );
 };
