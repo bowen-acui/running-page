@@ -17,31 +17,25 @@ const DataStatusBar = () => {
 
   return (
     <div className="mx-auto mt-4 max-w-screen-2xl px-4 lg:px-16">
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        <div className="rounded-[1.6rem] border border-[color:var(--color-hr-primary)]/35 bg-[color:var(--color-run-row-hover-background)]/40 px-4 py-4 backdrop-blur-sm">
-          <p className="font-mono text-[0.68rem] uppercase tracking-[0.3em] text-[color:var(--color-run-date)]">
-            Source
-          </p>
-          <p className="mt-2 text-lg font-black italic text-[color:var(--color-text-primary)]">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-[color:var(--color-hr-primary)]/30 pb-3 text-sm text-[color:var(--color-run-date)]">
+        <span>
+          来源{' '}
+          <strong className="font-semibold text-[color:var(--color-text-primary)]">
             {activitySource}
-          </p>
-        </div>
-        <div className="rounded-[1.6rem] border border-[color:var(--color-hr-primary)]/35 bg-[color:var(--color-run-row-hover-background)]/40 px-4 py-4 backdrop-blur-sm">
-          <p className="font-mono text-[0.68rem] uppercase tracking-[0.3em] text-[color:var(--color-run-date)]">
-            Last Sync
-          </p>
-          <p className="mt-2 text-sm font-semibold leading-6 text-[color:var(--color-text-primary)] md:text-base">
+          </strong>
+        </span>
+        <span>
+          同步{' '}
+          <strong className="font-semibold text-[color:var(--color-text-primary)]">
             {formatSyncTime(lastSyncedAt)}
-          </p>
-        </div>
-        <div className="rounded-[1.6rem] border border-[color:var(--color-hr-primary)]/35 bg-[color:var(--color-run-row-hover-background)]/40 px-4 py-4 backdrop-blur-sm">
-          <p className="font-mono text-[0.68rem] uppercase tracking-[0.3em] text-[color:var(--color-run-date)]">
-            Activities
-          </p>
-          <p className="mt-2 text-lg font-black italic text-[color:var(--color-text-primary)]">
+          </strong>
+        </span>
+        <span>
+          记录{' '}
+          <strong className="font-semibold text-[color:var(--color-text-primary)]">
             {activities.length}
-          </p>
-        </div>
+          </strong>
+        </span>
       </div>
     </div>
   );

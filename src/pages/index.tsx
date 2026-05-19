@@ -8,7 +8,6 @@ import {
 } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import LocationStat from '@/components/LocationStat';
 import RunMap from '@/components/RunMap';
@@ -83,7 +82,7 @@ const useRunHashId = () =>
   useSyncExternalStore(subscribeToRunHash, getRunIdFromHash, () => null);
 
 const Index = () => {
-  const { siteTitle, siteUrl } = getSiteMetadata();
+  const { siteTitle } = getSiteMetadata();
   const { activities, thisYear } = useActivities();
   const themeChangeCounter = useThemeChangeCounter();
   const [year, setYear] = useState(thisYear);
@@ -411,45 +410,23 @@ const Index = () => {
       <Helmet>
         <html lang="en" data-theme={theme} />
       </Helmet>
-      <div className="grid w-full gap-8 lg:grid-cols-[minmax(18rem,26rem)_minmax(0,1fr)] lg:items-start lg:gap-10">
+      <div className="grid w-full gap-6 lg:grid-cols-[minmax(18rem,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
         <section className="w-full lg:sticky lg:top-8">
-          <div className="rounded-[2.2rem] border border-[color:var(--color-hr-primary)]/35 bg-[color:var(--color-run-row-hover-background)]/22 px-5 py-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] lg:px-6">
-            <p className="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-[color:var(--color-run-date)]">
-              Visual Running Ledger
-            </p>
-            <h1 className="mt-4 text-4xl font-black italic tracking-tight text-[color:var(--color-text-primary)] sm:text-5xl lg:text-6xl">
-              <Link to="/">{siteTitle}</Link>
-            </h1>
-            <p className="mt-4 max-w-xl text-base leading-7 text-[color:var(--color-run-date)] sm:text-lg">
-              地图、年份、城市和轨迹都放在一张连续的跑步画布里。小屏优先看筛选与定位，大屏优先看时间纵深和路线整体感。
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <a
-                href={siteUrl}
-                className="rounded-full border border-[color:var(--color-primary)]/30 px-4 py-2 text-sm font-semibold tracking-[0.08em] text-[color:var(--color-text-primary)] transition-colors hover:bg-[color:var(--color-run-row-hover-background)]/60"
-              >
-                Repo
-              </a>
-              <a
-                href="#map-container"
-                className="rounded-full bg-[color:var(--color-primary)] px-4 py-2 text-sm font-semibold tracking-[0.08em] text-[color:var(--color-background)]"
-              >
-                Jump To Map
-              </a>
-            </div>
-          </div>
-        {(viewState.zoom ?? 0) <= 3 && IS_CHINESE ? (
-          <LocationStat
-            changeYear={changeYear}
-            changeCity={changeCity}
-            changeTitle={changeTitle}
-          />
-        ) : (
-          <YearsStat year={year} onClick={changeYear} />
-        )}
+          <h1 className="mb-6 text-3xl font-black italic text-[color:var(--color-text-primary)] sm:text-4xl">
+            {siteTitle}
+          </h1>
+          {(viewState.zoom ?? 0) <= 3 && IS_CHINESE ? (
+            <LocationStat
+              changeYear={changeYear}
+              changeCity={changeCity}
+              changeTitle={changeTitle}
+            />
+          ) : (
+            <YearsStat year={year} onClick={changeYear} />
+          )}
         </section>
         <section className="w-full space-y-6" id="map-container">
-          <div className="overflow-hidden rounded-[2rem] border border-[color:var(--color-hr-primary)]/30 bg-[color:var(--color-run-row-hover-background)]/18 p-2 shadow-[0_24px_80px_rgba(15,23,42,0.1)] sm:p-3">
+          <div className="overflow-hidden border border-[color:var(--color-hr-primary)]/30 bg-[color:var(--color-run-row-hover-background)]/10 p-2 sm:p-3">
             <RunMap
               title={title}
               viewState={viewState}
@@ -460,7 +437,7 @@ const Index = () => {
               animationTrigger={animationTrigger}
             />
           </div>
-          <div className="rounded-[2rem] border border-[color:var(--color-hr-primary)]/25 bg-[color:var(--color-run-row-hover-background)]/12 p-3 sm:p-5">
+          <div className="border border-[color:var(--color-hr-primary)]/25 bg-[color:var(--color-run-row-hover-background)]/10 p-3 sm:p-5">
             {year === 'Total' ? (
               <SVGStat />
             ) : (
@@ -474,7 +451,6 @@ const Index = () => {
           </div>
         </section>
       </div>
-      {/* Enable Audiences in Vercel Analytics: https://vercel.com/docs/concepts/analytics/audiences/quickstart */}
       {import.meta.env.VERCEL && <Analytics />}
     </Layout>
   );

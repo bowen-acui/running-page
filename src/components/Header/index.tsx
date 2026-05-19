@@ -60,16 +60,17 @@ const Header = () => {
             className="shrink-0 rounded-full ring-1 ring-[color:var(--color-hr-primary)]/30 transition-transform duration-200 hover:scale-[1.03]"
           >
             <picture>
-              <img className="h-14 w-14 rounded-full object-cover" alt="logo" src={logo} />
+              <img
+                className="h-14 w-14 rounded-full object-cover"
+                alt="logo"
+                src={logo}
+              />
             </picture>
           </Link>
           <div className="min-w-0">
-            <p className="font-mono text-[0.68rem] uppercase tracking-[0.32em] text-[color:var(--color-run-date)]">
-              Running Archive
-            </p>
             <Link
               to="/"
-              className="block truncate text-xl font-black italic tracking-tight text-[color:var(--color-text-primary)] lg:text-2xl"
+              className="block truncate text-xl font-black italic text-[color:var(--color-text-primary)] lg:text-2xl"
             >
               {siteTitle}
             </Link>
