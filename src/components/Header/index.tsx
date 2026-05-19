@@ -52,16 +52,16 @@ const Header = () => {
   };
 
   return (
-    <header className="mx-auto mt-4 w-full max-w-screen-2xl px-4 lg:mt-8 lg:px-16">
-      <nav className="flex flex-col gap-4 rounded-[2rem] border border-[color:var(--color-hr-primary)]/35 bg-[color:var(--color-background)]/70 px-4 py-4 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between lg:px-6">
-        <div className="flex items-center gap-4">
+    <header className="mx-auto mt-3 w-full max-w-screen-2xl px-3 sm:px-4 lg:mt-8 lg:px-16">
+      <nav className="flex flex-col gap-3 rounded-3xl border border-[color:var(--color-hr-primary)]/25 bg-[color:var(--color-background)]/70 px-3 py-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:px-4 sm:py-4 lg:flex-row lg:items-center lg:justify-between lg:px-6">
+        <div className="flex items-center gap-3 sm:gap-4">
           <Link
             to="/"
             className="shrink-0 rounded-full ring-1 ring-[color:var(--color-hr-primary)]/30 transition-transform duration-200 hover:scale-[1.03]"
           >
             <picture>
               <img
-                className="h-14 w-14 rounded-full object-cover"
+                className="h-11 w-11 rounded-full object-cover sm:h-14 sm:w-14"
                 alt="logo"
                 src={logo}
               />
@@ -70,18 +70,18 @@ const Header = () => {
           <div className="min-w-0">
             <Link
               to="/"
-              className="block truncate text-xl font-black text-[color:var(--color-text-primary)] italic lg:text-2xl"
+              className="block truncate text-lg font-black text-[color:var(--color-text-primary)] italic sm:text-xl lg:text-2xl"
             >
               {siteTitle}
             </Link>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+        <div className="flex flex-wrap items-center gap-1.5 lg:justify-end">
           {navLinks.map((n) => (
             <a
               key={n.url}
               href={n.url}
-              className="rounded-full border border-[color:var(--color-hr-primary)]/25 bg-[color:var(--color-run-row-hover-background)]/45 px-3 py-2 text-sm font-semibold tracking-[0.08em] text-[color:var(--color-run-date)] transition-colors duration-200 hover:border-[color:var(--color-primary)]/40 hover:text-[color:var(--color-text-primary)]"
+              className="rounded-full border border-[color:var(--color-hr-primary)]/20 bg-[color:var(--color-run-row-hover-background)]/35 px-2.5 py-1.5 text-xs font-semibold tracking-[0.08em] text-[color:var(--color-run-date)] transition-colors duration-200 hover:border-[color:var(--color-primary)]/40 hover:text-[color:var(--color-text-primary)] sm:px-3 sm:py-2 sm:text-sm"
             >
               {n.name}
             </a>

@@ -123,16 +123,16 @@ const getYearStatSummaries = (activityData: Activity[]) => {
 };
 
 const Metric = ({ label, unit, value }: MetricProps) => (
-  <div className="flex min-h-[5.25rem] flex-col justify-between rounded-2xl border border-[color:var(--color-hr-primary)]/10 bg-[color:var(--color-background)]/35 px-3 py-2.5 sm:min-h-[5.75rem] sm:px-3.5">
-    <span className="text-[0.68rem] font-bold tracking-[0.14em] text-[color:var(--color-run-date)] uppercase not-italic">
+  <div className="flex min-h-[4.75rem] flex-col justify-between rounded-xl border border-[color:var(--color-hr-primary)]/8 bg-[color:var(--color-run-row-hover-background)]/24 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:min-h-[5.15rem]">
+    <span className="text-[0.64rem] font-semibold tracking-[0.13em] text-[color:var(--color-run-date)]/80 uppercase not-italic">
       {label}
     </span>
-    <div className="flex items-baseline gap-1.5 whitespace-nowrap">
-      <span className="text-[clamp(1.65rem,7vw,2.85rem)] leading-none font-black tracking-[-0.04em] text-[color:var(--color-text-primary)] not-italic">
+    <div className="flex items-baseline gap-1.5 font-[family:var(--font-display)] whitespace-nowrap">
+      <span className="text-[clamp(1.35rem,5.8vw,2.2rem)] leading-none font-bold tracking-[-0.025em] text-[color:var(--color-text-primary)] not-italic">
         {intComma(value.toString())}
       </span>
       {unit && (
-        <span className="text-xs font-black tracking-[-0.02em] text-[color:var(--color-text-primary)]/75 uppercase sm:text-sm">
+        <span className="text-[0.68rem] font-semibold tracking-[0.01em] text-[color:var(--color-text-primary)]/60 uppercase sm:text-xs">
           {unit}
         </span>
       )}
@@ -155,29 +155,29 @@ const YearStat = ({
 
   return (
     <div
-      className="cursor-pointer rounded-[1.7rem] border border-[color:var(--color-hr-primary)]/20 bg-[color:var(--color-run-row-hover-background)]/18 p-4 transition-transform duration-200 hover:-translate-y-0.5 sm:p-5"
+      className="cursor-pointer rounded-3xl border border-[color:var(--color-hr-primary)]/12 bg-[color:var(--color-run-row-hover-background)]/18 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] transition-transform duration-200 hover:-translate-y-0.5 sm:p-4"
       onClick={() => onClick(year)}
     >
-      <section className="space-y-4">
-        <div className="flex items-end justify-between gap-4 px-1">
+      <section className="space-y-3">
+        <div className="flex items-end justify-between gap-4 px-0.5">
           <div>
-            <p className="text-[0.68rem] font-bold tracking-[0.18em] text-[color:var(--color-run-date)] uppercase">
+            <p className="text-[0.64rem] font-semibold tracking-[0.16em] text-[color:var(--color-run-date)]/80 uppercase">
               {titleLabel}
             </p>
-            <h2 className="text-[clamp(2.2rem,9vw,3.8rem)] leading-none font-black tracking-[-0.05em] text-[color:var(--color-text-primary)]">
+            <h2 className="text-[clamp(1.8rem,7.5vw,3rem)] leading-none font-[family:var(--font-display)] font-bold tracking-[-0.035em] text-[color:var(--color-text-primary)]">
               {year}
             </h2>
           </div>
-          <div className="pb-1 text-right">
-            <p className="text-[0.68rem] font-bold tracking-[0.18em] text-[color:var(--color-run-date)] uppercase">
+          <div className="pb-0.5 text-right">
+            <p className="text-[0.64rem] font-semibold tracking-[0.16em] text-[color:var(--color-run-date)]/80 uppercase">
               Runs
             </p>
-            <p className="text-[clamp(1.85rem,7vw,3rem)] leading-none font-black tracking-[-0.04em] text-[color:var(--color-text-primary)]">
+            <p className="text-[clamp(1.45rem,5.8vw,2.35rem)] leading-none font-[family:var(--font-display)] font-bold tracking-[-0.025em] text-[color:var(--color-text-primary)]">
               {intComma(summary.runCount.toString())}
             </p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2.5">
           <Metric
             value={summary.totalDistance}
             unit={DIST_UNIT}

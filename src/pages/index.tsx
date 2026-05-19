@@ -11,6 +11,7 @@ import Layout from '@/components/Layout';
 import LocationStat from '@/components/LocationStat';
 import RunMap from '@/components/RunMap';
 import RunTable from '@/components/RunTable';
+import SVGStat from '@/components/SVGStat';
 import YearsStat from '@/components/YearsStat';
 import useActivities from '@/hooks/useActivities';
 import getSiteMetadata from '@/hooks/useSiteMetadata';
@@ -346,9 +347,9 @@ const Index = () => {
       <Helmet>
         <html lang="en" data-theme={theme} />
       </Helmet>
-      <div className="grid w-full gap-6 lg:grid-cols-[minmax(18rem,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
+      <div className="grid w-full gap-4 sm:gap-6 lg:grid-cols-[minmax(18rem,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
         <section className="w-full lg:sticky lg:top-8">
-          <h1 className="mb-6 text-3xl font-black text-[color:var(--color-text-primary)] italic sm:text-4xl">
+          <h1 className="mb-4 text-[2rem] leading-none font-black text-[color:var(--color-text-primary)] italic sm:mb-6 sm:text-4xl">
             {siteTitle}
           </h1>
           {(viewState.zoom ?? 0) <= 3 && IS_CHINESE ? (
@@ -361,8 +362,8 @@ const Index = () => {
             <YearsStat year={year} onClick={changeYear} />
           )}
         </section>
-        <section className="w-full space-y-6" id="map-container">
-          <div className="overflow-hidden border border-[color:var(--color-hr-primary)]/30 bg-[color:var(--color-run-row-hover-background)]/10 p-2 sm:p-3">
+        <section className="min-w-0 space-y-4 sm:space-y-6" id="map-container">
+          <div className="map-shell overflow-hidden border border-[color:var(--color-hr-primary)]/12 bg-[color:var(--color-run-row-hover-background)]/14 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] sm:p-3">
             <RunMap
               title={title}
               viewState={viewState}
@@ -373,13 +374,17 @@ const Index = () => {
               animationTrigger={animationTrigger}
             />
           </div>
-          <div className="border border-[color:var(--color-hr-primary)]/25 bg-[color:var(--color-run-row-hover-background)]/10 p-3 sm:p-5">
-            <RunTable
-              runs={runs}
-              locateActivity={locateActivity}
-              runIndex={runIndex}
-              setRunIndex={setRunIndex}
-            />
+          <div className="min-w-0 overflow-hidden border border-[color:var(--color-hr-primary)]/12 bg-[color:var(--color-run-row-hover-background)]/14 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] sm:p-5">
+            {year === 'Total' ? (
+              <SVGStat />
+            ) : (
+              <RunTable
+                runs={runs}
+                locateActivity={locateActivity}
+                runIndex={runIndex}
+                setRunIndex={setRunIndex}
+              />
+            )}
           </div>
         </section>
       </div>

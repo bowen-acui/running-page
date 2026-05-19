@@ -21,7 +21,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
       </Helmet>
       <Header />
       <DataStatusBar />
-      <main className="mx-auto mt-6 mb-16 max-w-screen-2xl px-4 pb-10 lg:mt-8 lg:px-16">
+      <main className="mx-auto mt-4 mb-16 max-w-screen-2xl px-3 pb-10 sm:px-4 lg:mt-8 lg:px-16">
         {children}
       </main>
     </>

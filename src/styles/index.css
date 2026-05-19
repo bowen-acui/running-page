@@ -1,5 +1,6 @@
-/* IBM Plex Sans and IBM Plex Mono fonts */
+/* IBM Plex Sans family keeps the archive compact without feeling mechanical. */
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
 
 @import 'tailwindcss';
@@ -23,6 +24,7 @@
   --svg-color-active-cell: var(--svg-color-inactive-cell);
   /* fonts */
   --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
   --font-mono: var(--font-mono);
 }
 
@@ -43,6 +45,7 @@
     --svg-special-color: #d4a574;
     --svg-special-color2: #c5756b;
     --font-sans: 'IBM Plex Sans', sans-serif;
+    --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
   }
 }
@@ -64,6 +67,7 @@
     --svg-special-color: #f7d02c;
     --svg-special-color2: #f56c6c;
     --font-sans: 'IBM Plex Sans', sans-serif;
+    --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
   }
 }
@@ -85,6 +89,7 @@
   --svg-special-color: #d4a574;
   --svg-special-color2: #c5756b;
   --font-sans: 'IBM Plex Sans', sans-serif;
+  --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 }
 
@@ -104,6 +109,7 @@
   --svg-special-color: #f7d02c;
   --svg-special-color2: #f56c6c;
   --font-sans: 'IBM Plex Sans', sans-serif;
+  --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 }
 
