@@ -1,8 +1,7 @@
 import { lazy, Suspense } from 'react';
-import Stat from '@/components/Stat';
 import useActivities from '@/hooks/useActivities';
 import type { Activity } from '@/utils/utils';
-import { formatPace } from '@/utils/utils';
+import { formatPace, intComma } from '@/utils/utils';
 import useHover from '@/hooks/useHover';
 import { yearStats, githubYearStats } from '@assets/index';
 import { loadSvgComponent } from '@/utils/svgUtils';
@@ -42,6 +41,12 @@ interface YearStatSummary {
   streak: number;
   totalDistance: number;
   totalElevationGain: string;
+}
+
+interface MetricProps {
+  label: string;
+  unit?: string;
+  value: number | string;
 }
 
 const createAccumulator = (): YearStatAccumulator => ({
@@ -129,6 +134,24 @@ const getYearStatSummaries = (activityData: Activity[]) => {
   return summaries;
 };
 
+const Metric = ({ label, unit, value }: MetricProps) => (
+  <div className="flex min-h-[6.25rem] flex-col justify-between rounded-[1.15rem] border border-[color:var(--color-hr-primary)]/10 bg-[color:var(--color-background)]/35 px-3.5 py-3 sm:min-h-[6.75rem] sm:px-4">
+    <span className="text-xs font-bold tracking-[0.18em] text-[color:var(--color-run-date)] uppercase not-italic">
+      {label}
+    </span>
+    <div className="flex items-baseline gap-1.5 whitespace-nowrap">
+      <span className="font-mono text-[clamp(2.1rem,9vw,3.85rem)] leading-none font-black tracking-[-0.08em] text-[color:var(--color-text-primary)] not-italic">
+        {intComma(value.toString())}
+      </span>
+      {unit && (
+        <span className="font-mono text-base font-black tracking-[-0.04em] text-[color:var(--color-text-primary)]/80 uppercase sm:text-lg">
+          {unit}
+        </span>
+      )}
+    </div>
+  </div>
+);
+
 const YearStat = ({
   year,
   onClick,
@@ -143,31 +166,52 @@ const YearStat = ({
   const YearSVG = yearSvgs[`./year_${year}.svg`];
   const GithubYearSVG = githubYearSvgs[`./github_${year}.svg`];
   const summary = getYearStatSummaries(activities).get(year);
+  const titleLabel = year === 'Total' ? 'All Time' : 'Journey';
 
   if (!summary) return null;
 
   return (
     <div
-      className="cursor-pointer rounded-[1.7rem] border border-[color:var(--color-hr-primary)]/20 bg-[color:var(--color-run-row-hover-background)]/18 px-4 py-5 transition-transform duration-200 hover:-translate-y-0.5"
+      className="cursor-pointer rounded-[1.7rem] border border-[color:var(--color-hr-primary)]/20 bg-[color:var(--color-run-row-hover-background)]/18 p-4 transition-transform duration-200 hover:-translate-y-0.5 sm:p-5"
       onClick={() => onClick(year)}
     >
-      <section
-        {...eventHandlers}
-        className="grid grid-cols-2 gap-x-4 gap-y-5 md:grid-cols-3"
-      >
-        <Stat value={year} description="Journey" />
-        <Stat value={summary.runCount} description="Runs" />
-        <Stat value={summary.totalDistance} description={DIST_UNIT} />
-        {SHOW_ELEVATION_GAIN && (
-          <Stat
-            value={summary.totalElevationGain}
-            description="Elevation Gain"
+      <section {...eventHandlers} className="space-y-4">
+        <div className="flex items-end justify-between gap-4 px-1">
+          <div>
+            <p className="text-xs font-bold tracking-[0.22em] text-[color:var(--color-run-date)] uppercase">
+              {titleLabel}
+            </p>
+            <h2 className="font-mono text-[clamp(2.6rem,11vw,5rem)] leading-none font-black tracking-[-0.09em] text-[color:var(--color-text-primary)]">
+              {year}
+            </h2>
+          </div>
+          <div className="pb-1 text-right">
+            <p className="text-xs font-bold tracking-[0.22em] text-[color:var(--color-run-date)] uppercase">
+              Runs
+            </p>
+            <p className="font-mono text-[clamp(2rem,8vw,3.5rem)] leading-none font-black tracking-[-0.08em] text-[color:var(--color-text-primary)]">
+              {intComma(summary.runCount.toString())}
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Metric
+            value={summary.totalDistance}
+            unit={DIST_UNIT}
+            label="Distance"
           />
-        )}
-        <Stat value={summary.averagePace} description="Avg Pace" />
-        <Stat value={`${summary.streak} day`} description="Streak" />
-        {summary.hasHeartRate && (
-          <Stat value={summary.averageHeartRate} description="Avg Heart Rate" />
+          <Metric value={summary.averagePace} label="Avg Pace" />
+          <Metric value={summary.streak} unit="day" label="Streak" />
+          {summary.hasHeartRate && (
+            <Metric
+              value={summary.averageHeartRate}
+              unit="bpm"
+              label="Avg HR"
+            />
+          )}
+        </div>
+        {SHOW_ELEVATION_GAIN && (
+          <Metric value={summary.totalElevationGain} label="Elevation" />
         )}
       </section>
       {year !== 'Total' && hovered && YearSVG && GithubYearSVG && (
