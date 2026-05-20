@@ -1,6 +1,19 @@
 .activityList {
-  padding: 16px 0 0;
-  background-color: var(--color-background);
+  padding: 18px;
+  background:
+    radial-gradient(
+      circle at 6% 0%,
+      color-mix(in srgb, var(--color-secondary) 12%, transparent),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-background) 78%, white 22%),
+      color-mix(in srgb, var(--color-background) 94%, transparent)
+    );
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border-radius: 30px;
+  box-shadow: 0 22px 70px rgba(7, 54, 76, 0.06);
   color: var(--color-primary);
 }
 
@@ -25,12 +38,36 @@
 }
 
 .filterContainer {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 14px;
+  padding: 0 0 16px;
   overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  width: 100%;
+}
+
+.filterContainer::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-primary) 12%, transparent) 8%,
+    color-mix(in srgb, var(--color-primary) 12%, transparent) 92%,
+    transparent
+  );
+  content: '';
 }
 
 .filterContainer select {
@@ -39,10 +76,10 @@
   padding: 12px 14px;
   border-radius: 9999px;
   border: 1px solid
-    color-mix(in srgb, var(--color-run-table-thead) 40%, transparent);
+    color-mix(in srgb, var(--color-run-table-thead) 20%, transparent);
   background-color: color-mix(
     in srgb,
-    var(--color-run-row-hover-background) 70%,
+    var(--color-background) 78%,
     transparent
   );
   color: var(--color-run-table-thead);
@@ -50,7 +87,21 @@
   text-align: center;
   text-transform: capitalize;
   box-sizing: border-box;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.filterContainer select:focus,
+.smallHomeButton:focus {
+  outline: none;
+}
+
+.filterContainer select:focus-visible,
+.smallHomeButton:focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--color-primary) 36%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--color-secondary) 24%, transparent);
 }
 
 .summaryContainer {
@@ -61,6 +112,7 @@
   /* position: relative; */
   width: 100%;
   height: 100%;
+  padding-top: 4px;
   /* overflow: auto;
   will-change: transform; */
 }
@@ -68,25 +120,83 @@
 .activityCard {
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--color-run-row-hover-background) 92%, transparent),
-    color-mix(in srgb, var(--color-background) 92%, transparent)
+    color-mix(in srgb, var(--color-run-row-hover-background) 72%, white 28%),
+    color-mix(in srgb, var(--color-background) 88%, white 12%)
   );
-  border: 1px solid
-    color-mix(in srgb, var(--color-activity-card) 60%, transparent);
-  border-radius: 24px;
-  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 14%, transparent);
+  border-radius: 22px;
+  padding: 16px;
   width: 100%;
   max-width: 280px;
-  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 18px 46px rgba(7, 54, 76, 0.08);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
   position: relative;
+  overflow: hidden;
+}
+
+.activityCard::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-secondary) 8%, transparent),
+      transparent 42%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-primary) 5%, transparent),
+      transparent 28%
+    );
+  content: '';
+  pointer-events: none;
 }
 
 .activityCard:hover {
   transform: translateY(-3px);
   box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+}
+
+.activityCardDay {
+  min-height: 0;
+}
+
+.activityCardDay.activityCardFlippable {
+  padding: 14px;
+}
+
+.activityCardDay .cardHeader {
+  margin-bottom: 10px;
+}
+
+.activityCardDay .activityName {
+  padding: 4px 0;
+  font-size: 1.04rem;
+  letter-spacing: -0.02em;
+}
+
+.activityCardDay .primaryMetric {
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 17px;
+}
+
+.activityCardDay .primaryMetric strong {
+  font-size: 1.78rem;
+}
+
+.activityCardDay .activityDetails {
+  grid-template-columns: 1fr 1fr;
+}
+
+.activityCardDay .activityDetails p {
+  padding: 8px 9px;
 }
 
 /* Flip card styles */
@@ -141,38 +251,123 @@
   overflow: hidden;
 }
 
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
 .activityName {
-  font-size: 1.35rem;
-  margin-bottom: 14px;
+  font-size: 1.18rem;
+  margin: 0;
   color: var(--color-primary);
   font-weight: 900;
   letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.activityCount {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-secondary) 42%, transparent);
+  color: var(--color-primary);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.primaryMetric {
+  display: grid;
+  gap: 4px;
+  padding: 14px 14px 12px;
+  margin-bottom: 12px;
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-primary) 12%, transparent),
+      color-mix(in srgb, var(--color-secondary) 22%, transparent)
+    ),
+    color-mix(in srgb, var(--color-background) 58%, transparent);
+}
+
+.primaryMetric span {
+  color: color-mix(in srgb, var(--color-run-table-thead) 76%, transparent);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.primaryMetric strong {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--color-primary);
+  font-family: var(--font-display), sans-serif;
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.primaryMetric small {
+  color: color-mix(in srgb, var(--color-run-table-thead) 78%, transparent);
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.activityDetails {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .activityDetails p {
-  margin: 10px 0;
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--color-background) 66%, transparent);
   color: var(--color-run-table-thead);
-  line-height: 1.55;
+  line-height: 1.2;
+}
+
+.activityDetails span {
+  color: color-mix(in srgb, var(--color-run-table-thead) 70%, transparent);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
 }
 
 .activityDetails strong {
   color: var(--color-primary);
+  font-size: 0.88rem;
+  font-weight: 850;
+  letter-spacing: -0.01em;
 }
 
 .chart {
-  height: 250px;
+  height: 132px;
   width: 100%;
   background-color: color-mix(
     in srgb,
-    var(--color-activity-card) 60%,
+    var(--color-activity-card) 38%,
     transparent
   );
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 14px;
-  border-radius: 18px;
+  margin-top: 12px;
+  border-radius: 16px;
   padding: 8px;
+  opacity: 0.72;
+  overflow: hidden;
 }
 
 .smallHomeButton {
@@ -185,6 +380,7 @@
   cursor: pointer;
   font-weight: 700;
   letter-spacing: 0.08em;
+  box-shadow: 0 10px 22px rgba(7, 54, 76, 0.16);
 }
 
 .smallHomeButton:hover {
@@ -235,6 +431,93 @@
   max-height: 80vh;
 }
 
+.lifeSvg {
+  max-width: 100%;
+  height: auto;
+  max-height: 80vh;
+}
+
+.yearSummarySvg,
+.lifeSvg {
+  overflow: hidden;
+  border-radius: 1.45rem;
+  background: transparent;
+}
+
+.yearSummarySvg > rect:first-child,
+.lifeSvg > rect:first-child {
+  fill: transparent;
+}
+
+.yearSummarySvg text,
+.lifeSvg text {
+  font-family: var(--font-sans) !important;
+  fill: color-mix(in srgb, var(--color-run-date) 78%, transparent);
+}
+
+.yearSummarySvg text[fill='#FFFFFF'],
+.lifeSvg text[fill='#FFFFFF'] {
+  fill: var(--color-primary);
+}
+
+.yearSummarySvg text[style*='font-size:12px'],
+.lifeSvg text[style*='font-size:12px'] {
+  font-family: var(--font-display) !important;
+  font-size: 8px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+}
+
+.yearSummarySvg text[style*='font-size:10px'],
+.lifeSvg text[style*='font-size:10px'] {
+  font-family: var(--font-display) !important;
+  font-size: 7.2px !important;
+  font-weight: 700 !important;
+}
+
+.yearSummarySvg text[style*='font-size:9px'],
+.lifeSvg text[style*='font-size:9px'],
+.yearSummarySvg text[style*='font-size:8px'],
+.lifeSvg text[style*='font-size:8px'] {
+  font-family: var(--font-display) !important;
+  font-size: 6px !important;
+  font-weight: 700 !important;
+}
+
+.yearSummarySvg text[style*='font-size:7px'],
+.lifeSvg text[style*='font-size:7px'] {
+  font-size: 5.2px !important;
+}
+
+.yearSummarySvg text[style*='font-size:6px'],
+.lifeSvg text[style*='font-size:6px'] {
+  font-size: 4.6px !important;
+}
+
+.yearSummarySvg text[style*='font-size:5px'],
+.lifeSvg text[style*='font-size:5px'] {
+  font-size: 4px !important;
+}
+
+.yearSummarySvg text[style*='font-size:4px'],
+.lifeSvg text[style*='font-size:4px'] {
+  font-size: 3.4px !important;
+}
+
+.yearSummarySvg text[style*='font-size:3px'],
+.lifeSvg text[style*='font-size:3px'] {
+  font-size: 2.8px !important;
+}
+
+.yearSummarySvg circle[fill='gray'],
+.lifeSvg circle[fill='gray'],
+.yearSummarySvg circle[fill='#555555'],
+.lifeSvg circle[fill='#555555'],
+.yearSummarySvg circle[fill='#444444'],
+.lifeSvg circle[fill='#444444'] {
+  fill: color-mix(in srgb, var(--color-run-date) 16%, transparent);
+}
+
 /* Inner wrapper to center the virtual list rows and constrain width */
 .summaryInner {
   display: flex;
@@ -242,6 +525,14 @@
   width: 100%;
   box-sizing: border-box;
   padding: 0;
+}
+
+.mobileCardList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  width: 100%;
+  padding-bottom: 20px;
 }
 
 /* Prevent content from sitting flush against the custom scrollbar. The inner wrapper (direct child) gets right padding. */
@@ -253,7 +544,7 @@
 /* Row container used by VirtualList rows */
 .rowContainer {
   display: flex;
-  padding: 8px 0 18px;
+  padding: 4px 0 16px;
   justify-content: flex-start;
   align-items: stretch;
   padding-right: 12px;
@@ -274,17 +565,25 @@
 
 @media only screen and (max-width: 768px) {
   .activityList {
-    padding-top: 8px;
+    padding: 12px;
+    border-radius: 22px;
   }
 
   .filterContainer {
     position: sticky;
-    top: 12px;
+    top: 8px;
     z-index: 10;
-    padding: 10px;
-    border-radius: 24px;
-    background: color-mix(in srgb, var(--color-background) 84%, transparent);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 0 0 10px;
+    border: 0;
+    border-radius: 0;
+    background: color-mix(in srgb, var(--color-background) 82%, transparent);
     backdrop-filter: blur(14px);
+    width: 100%;
+    box-shadow: none;
   }
 
   .filterContainer > * {
@@ -295,16 +594,54 @@
   .smallHomeButton {
     width: 100%;
     min-width: 0;
+    padding: 10px 8px;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
   }
 
   .activityCard {
     max-width: none;
-    border-radius: 22px;
-    padding: 16px;
+    border-radius: 20px;
+    padding: 13px;
+    box-shadow: none;
+  }
+
+  .activityCardDay .activityName {
+    font-size: 0.98rem;
+  }
+
+  .activityCardDay .primaryMetric strong {
+    font-size: 1.64rem;
   }
 
   .activityName {
-    font-size: 1.15rem;
+    margin: 0;
+    font-size: 1.05rem;
+  }
+
+  .activityDetails {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 10px;
+  }
+
+  .activityDetails p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.35;
+  }
+
+  .primaryMetric {
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+
+  .primaryMetric strong {
+    font-size: 1.86rem;
+  }
+
+  .mobileCardList {
+    gap: 10px;
   }
 
   .chart {
@@ -334,6 +671,38 @@
   }
 
   .rowContainer {
+    width: 100%;
     padding-right: 0;
+    padding-bottom: 12px;
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .filterContainer {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .smallHomeButton {
+    grid-column: 1 / -1;
+  }
+
+  .activityDetails {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .activityDetails p {
+    grid-template-columns: 72px 1fr;
+    align-items: baseline;
+    gap: 8px;
+    padding: 8px 9px;
+  }
+
+  .activityDetails strong {
+    text-align: right;
+  }
+
+  .activityCardDay .activityDetails {
+    grid-template-columns: 1fr;
   }
 }

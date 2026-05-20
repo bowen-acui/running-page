@@ -58,6 +58,10 @@ const notifyRunHashChange = () => {
   window.dispatchEvent(new Event(HASH_RUN_CHANGE_EVENT));
 };
 
+const isMobileViewport = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(max-width: 768px)').matches;
+
 const clearRunHash = () => {
   if (window.location.hash) {
     window.history.pushState(
@@ -101,6 +105,7 @@ const Index = () => {
 
   // Animation trigger for single runs - increment this to force animation replay
   const [animationTrigger, setAnimationTrigger] = useState(0);
+  const [isMapCollapsed, setIsMapCollapsed] = useState(isMobileViewport);
 
   // Memoize expensive calculations
   const runs = useMemo(() => {
@@ -340,6 +345,23 @@ const Index = () => {
     }
   }, [runs, startAnimation, singleRunId]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const handleChange = () => {
+      setIsMapCollapsed(mediaQuery.matches);
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (singleRunId !== null) {
+      setIsMapCollapsed(false);
+    }
+  }, [singleRunId]);
+
   const { theme } = useTheme();
 
   return (
@@ -363,18 +385,36 @@ const Index = () => {
           )}
         </section>
         <section className="min-w-0 space-y-4 sm:space-y-6" id="map-container">
-          <div className="map-shell overflow-hidden border border-[color:var(--color-hr-primary)]/12 bg-[color:var(--color-run-row-hover-background)]/14 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] sm:p-3">
-            <RunMap
-              title={title}
-              viewState={viewState}
-              geoData={animatedGeoData}
-              setViewState={setViewState}
-              changeYear={changeYear}
-              thisYear={year}
-              animationTrigger={animationTrigger}
-            />
+          <div className="home-map-panel map-shell overflow-hidden rounded-[1.75rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-3">
+            {isMapCollapsed ? (
+              <button
+                type="button"
+                className="flex min-h-24 w-full flex-col items-start justify-center rounded-2xl bg-[color:var(--color-background)]/35 px-4 py-3 text-left text-[color:var(--color-run-date)]"
+                onClick={() => setIsMapCollapsed(false)}
+              >
+                <span className="text-xs font-semibold tracking-[0.16em] uppercase">
+                  Route Map
+                </span>
+                <strong className="mt-1 text-xl text-[color:var(--color-text-primary)]">
+                  查看路线地图
+                </strong>
+                <span className="mt-1 text-sm">
+                  点击后加载地图，首屏优先显示数据。
+                </span>
+              </button>
+            ) : (
+              <RunMap
+                title={title}
+                viewState={viewState}
+                geoData={animatedGeoData}
+                setViewState={setViewState}
+                changeYear={changeYear}
+                thisYear={year}
+                animationTrigger={animationTrigger}
+              />
+            )}
           </div>
-          <div className="min-w-0 overflow-hidden border border-[color:var(--color-hr-primary)]/12 bg-[color:var(--color-run-row-hover-background)]/14 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] sm:p-5">
+          <div className="home-data-panel min-w-0 overflow-hidden rounded-[1.75rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-5">
             {year === 'Total' ? (
               <SVGStat />
             ) : (

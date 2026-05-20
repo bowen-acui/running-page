@@ -1,5 +1,6 @@
 import useActivities from '@/hooks/useActivities';
 import getSiteMetadata from '@/hooks/useSiteMetadata';
+import { isRunActivity } from '@/utils/utils';
 
 const formatSyncTime = (value: string | null) => {
   if (!value) return '未获取';
@@ -14,6 +15,7 @@ const formatSyncTime = (value: string | null) => {
 const DataStatusBar = () => {
   const { lastSyncedAt, activities } = useActivities();
   const { activitySource } = getSiteMetadata();
+  const runCount = activities.filter(isRunActivity).length;
 
   return (
     <div className="mx-auto mt-4 max-w-screen-2xl px-4 lg:px-16">
@@ -33,7 +35,7 @@ const DataStatusBar = () => {
         <span>
           记录{' '}
           <strong className="font-semibold text-[color:var(--color-text-primary)]">
-            {activities.length}
+            {runCount}
           </strong>
         </span>
       </div>

@@ -64,6 +64,10 @@ function createSnapshotStore<T>(initialSnapshot: T): SnapshotStore<T> {
 const getInitialListHeight = () =>
   typeof window === 'undefined' ? 500 : Math.max(100, window.innerHeight - 40);
 
+const getIsCompactSummary = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(max-width: 768px)').matches;
+
 const loadRoutePreview = () => import('@/components/RoutePreview');
 const RoutePreview = lazy(loadRoutePreview);
 const loadActivityChart = () => import('./ActivityChart');
@@ -128,6 +132,7 @@ interface ActivityCardProps {
   dailyDistances: number[];
   interval: string;
   activities?: Activity[]; // Add activities for day interval
+  compact?: boolean;
 }
 
 interface ActivityGroups {
@@ -597,15 +602,32 @@ function useActivityListMeasurements(itemWidth: number, gap: number) {
   };
 }
 
+function useCompactSummaryLayout() {
+  const [isCompact, setIsCompact] = useState(getIsCompactSummary);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const handleChange = () => setIsCompact(mediaQuery.matches);
+    handleChange();
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  return isCompact;
+}
+
 const ActivityCardInner: React.FC<ActivityCardProps> = ({
   period,
   summary,
   dailyDistances,
   interval,
   activities = [],
+  compact = false,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
-  const showChart = ['month', 'week', 'year'].includes(interval);
+  const showChart = !compact && ['month', 'week', 'year'].includes(interval);
   const handleCardClick = useCallback(() => {
     if (interval === 'day' && activities.length > 0) {
       setIsFlipped((current) => !current);
@@ -636,9 +658,52 @@ const ActivityCardInner: React.FC<ActivityCardProps> = ({
     };
   }, [data, showChart]);
 
+  const metricItems = [
+    {
+      label: ACTIVITY_TOTAL.AVERAGE_SPEED_TITLE,
+      value: formatPace(summary.averageSpeed),
+    },
+    {
+      label: ACTIVITY_TOTAL.TOTAL_TIME_TITLE,
+      value: formatTime(summary.totalTime),
+    },
+    ...(summary.averageHeartRate !== undefined
+      ? [
+          {
+            label: ACTIVITY_TOTAL.AVERAGE_HEART_RATE_TITLE,
+            value: `${summary.averageHeartRate.toFixed(0)} bpm`,
+          },
+        ]
+      : []),
+    ...(SHOW_ELEVATION_GAIN && summary.totalElevationGain !== undefined
+      ? [
+          {
+            label: ACTIVITY_TOTAL.TOTAL_ELEVATION_GAIN_TITLE,
+            value: `${summary.totalElevationGain.toFixed(0)} m`,
+          },
+        ]
+      : []),
+    ...(interval !== 'day'
+      ? [
+          {
+            label: ACTIVITY_TOTAL.MAX_DISTANCE_TITLE,
+            value: `${summary.maxDistance.toFixed(2)} ${DIST_UNIT}`,
+          },
+          {
+            label: ACTIVITY_TOTAL.MAX_SPEED_TITLE,
+            value: formatPace(summary.maxSpeed),
+          },
+          {
+            label: ACTIVITY_TOTAL.AVERAGE_DISTANCE_TITLE,
+            value: `${(summary.totalDistance / summary.count).toFixed(2)} ${DIST_UNIT}`,
+          },
+        ]
+      : []),
+  ];
+
   return (
     <div
-      className={`${styles.activityCard} ${interval === 'day' ? styles.activityCardFlippable : ''}`}
+      className={`${styles.activityCard} ${interval === 'day' ? `${styles.activityCardDay} ${styles.activityCardFlippable}` : ''}`}
       onClick={handleCardClick}
       style={{
         cursor:
@@ -648,66 +713,41 @@ const ActivityCardInner: React.FC<ActivityCardProps> = ({
       <div className={`${styles.cardInner} ${isFlipped ? styles.flipped : ''}`}>
         {/* Front side - Activity details */}
         <div className={styles.cardFront}>
-          <h2 className={styles.activityName}>{period}</h2>
-          <div className={styles.activityDetails}>
-            <p>
-              <strong>{ACTIVITY_TOTAL.TOTAL_DISTANCE_TITLE}:</strong>{' '}
-              {summary.totalDistance.toFixed(2)} {DIST_UNIT}
-            </p>
-            {SHOW_ELEVATION_GAIN &&
-              summary.totalElevationGain !== undefined && (
-                <p>
-                  <strong>{ACTIVITY_TOTAL.TOTAL_ELEVATION_GAIN_TITLE}:</strong>{' '}
-                  {summary.totalElevationGain.toFixed(0)} m
-                </p>
-              )}
-            <p>
-              <strong>{ACTIVITY_TOTAL.AVERAGE_SPEED_TITLE}:</strong>{' '}
-              {formatPace(summary.averageSpeed)}
-            </p>
-            <p>
-              <strong>{ACTIVITY_TOTAL.TOTAL_TIME_TITLE}:</strong>{' '}
-              {formatTime(summary.totalTime)}
-            </p>
-            {summary.averageHeartRate !== undefined && (
-              <p>
-                <strong>{ACTIVITY_TOTAL.AVERAGE_HEART_RATE_TITLE}:</strong>{' '}
-                {summary.averageHeartRate.toFixed(0)} bpm
-              </p>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.activityName}>{period}</h2>
+            {interval === 'day' && summary.count > 1 && (
+              <span className={styles.activityCount}>{summary.count} 次</span>
             )}
             {interval !== 'day' && (
-              <>
-                <p>
-                  <strong>{ACTIVITY_TOTAL.ACTIVITY_COUNT_TITLE}:</strong>{' '}
-                  {summary.count}
-                </p>
-                <p>
-                  <strong>{ACTIVITY_TOTAL.MAX_DISTANCE_TITLE}:</strong>{' '}
-                  {summary.maxDistance.toFixed(2)} {DIST_UNIT}
-                </p>
-                <p>
-                  <strong>{ACTIVITY_TOTAL.MAX_SPEED_TITLE}:</strong>{' '}
-                  {formatPace(summary.maxSpeed)}
-                </p>
-                <p>
-                  <strong>{ACTIVITY_TOTAL.AVERAGE_DISTANCE_TITLE}:</strong>{' '}
-                  {(summary.totalDistance / summary.count).toFixed(2)}{' '}
-                  {DIST_UNIT}
-                </p>
-              </>
-            )}
-            {showChart && (
-              <div className={styles.chart}>
-                <Suspense fallback={null}>
-                  <ActivityChart
-                    data={data}
-                    yAxisMax={yAxisMax}
-                    yAxisTicks={yAxisTicks}
-                  />
-                </Suspense>
-              </div>
+              <span className={styles.activityCount}>{summary.count} 次</span>
             )}
           </div>
+          <div className={styles.primaryMetric}>
+            <span>{ACTIVITY_TOTAL.TOTAL_DISTANCE_TITLE}</span>
+            <strong>
+              {summary.totalDistance.toFixed(2)}
+              <small>{DIST_UNIT}</small>
+            </strong>
+          </div>
+          <div className={styles.activityDetails}>
+            {metricItems.map((item) => (
+              <p key={`${item.label}-${item.value}`}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </p>
+            ))}
+          </div>
+          {showChart && (
+            <div className={styles.chart}>
+              <Suspense fallback={null}>
+                <ActivityChart
+                  data={data}
+                  yAxisMax={yAxisMax}
+                  yAxisTicks={yAxisTicks}
+                />
+              </Suspense>
+            </div>
+          )}
         </div>
 
         {/* Back side - Route preview */}
@@ -732,6 +772,7 @@ const activityCardAreEqual = (
 ) => {
   if (prev.period !== next.period) return false;
   if (prev.interval !== next.interval) return false;
+  if (prev.compact !== next.compact) return false;
   const s1 = prev.summary;
   const s2 = next.summary;
   if (
@@ -763,8 +804,9 @@ const ActivityCard = React.memo(ActivityCardInner, activityCardAreEqual);
 const ActivityList: React.FC = () => {
   const { activities: activityData } = useActivities();
   const [interval, setInterval] = useState<IntervalType>('month');
-  const [sportType, setSportType] = useState<string>('all');
+  const [sportType, setSportType] = useState<string>('running');
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
+  const isCompact = useCompactSummaryLayout();
 
   const availableYears = useMemo(
     () => getAvailableActivityYears(activityData),
@@ -894,11 +936,17 @@ const ActivityList: React.FC = () => {
 
   // compute a row width so we can center the VirtualList and keep cards left-aligned inside
   const rowWidth =
-    itemsPerRow < 1
+    isCompact || itemsPerRow < 1
       ? '100%'
       : `${itemsPerRow * ITEM_WIDTH + Math.max(0, itemsPerRow - 1) * ITEM_GAP}px`;
 
   const loading = itemsPerRow < 1 || !rowHeight;
+  const itemGap = isCompact ? 12 : ITEM_GAP;
+  const viewportHeight =
+    typeof window === 'undefined' ? 500 : window.innerHeight;
+  const virtualListHeight = isCompact
+    ? Math.max(360, Math.min(listHeight, viewportHeight - 120))
+    : listHeight;
   const SelectedYearSvg = selectedYear
     ? yearSummarySvgs[`./year_summary_${selectedYear}.svg`]
     : null;
@@ -959,14 +1007,24 @@ const ActivityList: React.FC = () => {
               // Show Life SVG when no year is selected
               <>
                 {(sportType === 'running' || sportType === 'Run') && (
-                  <RunningSvg />
+                  <RunningSvg className={styles.lifeSvg} />
                 )}
-                {sportType === 'walking' && <WalkingSvg />}
-                {sportType === 'hiking' && <HikingSvg />}
-                {sportType === 'cycling' && <CyclingSvg />}
-                {sportType === 'swimming' && <SwimmingSvg />}
-                {sportType === 'skiing' && <SkiingSvg />}
-                {sportType === 'all' && <AllSvg />}
+                {sportType === 'walking' && (
+                  <WalkingSvg className={styles.lifeSvg} />
+                )}
+                {sportType === 'hiking' && (
+                  <HikingSvg className={styles.lifeSvg} />
+                )}
+                {sportType === 'cycling' && (
+                  <CyclingSvg className={styles.lifeSvg} />
+                )}
+                {sportType === 'swimming' && (
+                  <SwimmingSvg className={styles.lifeSvg} />
+                )}
+                {sportType === 'skiing' && (
+                  <SkiingSvg className={styles.lifeSvg} />
+                )}
+                {sportType === 'all' && <AllSvg className={styles.lifeSvg} />}
               </>
             )}
           </Suspense>
@@ -975,92 +1033,134 @@ const ActivityList: React.FC = () => {
 
       {interval !== 'life' && (
         <div className={styles.summaryContainer} ref={setSummaryContainerRef}>
-          {/* hidden sample card for measuring row height */}
-          <div
-            style={{
-              position: 'absolute',
-              visibility: 'hidden',
-              pointerEvents: 'none',
-              height: 'auto',
-            }}
-            ref={setSampleCardRef}
-          >
-            {dataList[0] && (
-              <ActivityCard
-                key={dataList[0].period}
-                period={dataList[0].period}
-                summary={toDisplaySummary(dataList[0].summary)}
-                dailyDistances={dataList[0].summary.dailyDistances}
-                interval={interval}
-                activities={
-                  interval === 'day'
-                    ? dataList[0].summary.activities
-                    : undefined
-                }
-              />
-            )}
-          </div>
-          <div className={styles.summaryInner}>
-            <div style={{ width: rowWidth }}>
-              {loading ? (
-                // Use full viewport height (or viewport minus filter height if available) to avoid flicker
-                <div
-                  style={{
-                    height: listHeight,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <div
-                    style={{
-                      padding: 20,
-                      color: 'var(--color-run-table-thead)',
-                    }}
-                  >
-                    {LOADING_TEXT}
-                  </div>
-                </div>
-              ) : (
-                <VirtualList
-                  key={`${sportType}-${interval}-${itemsPerRow}`}
-                  data={calcGroup}
-                  height={listHeight}
-                  itemHeight={rowHeight}
-                  itemKey={(row: RowGroup) => row[0]?.period ?? ''}
-                  styles={VIRTUAL_LIST_STYLES}
-                >
-                  {(row: RowGroup) => (
-                    <div
-                      ref={virtualListRef}
-                      className={styles.rowContainer}
-                      style={{ gap: `${ITEM_GAP}px` }}
-                    >
-                      {row.map(
-                        (cardData: {
-                          period: string;
-                          summary: ActivitySummary;
-                        }) => (
-                          <ActivityCard
-                            key={cardData.period}
-                            period={cardData.period}
-                            summary={toDisplaySummary(cardData.summary)}
-                            dailyDistances={cardData.summary.dailyDistances}
-                            interval={interval}
-                            activities={
-                              interval === 'day'
-                                ? cardData.summary.activities
-                                : undefined
-                            }
-                          />
-                        )
-                      )}
-                    </div>
-                  )}
-                </VirtualList>
-              )}
+          {isCompact ? (
+            <div className={styles.mobileCardList}>
+              {dataList.map((cardData) => (
+                <ActivityCard
+                  key={cardData.period}
+                  period={cardData.period}
+                  summary={toDisplaySummary(cardData.summary)}
+                  dailyDistances={cardData.summary.dailyDistances}
+                  interval={interval}
+                  compact={isCompact}
+                  activities={
+                    interval === 'day' ? cardData.summary.activities : undefined
+                  }
+                />
+              ))}
             </div>
-          </div>
+          ) : (
+            <>
+              {/* hidden sample card for measuring row height */}
+              <div
+                style={{
+                  position: 'absolute',
+                  visibility: 'hidden',
+                  pointerEvents: 'none',
+                  height: 'auto',
+                  width: ITEM_WIDTH,
+                }}
+                ref={setSampleCardRef}
+              >
+                {dataList[0] && (
+                  <ActivityCard
+                    key={dataList[0].period}
+                    period={dataList[0].period}
+                    summary={toDisplaySummary(dataList[0].summary)}
+                    dailyDistances={dataList[0].summary.dailyDistances}
+                    interval={interval}
+                    compact={isCompact}
+                    activities={
+                      interval === 'day'
+                        ? dataList[0].summary.activities
+                        : undefined
+                    }
+                  />
+                )}
+              </div>
+              <div className={styles.summaryInner}>
+                <div style={{ width: rowWidth }}>
+                  {loading ? (
+                    // Use full viewport height (or viewport minus filter height if available) to avoid flicker
+                    <div
+                      style={{
+                        height: virtualListHeight,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: 20,
+                          color: 'var(--color-run-table-thead)',
+                        }}
+                      >
+                        {LOADING_TEXT}
+                      </div>
+                    </div>
+                  ) : (
+                    <VirtualList
+                      key={`${sportType}-${interval}-${itemsPerRow}-${isCompact ? 'compact' : 'wide'}`}
+                      data={calcGroup}
+                      height={virtualListHeight}
+                      itemHeight={rowHeight}
+                      itemKey={(row: RowGroup) => row[0]?.period ?? ''}
+                      styles={VIRTUAL_LIST_STYLES}
+                    >
+                      {(row: RowGroup) => (
+                        <div
+                          ref={virtualListRef}
+                          className={styles.rowContainer}
+                          style={{ gap: `${itemGap}px` }}
+                        >
+                          {row.map(
+                            (cardData: {
+                              period: string;
+                              summary: ActivitySummary;
+                            }) => (
+                              <ActivityCard
+                                key={cardData.period}
+                                period={cardData.period}
+                                summary={toDisplaySummary(cardData.summary)}
+                                dailyDistances={cardData.summary.dailyDistances}
+                                interval={interval}
+                                compact={isCompact}
+                                activities={
+                                  interval === 'day'
+                                    ? cardData.summary.activities
+                                    : undefined
+                                }
+                              />
+                            )
+                          )}
+                        </div>
+                      )}
+                    </VirtualList>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+          {isCompact && dataList.length === 0 && (
+            <div
+              style={{
+                minHeight: 240,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <div
+                style={{
+                  padding: 20,
+                  color: 'var(--color-run-table-thead)',
+                }}
+              >
+                {LOADING_TEXT}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

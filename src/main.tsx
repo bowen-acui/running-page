@@ -31,6 +31,10 @@ const routes = createBrowserRouter(
       element: createRouteElement(<HomePage />),
     },
     {
+      path: 'total',
+      element: createRouteElement(<HomePage />),
+    },
+    {
       path: '*',
       element: createRouteElement(<NotFound />),
     },
