@@ -385,21 +385,44 @@ const Index = () => {
           )}
         </section>
         <section className="min-w-0 space-y-4 sm:space-y-6" id="map-container">
-          <div className="home-map-panel map-shell overflow-hidden rounded-[1.75rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-3">
+          <div
+            className={`home-map-panel map-shell ${isMapCollapsed ? 'map-shell-collapsed' : ''} overflow-hidden rounded-[1.75rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-3`}
+          >
             {isMapCollapsed ? (
               <button
                 type="button"
-                className="flex min-h-24 w-full flex-col items-start justify-center rounded-2xl bg-[color:var(--color-background)]/35 px-4 py-3 text-left text-[color:var(--color-run-date)]"
+                className="group relative flex min-h-44 w-full items-center justify-between overflow-hidden rounded-[1.35rem] border border-[color:var(--color-primary)]/8 bg-[color:var(--color-background)]/28 px-5 py-4 text-left text-[color:var(--color-run-date)] transition-colors duration-200 hover:bg-[color:var(--color-background)]/42"
                 onClick={() => setIsMapCollapsed(false)}
               >
-                <span className="text-xs font-semibold tracking-[0.16em] uppercase">
-                  Route Map
+                <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,color-mix(in_srgb,var(--color-primary)_9%,transparent),transparent_32%)]" />
+                <span className="relative z-10 min-w-0">
+                  <span className="block text-[0.68rem] font-semibold tracking-[0.18em] text-[color:var(--color-run-date)]/70 uppercase">
+                    Route Map
+                  </span>
+                  <strong className="mt-1 block text-[1.05rem] leading-tight font-black text-[color:var(--color-text-primary)]">
+                    查看路线地图
+                  </strong>
+                  <span className="mt-1.5 block text-[0.78rem] leading-snug text-[color:var(--color-run-date)]/78">
+                    加载完整路线和缩放控件
+                  </span>
                 </span>
-                <strong className="mt-1 text-xl text-[color:var(--color-text-primary)]">
-                  查看路线地图
-                </strong>
-                <span className="mt-1 text-sm">
-                  点击后加载地图，首屏优先显示数据。
+                <span className="relative z-10 flex h-20 w-24 shrink-0 items-center justify-center rounded-2xl bg-[color:var(--color-run-row-hover-background)]/28 ring-1 ring-[color:var(--color-primary)]/8">
+                  <svg
+                    aria-hidden="true"
+                    className="h-14 w-16 text-[color:var(--color-primary)] opacity-75"
+                    viewBox="0 0 88 64"
+                    fill="none"
+                  >
+                    <path
+                      d="M8 46C20 18 31 22 39 35C47 48 55 49 80 16"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="8" cy="46" r="5" fill="currentColor" />
+                    <circle cx="80" cy="16" r="5" fill="currentColor" />
+                  </svg>
                 </span>
               </button>
             ) : (

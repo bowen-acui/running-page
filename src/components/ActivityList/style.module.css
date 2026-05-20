@@ -565,25 +565,37 @@
 
 @media only screen and (max-width: 768px) {
   .activityList {
-    padding: 12px;
-    border-radius: 22px;
+    padding: 8px;
+    border-radius: 20px;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-background) 90%, white 10%),
+        color-mix(in srgb, var(--color-background) 96%, transparent)
+      ),
+      color-mix(in srgb, var(--color-background) 94%, transparent);
+    border-color: color-mix(in srgb, var(--color-primary) 9%, transparent);
   }
 
   .filterContainer {
     position: sticky;
-    top: 8px;
+    top: 6px;
     z-index: 10;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 10px;
-    padding: 0 0 10px;
-    border: 0;
-    border-radius: 0;
-    background: color-mix(in srgb, var(--color-background) 82%, transparent);
+    gap: 6px;
+    margin-bottom: 8px;
+    padding: 4px;
+    border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--color-background) 88%, transparent);
     backdrop-filter: blur(14px);
     width: 100%;
     box-shadow: none;
+  }
+
+  .filterContainer::after {
+    display: none;
   }
 
   .filterContainer > * {
@@ -594,50 +606,85 @@
   .smallHomeButton {
     width: 100%;
     min-width: 0;
-    padding: 10px 8px;
-    font-size: 0.82rem;
-    letter-spacing: 0.04em;
+    padding: 9px 8px;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    box-shadow: none;
+  }
+
+  .filterContainer select {
+    border-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    background: color-mix(in srgb, var(--color-background) 72%, transparent);
+  }
+
+  .smallHomeButton {
+    border: 1px solid color-mix(in srgb, var(--color-primary) 16%, transparent);
+    background: color-mix(in srgb, var(--color-primary) 11%, transparent);
+    color: var(--color-primary);
   }
 
   .activityCard {
     max-width: none;
-    border-radius: 20px;
-    padding: 13px;
+    border-radius: 18px;
+    padding: 11px;
+    background: color-mix(in srgb, var(--color-background) 78%, white 6%);
+    border-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
     box-shadow: none;
   }
 
+  .activityCard::before {
+    opacity: 0.35;
+  }
+
+  .cardHeader {
+    margin-bottom: 8px;
+  }
+
   .activityCardDay .activityName {
-    font-size: 0.98rem;
+    font-size: 0.92rem;
   }
 
   .activityCardDay .primaryMetric strong {
-    font-size: 1.64rem;
+    font-size: 1.48rem;
   }
 
   .activityName {
     margin: 0;
-    font-size: 1.05rem;
+    font-size: 0.96rem;
+    letter-spacing: -0.02em;
+  }
+
+  .activityCount {
+    padding: 4px 8px;
+    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    font-size: 0.68rem;
   }
 
   .activityDetails {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px 10px;
+    gap: 6px;
   }
 
   .activityDetails p {
     margin: 0;
-    font-size: 0.9rem;
-    line-height: 1.35;
+    padding: 8px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--color-background) 68%, transparent);
+    font-size: 0.82rem;
+    line-height: 1.22;
   }
 
   .primaryMetric {
-    padding: 12px;
-    margin-bottom: 10px;
+    padding: 10px 11px;
+    margin-bottom: 8px;
+    border-radius: 15px;
+    background: color-mix(in srgb, var(--color-primary) 8%, transparent);
   }
 
   .primaryMetric strong {
-    font-size: 1.86rem;
+    font-size: 1.62rem;
   }
 
   .mobileCardList {
@@ -679,23 +726,23 @@
 
 @media only screen and (max-width: 480px) {
   .filterContainer {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
   }
 
   .smallHomeButton {
-    grid-column: 1 / -1;
+    grid-column: auto;
   }
 
   .activityDetails {
     grid-template-columns: 1fr;
-    gap: 7px;
+    gap: 6px;
   }
 
   .activityDetails p {
-    grid-template-columns: 72px 1fr;
+    grid-template-columns: minmax(68px, 0.65fr) 1fr;
     align-items: baseline;
-    gap: 8px;
-    padding: 8px 9px;
+    gap: 6px;
+    padding: 7px 9px;
   }
 
   .activityDetails strong {

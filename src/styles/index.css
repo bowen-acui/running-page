@@ -52,20 +52,19 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* const nike = 'rgb(224,237,94)'; */
-    --color-brand: #e0ed5e;
-    --color-secondary: #ccd94a;
+    --color-brand: #d9dddc;
+    --color-secondary: #8d9a91;
     --color-bg: var(--color-neutral-900);
     --color-tx: var(--color-brand);
-    --color-hr: var(--color-red-500);
+    --color-hr: #333a2e;
     --color-selected: var(--color-brand);
     --color-run-date: var(--color-neutral-300);
     --color-run-table-thead: var(--color-zinc-300);
-    --color-run-row-hover-background: var(--color-neutral-800);
-    --color-activity-card: var(--color-neutral-700);
+    --color-run-row-hover-background: #1f2420;
+    --color-activity-card: #2a3028;
     --svg-color-active-cell: #4dd2ff;
-    --svg-special-color: #f7d02c;
-    --svg-special-color2: #f56c6c;
+    --svg-special-color: #c6cf6f;
+    --svg-special-color2: #d46a5f;
     --font-sans: 'IBM Plex Sans', sans-serif;
     --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
@@ -94,20 +93,19 @@
 }
 
 [data-theme='dark'] {
-  /* const nike = 'rgb(224,237,94)'; */
-  --color-brand: #e0ed5e;
-  --color-secondary: #ccd94a;
+  --color-brand: #d9dddc;
+  --color-secondary: #8d9a91;
   --color-bg: var(--color-neutral-900);
   --color-tx: var(--color-brand);
-  --color-hr: var(--color-red-500);
+  --color-hr: #333a2e;
   --color-selected: var(--color-brand);
   --color-run-date: var(--color-neutral-300);
   --color-run-table-thead: var(--color-zinc-300);
-  --color-run-row-hover-background: var(--color-neutral-800);
-  --color-activity-card: var(--color-neutral-700);
+  --color-run-row-hover-background: #1f2420;
+  --color-activity-card: #2a3028;
   --svg-color-active-cell: #4dd2ff;
-  --svg-special-color: #f7d02c;
-  --svg-special-color2: #f56c6c;
+  --svg-special-color: #c6cf6f;
+  --svg-special-color2: #d46a5f;
   --font-sans: 'IBM Plex Sans', sans-serif;
   --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;

@@ -2,23 +2,27 @@
   .tableContainer {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    border-radius: 1.2rem;
+    background: transparent;
   }
 
   .runTable {
-    min-width: 650px;
-    font-size: 0.8rem;
+    min-width: 520px;
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.15;
   }
 
   .runTable th,
   .runTable td {
-    padding: 0.25rem !important;
+    padding: 0.34rem 0.42rem !important;
     white-space: nowrap;
-    min-width: 60px;
+    min-width: 52px;
   }
 
   .runTable th:first-child,
   .runTable td:first-child {
-    min-width: 100px;
+    min-width: 92px;
   }
 
   .runTable th:last-child,
@@ -29,18 +33,22 @@
 
 .runTable {
   width: 100%;
-  margin: 2rem 0 5rem 0;
+  margin: 0.6rem 0 1rem;
   color: var(--color-run-table-thead);
-  background-color: var(--color-background);
+  background: transparent;
   font-family: var(--font-mono);
   table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0 0.12rem;
   :is(thead) {
     color: var(--color-run-table-thead);
 
     :is(th) {
-      padding: 0.5rem;
+      padding: 0.45rem 0.5rem;
       white-space: nowrap;
       text-align: center;
+      font-size: 0.82em;
+      letter-spacing: 0.04em;
     }
 
     .sortableHeader {
@@ -78,9 +86,10 @@
 .runRow {
   cursor: pointer;
   :is(td) {
-    padding: 0.5rem;
+    padding: 0.45rem 0.5rem;
     border: 0;
     text-align: center; /* 默认居中 */
+    background: transparent;
   }
 
   :is(td):first-child {
@@ -92,17 +101,43 @@
   }
 
   &:hover {
-    background-color: var(--color-run-row-hover-background);
+    background-color: transparent;
+  }
+
+  &:hover :is(td) {
+    background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);
   }
 }
 
 .selected {
   color: var(--color-primary);
+  background-color: transparent;
+}
+
+.selected :is(td) {
+  background-color: color-mix(in srgb, var(--color-primary) 7%, transparent);
+}
+
+.runRow :is(td):first-child {
+  border-radius: 0.55rem 0 0 0.55rem;
+}
+
+.runRow :is(td):last-child {
+  border-radius: 0 0.55rem 0.55rem 0;
 }
 
 .tableContainer {
   width: 100%;
   overflow-x: auto;
+}
+
+.tableHint {
+  margin: 0.45rem 0 0.1rem;
+  color: color-mix(in srgb, var(--color-run-date) 68%, transparent);
+  font-size: 0.76rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-align: right;
 }
 
 .runDate {

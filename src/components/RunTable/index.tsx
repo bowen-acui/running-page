@@ -27,6 +27,8 @@ interface SortState {
   key: string;
 }
 
+const DEFAULT_VISIBLE_ROWS = 20;
+
 const RunTable = ({
   runs,
   locateActivity,
@@ -74,14 +76,25 @@ const RunTable = ({
     []
   );
 
-  const displayedRuns = useMemo(() => {
-    if (!sortState) return runs;
+  const sortedRuns = useMemo(() => {
+    const sortedRuns = (() => {
+      if (!sortState) return runs;
 
-    const sortFunction = getSortFunction(sortState.key, sortState.direction);
-    if (!sortFunction) return runs;
+      const sortFunction = getSortFunction(sortState.key, sortState.direction);
+      if (!sortFunction) return runs;
 
-    return runs.slice().sort(sortFunction);
+      return runs.slice().sort(sortFunction);
+    })();
+
+    return sortedRuns;
   }, [getSortFunction, runs, sortState]);
+
+  const displayedRuns = useMemo(
+    () => sortedRuns.slice(0, DEFAULT_VISIBLE_ROWS),
+    [sortedRuns]
+  );
+
+  const hiddenRunCount = Math.max(0, sortedRuns.length - displayedRuns.length);
 
   const runIndexById = useMemo(
     () => new Map(runs.map((run, index) => [run.run_id, index])),
@@ -140,6 +153,11 @@ const RunTable = ({
           })}
         </tbody>
       </table>
+      {hiddenRunCount > 0 && (
+        <div className={styles.tableHint}>
+          仅显示前 {DEFAULT_VISIBLE_ROWS} 条 / 共 {sortedRuns.length} 条
+        </div>
+      )}
     </div>
   );
 };
