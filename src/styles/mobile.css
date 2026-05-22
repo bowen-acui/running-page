@@ -72,15 +72,22 @@
     width: 700px !important;
     max-width: none;
     min-width: 700px;
+    transform: translateY(-10px);
+  }
+
+  .github-svg text[x='10'][y='20'] {
+    display: none;
   }
 
   .mobile-heatmap {
     max-width: 100%;
     overflow-x: auto;
+    overflow-y: hidden;
     border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
     border-radius: 1.45rem;
     background: color-mix(in srgb, var(--color-background) 96%, white 4%);
     padding: 0.75rem;
+    max-height: 340px;
     scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
   }

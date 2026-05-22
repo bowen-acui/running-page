@@ -431,6 +431,16 @@
   max-height: 80vh;
 }
 
+.yearSummaryFrame {
+  width: 100%;
+  max-width: 720px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border-radius: 1.55rem;
+  background: color-mix(in srgb, var(--color-background) 94%, white 6%);
+  padding: 0.85rem;
+}
+
 .lifeSvg {
   max-width: 100%;
   height: auto;
@@ -453,6 +463,10 @@
 .lifeSvg text {
   font-family: var(--font-sans) !important;
   fill: color-mix(in srgb, var(--color-run-date) 78%, transparent);
+}
+
+.yearSummarySvg text[y='285.5806451612903'] {
+  display: none;
 }
 
 .yearSummarySvg text[fill='#FFFFFF'],
@@ -604,18 +618,25 @@
 
   .filterContainer select,
   .smallHomeButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     min-width: 0;
-    padding: 9px 8px;
+    height: 44px;
+    padding: 0 8px;
     border-radius: 9999px;
     font-size: 0.78rem;
     letter-spacing: 0.02em;
+    line-height: 1;
+    text-align: center;
     box-shadow: none;
   }
 
   .filterContainer select {
     border-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
     background: color-mix(in srgb, var(--color-background) 72%, transparent);
+    text-align-last: center;
   }
 
   .smallHomeButton {
@@ -688,7 +709,7 @@
   }
 
   .mobileCardList {
-    gap: 10px;
+    gap: 8px;
   }
 
   .chart {
@@ -710,6 +731,17 @@
 
   .yearButton {
     flex: 0 0 auto;
+  }
+
+  .yearSummaryFrame {
+    max-width: 100%;
+    padding: 0.7rem;
+    border-radius: 1.35rem;
+  }
+
+  .yearSummarySvg {
+    width: 100%;
+    max-height: none;
   }
 
   .summaryInner > div {

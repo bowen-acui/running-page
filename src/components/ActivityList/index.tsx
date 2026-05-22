@@ -1002,7 +1002,9 @@ const ActivityList: React.FC = () => {
           <Suspense fallback={<div>Loading SVG...</div>}>
             {SelectedYearSvg ? (
               // Show Year Summary SVG when a year is selected
-              <SelectedYearSvg className={styles.yearSummarySvg} />
+              <div className={styles.yearSummaryFrame}>
+                <SelectedYearSvg className={styles.yearSummarySvg} />
+              </div>
             ) : (
               // Show Life SVG when no year is selected
               <>

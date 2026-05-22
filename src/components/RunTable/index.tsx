@@ -36,6 +36,7 @@ const RunTable = ({
   setRunIndex,
 }: IRunTableProperties) => {
   const [sortState, setSortState] = useState<SortState | null>(null);
+  const [showAllRows, setShowAllRows] = useState(false);
 
   const sortKeys = useMemo(() => {
     const keys = [DIST_UNIT, 'Elev', 'Pace', 'BPM', 'Time', 'Date'];
@@ -90,8 +91,9 @@ const RunTable = ({
   }, [getSortFunction, runs, sortState]);
 
   const displayedRuns = useMemo(
-    () => sortedRuns.slice(0, DEFAULT_VISIBLE_ROWS),
-    [sortedRuns]
+    () =>
+      showAllRows ? sortedRuns : sortedRuns.slice(0, DEFAULT_VISIBLE_ROWS),
+    [showAllRows, sortedRuns]
   );
 
   const hiddenRunCount = Math.max(0, sortedRuns.length - displayedRuns.length);
@@ -155,7 +157,20 @@ const RunTable = ({
       </table>
       {hiddenRunCount > 0 && (
         <div className={styles.tableHint}>
-          仅显示前 {DEFAULT_VISIBLE_ROWS} 条 / 共 {sortedRuns.length} 条
+          <span>
+            仅显示前 {DEFAULT_VISIBLE_ROWS} 条 / 共 {sortedRuns.length} 条
+          </span>
+          <button type="button" onClick={() => setShowAllRows(true)}>
+            显示全部
+          </button>
+        </div>
+      )}
+      {showAllRows && sortedRuns.length > DEFAULT_VISIBLE_ROWS && (
+        <div className={styles.tableHint}>
+          <span>已显示全部 {sortedRuns.length} 条</span>
+          <button type="button" onClick={() => setShowAllRows(false)}>
+            收起
+          </button>
         </div>
       )}
     </div>

@@ -124,15 +124,15 @@ const getYearStatSummaries = (activityData: Activity[]) => {
 
 const Metric = ({ label, unit, value }: MetricProps) => (
   <div className="flex min-h-[4.1rem] flex-col justify-between rounded-2xl border border-[color:var(--color-primary)]/8 bg-[color:var(--color-background)]/38 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] sm:min-h-[4.55rem]">
-    <span className="text-[0.62rem] font-bold tracking-[0.12em] text-[color:var(--color-run-date)]/72 uppercase not-italic">
+    <span className="text-[0.58rem] font-semibold tracking-[0.1em] text-[color:var(--color-run-date)]/66 uppercase not-italic">
       {label}
     </span>
     <div className="flex items-baseline gap-1.5 font-[family:var(--font-display)] whitespace-nowrap">
-      <span className="text-[clamp(1.24rem,5vw,1.95rem)] leading-none font-bold tracking-[-0.025em] text-[color:var(--color-text-primary)] not-italic">
+      <span className="text-[clamp(1.18rem,4.6vw,1.74rem)] leading-none font-semibold tracking-[-0.018em] text-[color:var(--color-text-primary)] not-italic">
         {intComma(value.toString())}
       </span>
       {unit && (
-        <span className="text-[0.68rem] font-semibold tracking-[0.01em] text-[color:var(--color-text-primary)]/60 uppercase sm:text-xs">
+        <span className="text-[0.62rem] font-medium tracking-[0.01em] text-[color:var(--color-text-primary)]/55 uppercase sm:text-[0.7rem]">
           {unit}
         </span>
       )}
@@ -161,18 +161,18 @@ const YearStat = ({
       <section className="space-y-2.5">
         <div className="flex items-start justify-between gap-4 rounded-2xl bg-[color:var(--color-background)]/26 px-3 py-2.5">
           <div>
-            <p className="text-[0.62rem] font-bold tracking-[0.14em] text-[color:var(--color-run-date)]/72 uppercase">
+            <p className="text-[0.58rem] font-semibold tracking-[0.12em] text-[color:var(--color-run-date)]/66 uppercase">
               {titleLabel}
             </p>
-            <h2 className="text-[clamp(1.55rem,6vw,2.55rem)] leading-none font-[family:var(--font-display)] font-bold tracking-[-0.035em] text-[color:var(--color-text-primary)]">
+            <h2 className="text-[clamp(1.45rem,5.5vw,2.2rem)] leading-none font-[family:var(--font-display)] font-semibold tracking-[-0.026em] text-[color:var(--color-text-primary)]">
               {year}
             </h2>
           </div>
-          <div className="px-0.5 py-0.5 text-right">
-            <p className="text-[0.6rem] font-bold tracking-[0.14em] text-[color:var(--color-run-date)]/72 uppercase">
+          <div className="flex flex-col items-end px-0.5 py-0.5 text-right">
+            <p className="text-[0.56rem] font-semibold tracking-[0.12em] text-[color:var(--color-run-date)]/66 uppercase">
               Runs
             </p>
-            <p className="text-[clamp(1.3rem,5.2vw,2.1rem)] leading-none font-[family:var(--font-display)] font-bold tracking-[-0.025em] text-[color:var(--color-text-primary)]">
+            <p className="text-[clamp(1.18rem,4.8vw,1.76rem)] leading-none font-[family:var(--font-display)] font-semibold tracking-[-0.018em] text-[color:var(--color-text-primary)]">
               {intComma(summary.runCount.toString())}
             </p>
           </div>

@@ -1,4 +1,6 @@
 import {
+  lazy,
+  Suspense,
   useEffect,
   useState,
   useMemo,
@@ -9,7 +11,6 @@ import { Analytics } from '@vercel/analytics/react';
 import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/Layout';
 import LocationStat from '@/components/LocationStat';
-import RunMap from '@/components/RunMap';
 import RunTable from '@/components/RunTable';
 import SVGStat from '@/components/SVGStat';
 import YearsStat from '@/components/YearsStat';
@@ -36,6 +37,7 @@ import {
 import { useTheme, useThemeChangeCounter } from '@/hooks/useTheme';
 
 const HASH_RUN_CHANGE_EVENT = 'running-page-hash-run-change';
+const RunMap = lazy(() => import('@/components/RunMap'));
 
 const getRunIdFromHash = () => {
   if (typeof window === 'undefined') return null;
@@ -85,7 +87,7 @@ const useRunHashId = () =>
   useSyncExternalStore(subscribeToRunHash, getRunIdFromHash, () => null);
 
 const Index = () => {
-  const { siteTitle } = getSiteMetadata();
+  const { siteTitle, navLinks } = getSiteMetadata();
   const { activities, thisYear } = useActivities();
   const themeChangeCounter = useThemeChangeCounter();
   const [year, setYear] = useState(thisYear);
@@ -363,17 +365,38 @@ const Index = () => {
   }, [singleRunId]);
 
   const { theme } = useTheme();
+  const summaryLink = navLinks.find((link) => link.name === 'Summary');
+  const runningTitleIndex = siteTitle.indexOf(' Running');
+  const titlePrefix =
+    runningTitleIndex >= 0 ? siteTitle.slice(0, runningTitleIndex) : siteTitle;
+  const titleSuffix =
+    runningTitleIndex >= 0 ? siteTitle.slice(runningTitleIndex + 1) : '';
 
   return (
     <Layout>
       <Helmet>
         <html lang="en" data-theme={theme} />
       </Helmet>
-      <div className="grid w-full gap-4 sm:gap-6 lg:grid-cols-[minmax(18rem,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
+      <div className="grid w-full gap-3 sm:gap-5 lg:grid-cols-[minmax(18rem,23rem)_minmax(0,1fr)] lg:items-start lg:gap-5 xl:gap-6">
         <section className="w-full lg:sticky lg:top-8">
-          <h1 className="mb-4 text-[2rem] leading-none font-black text-[color:var(--color-text-primary)] italic sm:mb-6 sm:text-4xl">
-            {siteTitle}
-          </h1>
+          <div className="mb-1 grid min-h-9 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-[1.625rem] pt-1 sm:mb-1.5 lg:mr-6">
+            <h1 className="min-w-0 overflow-visible text-[clamp(0.86rem,3.5vw,1.02rem)] leading-none font-[family:var(--font-logo)] font-black tracking-[0.01em] text-[color:var(--color-text-primary)] sm:text-[1.18rem]">
+              {titlePrefix}
+              {titleSuffix && (
+                <span className="ml-1.5 align-[-0.015em] text-[1.08em] font-[family:var(--font-logo-latin)] font-bold tracking-[0.002em]">
+                  {titleSuffix}
+                </span>
+              )}
+            </h1>
+            {summaryLink && (
+              <a
+                className="inline-flex h-7 shrink-0 items-center justify-center self-start rounded-full border border-[color:var(--color-primary)]/10 bg-[color:var(--color-background)]/46 px-3 text-[0.56rem] font-semibold tracking-[0.1em] text-[color:var(--color-run-date)]/72 uppercase transition-colors hover:text-[color:var(--color-text-primary)]"
+                href={summaryLink.url}
+              >
+                {summaryLink.name}
+              </a>
+            )}
+          </div>
           {(viewState.zoom ?? 0) <= 3 && IS_CHINESE ? (
             <LocationStat
               changeYear={changeYear}
@@ -426,15 +449,23 @@ const Index = () => {
                 </span>
               </button>
             ) : (
-              <RunMap
-                title={title}
-                viewState={viewState}
-                geoData={animatedGeoData}
-                setViewState={setViewState}
-                changeYear={changeYear}
-                thisYear={year}
-                animationTrigger={animationTrigger}
-              />
+              <Suspense
+                fallback={
+                  <div className="flex min-h-[var(--map-height,320px)] items-center justify-center rounded-[1.35rem] bg-[color:var(--color-background)]/28 text-sm font-semibold text-[color:var(--color-run-date)]/72">
+                    加载路线地图...
+                  </div>
+                }
+              >
+                <RunMap
+                  title={title}
+                  viewState={viewState}
+                  geoData={animatedGeoData}
+                  setViewState={setViewState}
+                  changeYear={changeYear}
+                  thisYear={year}
+                  animationTrigger={animationTrigger}
+                />
+              </Suspense>
             )}
           </div>
           <div className="home-data-panel min-w-0 overflow-hidden rounded-[1.75rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-5">

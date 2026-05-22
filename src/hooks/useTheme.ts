@@ -2,17 +2,34 @@ import { useState, useEffect, useCallback, useSyncExternalStore } from 'react';
 import { MAP_TILE_STYLE_LIGHT, MAP_TILE_STYLE_DARK } from '@/utils/const';
 
 export type Theme = 'light' | 'dark';
+export type ThemePreference = Theme | 'system';
 
 // Custom event name for theme changes
 export const THEME_CHANGE_EVENT = 'theme-change';
 
-const getCurrentThemeSnapshot = () => {
+const getSystemTheme = (): Theme => {
   if (typeof window === 'undefined') return 'dark';
-  return (
-    document.documentElement.getAttribute('data-theme') ||
-    localStorage.getItem('theme') ||
-    'dark'
-  );
+  return window.matchMedia('(prefers-color-scheme: light)').matches
+    ? 'light'
+    : 'dark';
+};
+
+const getStoredThemePreference = (): ThemePreference => {
+  if (typeof window === 'undefined') return 'system';
+  const storedTheme = localStorage.getItem('theme');
+  return storedTheme === 'light' || storedTheme === 'dark'
+    ? storedTheme
+    : 'system';
+};
+
+const resolveThemePreference = (preference: ThemePreference): Theme =>
+  preference === 'system' ? getSystemTheme() : preference;
+
+const getCurrentThemeSnapshot = (): Theme => {
+  if (typeof window === 'undefined') return 'dark';
+  return document.documentElement.getAttribute('data-theme') === 'light'
+    ? 'light'
+    : 'dark';
 };
 
 const subscribeToThemeChanges = (onStoreChange: () => void) => {
@@ -44,11 +61,17 @@ const subscribeToThemeChanges = (onStoreChange: () => void) => {
 
   window.addEventListener(THEME_CHANGE_EVENT, handleThemeChange);
   window.addEventListener('storage', handleStorageChange);
+  window
+    .matchMedia('(prefers-color-scheme: dark)')
+    .addEventListener('change', handleThemeChange);
 
   return () => {
     observer.disconnect();
     window.removeEventListener(THEME_CHANGE_EVENT, handleThemeChange);
     window.removeEventListener('storage', handleStorageChange);
+    window
+      .matchMedia('(prefers-color-scheme: dark)')
+      .removeEventListener('change', handleThemeChange);
   };
 };
 
@@ -83,17 +106,15 @@ export const useMapTheme = () => {
  * @returns Object with current theme and function to change theme
  */
 export const useTheme = () => {
-  // Initialize theme from localStorage or default to dark
-  const [themeState, setThemeState] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'dark';
-    return (localStorage.getItem('theme') as Theme) || 'dark';
-  });
+  const [themePreference, setThemePreference] = useState<ThemePreference>(
+    getStoredThemePreference
+  );
 
   /**
    * Set theme and dispatch event to notify other components
    */
-  const setTheme = useCallback((newTheme: Theme) => {
-    setThemeState(newTheme);
+  const setTheme = useCallback((newTheme: ThemePreference) => {
+    setThemePreference(newTheme);
 
     // Dispatch custom event for theme change
     const event = new CustomEvent(THEME_CHANGE_EVENT, {
@@ -105,14 +126,24 @@ export const useTheme = () => {
   // Apply theme changes to DOM and localStorage
   useEffect(() => {
     const root = window.document.documentElement;
+    const applyTheme = () => {
+      root.setAttribute('data-theme', resolveThemePreference(themePreference));
+      localStorage.setItem('theme', themePreference);
+      window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
+    };
 
-    // Set attribute and save to localStorage for both themes
-    root.setAttribute('data-theme', themeState);
-    localStorage.setItem('theme', themeState);
-  }, [themeState]);
+    applyTheme();
+
+    if (themePreference !== 'system') return undefined;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', applyTheme);
+    return () => mediaQuery.removeEventListener('change', applyTheme);
+  }, [themePreference]);
 
   return {
-    theme: themeState,
+    preference: themePreference,
+    theme: resolveThemePreference(themePreference),
     setTheme,
   };
 };
