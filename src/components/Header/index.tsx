@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import type { ReactElement } from 'react';
+import BrandTitle from '@/components/BrandTitle';
 import getSiteMetadata from '@/hooks/useSiteMetadata';
-import { useTheme, Theme, ThemePreference } from '@/hooks/useTheme';
+import { useTheme, ThemePreference } from '@/hooks/useTheme';
 import styles from './style.module.css';
 
 const Header = () => {
@@ -100,9 +101,13 @@ const Header = () => {
           <div className="min-w-0 flex-1">
             <Link
               to="/"
-              className="block truncate text-lg font-black text-[color:var(--color-text-primary)] italic sm:text-xl lg:text-2xl"
+              className="inline-flex max-w-full items-baseline pt-[0.04em] text-[1.02rem] sm:text-[1.12rem] lg:text-[1.34rem]"
             >
-              {siteTitle}
+              <BrandTitle
+                title={siteTitle}
+                prefixClassName="font-black tracking-[0.004em]"
+                suffixClassName="top-[0.04em] text-[0.97em] font-semibold tracking-[0.006em]"
+              />
             </Link>
           </div>
         </div>

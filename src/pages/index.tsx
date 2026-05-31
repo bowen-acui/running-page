@@ -2,6 +2,7 @@ import {
   lazy,
   Suspense,
   useEffect,
+  useRef,
   useState,
   useMemo,
   useCallback,
@@ -14,6 +15,7 @@ import LocationStat from '@/components/LocationStat';
 import RunTable from '@/components/RunTable';
 import SVGStat from '@/components/SVGStat';
 import YearsStat from '@/components/YearsStat';
+import BrandTitle from '@/components/BrandTitle';
 import useActivities from '@/hooks/useActivities';
 import getSiteMetadata from '@/hooks/useSiteMetadata';
 import { useInterval } from '@/hooks/useInterval';
@@ -108,6 +110,8 @@ const Index = () => {
   // Animation trigger for single runs - increment this to force animation replay
   const [animationTrigger, setAnimationTrigger] = useState(0);
   const [isMapCollapsed, setIsMapCollapsed] = useState(isMobileViewport);
+  const [shouldRenderMap, setShouldRenderMap] = useState(() => !isMobileViewport());
+  const mapPanelRef = useRef<HTMLDivElement | null>(null);
 
   // Memoize expensive calculations
   const runs = useMemo(() => {
@@ -361,17 +365,38 @@ const Index = () => {
   useEffect(() => {
     if (singleRunId !== null) {
       setIsMapCollapsed(false);
+      setShouldRenderMap(true);
     }
   }, [singleRunId]);
 
+  useEffect(() => {
+    if (!isMapCollapsed) {
+      setShouldRenderMap(true);
+    }
+  }, [isMapCollapsed]);
+
+  useEffect(() => {
+    const node = mapPanelRef.current;
+    if (!node || shouldRenderMap || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldRenderMap(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '180px 0px' }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [shouldRenderMap]);
+
   const { theme } = useTheme();
   const summaryLink = navLinks.find((link) => link.name === 'Summary');
-  const runningTitleIndex = siteTitle.indexOf(' Running');
-  const titlePrefix =
-    runningTitleIndex >= 0 ? siteTitle.slice(0, runningTitleIndex) : siteTitle;
-  const titleSuffix =
-    runningTitleIndex >= 0 ? siteTitle.slice(runningTitleIndex + 1) : '';
-
   return (
     <Layout>
       <Helmet>
@@ -380,13 +405,12 @@ const Index = () => {
       <div className="grid w-full gap-3 sm:gap-5 lg:grid-cols-[minmax(18rem,23rem)_minmax(0,1fr)] lg:items-start lg:gap-5 xl:gap-6">
         <section className="w-full lg:sticky lg:top-8">
           <div className="mb-1 grid min-h-9 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-[1.625rem] pt-1 sm:mb-1.5 lg:mr-6">
-            <h1 className="min-w-0 overflow-visible text-[clamp(0.86rem,3.5vw,1.02rem)] leading-none font-[family:var(--font-logo)] font-black tracking-[0.01em] text-[color:var(--color-text-primary)] sm:text-[1.18rem]">
-              {titlePrefix}
-              {titleSuffix && (
-                <span className="ml-1.5 align-[-0.015em] text-[1.08em] font-[family:var(--font-logo-latin)] font-bold tracking-[0.002em]">
-                  {titleSuffix}
-                </span>
-              )}
+            <h1 className="min-w-0 overflow-visible pt-[0.08em] text-[clamp(0.86rem,3.5vw,1.02rem)] leading-none sm:text-[1.18rem]">
+              <BrandTitle
+                title={siteTitle}
+                prefixClassName="font-black tracking-[0.004em]"
+                suffixClassName="top-[0.04em] text-[1.02em] font-semibold tracking-[0.008em]"
+              />
             </h1>
             {summaryLink && (
               <a
@@ -409,6 +433,7 @@ const Index = () => {
         </section>
         <section className="min-w-0 space-y-4 sm:space-y-6" id="map-container">
           <div
+            ref={mapPanelRef}
             className={`home-map-panel map-shell ${isMapCollapsed ? 'map-shell-collapsed' : ''} overflow-hidden rounded-[1.75rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-3`}
           >
             {isMapCollapsed ? (
@@ -449,23 +474,25 @@ const Index = () => {
                 </span>
               </button>
             ) : (
-              <Suspense
-                fallback={
-                  <div className="flex min-h-[var(--map-height,320px)] items-center justify-center rounded-[1.35rem] bg-[color:var(--color-background)]/28 text-sm font-semibold text-[color:var(--color-run-date)]/72">
-                    加载路线地图...
-                  </div>
-                }
-              >
-                <RunMap
-                  title={title}
-                  viewState={viewState}
-                  geoData={animatedGeoData}
-                  setViewState={setViewState}
-                  changeYear={changeYear}
-                  thisYear={year}
-                  animationTrigger={animationTrigger}
-                />
-              </Suspense>
+              shouldRenderMap && (
+                <Suspense
+                  fallback={
+                    <div className="flex min-h-[var(--map-height,320px)] items-center justify-center rounded-[1.35rem] bg-[color:var(--color-background)]/28 text-sm font-semibold text-[color:var(--color-run-date)]/72">
+                      加载路线地图...
+                    </div>
+                  }
+                >
+                  <RunMap
+                    title={title}
+                    viewState={viewState}
+                    geoData={animatedGeoData}
+                    setViewState={setViewState}
+                    changeYear={changeYear}
+                    thisYear={year}
+                    animationTrigger={animationTrigger}
+                  />
+                </Suspense>
+              )
             )}
           </div>
           <div className="home-data-panel min-w-0 overflow-hidden rounded-[1.75rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-5">
