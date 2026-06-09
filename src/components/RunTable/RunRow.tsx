@@ -1,3 +1,4 @@
+import type React from 'react';
 import {
   formatPace,
   titleForRun,
@@ -28,8 +29,9 @@ const RunRow = ({
   const paceParts = run.average_speed ? formatPace(run.average_speed) : null;
   const heartRate = run.average_heartrate;
   const runTime = formatRunTime(run.moving_time);
+  const isSelected = runIndex === elementIndex;
   const handleClick = () => {
-    if (runIndex === elementIndex) {
+    if (isSelected) {
       setRunIndex(-1);
       locateActivity([]);
       return;
@@ -37,12 +39,21 @@ const RunRow = ({
     setRunIndex(elementIndex);
     locateActivity([run.run_id]);
   };
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTableRowElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleClick();
+    }
+  };
 
   return (
     <tr
-      className={`${styles.runRow} ${runIndex === elementIndex ? styles.selected : ''}`}
+      className={`${styles.runRow} ${isSelected ? styles.selected : ''}`}
       key={run.start_date_local}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      aria-selected={isSelected}
     >
       <td>{titleForRun(run)}</td>
       <td>{distance}</td>

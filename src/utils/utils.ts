@@ -296,6 +296,10 @@ const sortDateFunc = (a: Activity, b: Activity) => {
 };
 const sortDateFuncReverse = (a: Activity, b: Activity) => sortDateFunc(b, a);
 
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 export {
   titleForShow,
   formatPace,
@@ -312,4 +316,5 @@ export {
   sortDateFuncReverse,
   formatRunTime,
   convertMovingTime2Sec,
+  prefersReducedMotion,
 };

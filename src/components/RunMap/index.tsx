@@ -37,6 +37,7 @@ import {
   getMapStyle,
   isTouchDevice,
 } from '@/utils/geoUtils';
+import { prefersReducedMotion } from '@/utils/utils';
 import { RouteAnimator } from '@/utils/routeAnimation';
 import RunMarker from './RunMarker';
 import RunMapButtons from './RunMapButtons';
@@ -396,6 +397,10 @@ const RunMap = ({
     if (!isSingleRun) return;
     const points = geoData.features[0].geometry.coordinates as Coordinate[];
     if (!points || points.length < 2) return;
+
+    // Respect the user's reduced-motion preference: the static route layer
+    // already shows the full track, so skip the draw animation entirely.
+    if (prefersReducedMotion()) return;
 
     // Stop any existing animation
     if (routeAnimatorRef.current) {

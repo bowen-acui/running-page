@@ -24,6 +24,7 @@ import {
   filterCityRuns,
   filterTitleRuns,
   filterYearRuns,
+  prefersReducedMotion,
   scrollToMap,
   sortDateFunc,
   titleForShow,
@@ -163,7 +164,7 @@ const Index = () => {
   // Helper function to start animation
   const startAnimation = useCallback(
     (runsToAnimate: Activity[]) => {
-      if (runsToAnimate.length === 0) {
+      if (runsToAnimate.length === 0 || prefersReducedMotion()) {
         setAnimatedGeoData(geoData);
         return;
       }
