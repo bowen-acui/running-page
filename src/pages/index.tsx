@@ -24,6 +24,7 @@ import {
   filterCityRuns,
   filterTitleRuns,
   filterYearRuns,
+  prefersReducedMotion,
   scrollToMap,
   sortDateFunc,
   titleForShow,
@@ -38,6 +39,37 @@ import { useTheme, useThemeChangeCounter } from '@/hooks/useTheme';
 
 const HASH_RUN_CHANGE_EVENT = 'running-page-hash-run-change';
 const RunMap = lazy(() => import('@/components/RunMap'));
+const YearCompareChart = lazy(() => import('@/components/YearCompareChart'));
+
+const FILTER_FUNCS = {
+  year: filterYearRuns,
+  city: filterCityRuns,
+  title: filterTitleRuns,
+} as const;
+
+type FilterKind = keyof typeof FILTER_FUNCS;
+
+// Parse a shareable filter hash like #year_2025 / #city_上海 / #title_晨跑
+const getFilterFromHash = (): { kind: FilterKind; value: string } | null => {
+  if (typeof window === 'undefined') return null;
+  let hash: string;
+  try {
+    hash = decodeURIComponent(window.location.hash.replace('#', ''));
+  } catch {
+    return null;
+  }
+  const match = hash.match(/^(year|city|title)_(.+)$/);
+  if (!match) return null;
+  return { kind: match[1] as FilterKind, value: match[2] };
+};
+
+const setFilterHash = (kind: string, item: string) => {
+  const newHash = `#${kind}_${encodeURIComponent(item)}`;
+  if (window.location.hash !== newHash) {
+    window.history.replaceState(null, '', newHash);
+    notifyRunHashChange();
+  }
+};
 
 const getRunIdFromHash = () => {
   if (typeof window === 'undefined') return null;
@@ -90,9 +122,14 @@ const Index = () => {
   const { siteTitle, navLinks } = getSiteMetadata();
   const { activities, thisYear } = useActivities();
   const themeChangeCounter = useThemeChangeCounter();
-  const [year, setYear] = useState(thisYear);
+  // Restore a shared filter from the URL hash on first load
+  const [initialFilter] = useState(getFilterFromHash);
+  const [year, setYear] = useState(
+    initialFilter?.kind === 'year' ? initialFilter.value : thisYear
+  );
   const [runIndex, setRunIndex] = useState(-1);
   const [title, setTitle] = useState('');
+  const [selectedRun, setSelectedRun] = useState<Activity | null>(null);
   // Animation states for replacing intervalIdRef
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentAnimationIndex, setCurrentAnimationIndex] = useState(0);
@@ -100,7 +137,11 @@ const Index = () => {
   const [currentFilter, setCurrentFilter] = useState<{
     item: string;
     func: (_run: Activity, _value: string) => boolean;
-  }>({ item: thisYear, func: filterYearRuns });
+  }>(() =>
+    initialFilter
+      ? { item: initialFilter.value, func: FILTER_FUNCS[initialFilter.kind] }
+      : { item: thisYear, func: filterYearRuns }
+  );
 
   // Track if we're showing a single run from URL hash
   const singleRunId = useRunHashId();
@@ -163,7 +204,7 @@ const Index = () => {
   // Helper function to start animation
   const startAnimation = useCallback(
     (runsToAnimate: Activity[]) => {
-      if (runsToAnimate.length === 0) {
+      if (runsToAnimate.length === 0 || prefersReducedMotion()) {
         setAnimatedGeoData(geoData);
         return;
       }
@@ -189,11 +230,13 @@ const Index = () => {
       }
       setCurrentFilter({ item, func });
       setRunIndex(-1);
+      setSelectedRun(null);
       setTitle(`${item} ${name} Running Heatmap`);
-      // Reset single run state when changing filters
-      clearRunHash();
+      // Reflect the filter in the URL so the view is shareable; this also
+      // resets any single-run state since the hash no longer starts with run_
+      setFilterHash(name.toLowerCase(), item);
     },
-    [thisYear]
+    [thisYear, setYear, setCurrentFilter, setRunIndex, setSelectedRun, setTitle]
   );
 
   const changeYear = useCallback(
@@ -211,7 +254,14 @@ const Index = () => {
       // Stop current animation
       setIsAnimating(false);
     },
-    [viewState.zoom, bounds, changeByItem]
+    [
+      viewState.zoom,
+      bounds,
+      changeByItem,
+      setYear,
+      setViewState,
+      setIsAnimating,
+    ]
   );
 
   const changeCity = useCallback(
@@ -251,8 +301,10 @@ const Index = () => {
         const runId = runIds[0];
         const runIdx = runs.findIndex((run) => run.run_id === runId);
         setRunIndex(runIdx);
+        setSelectedRun(runs[runIdx] ?? null);
       } else {
         setRunIndex(-1);
+        setSelectedRun(null);
       }
 
       // Update URL hash when a single run is located
@@ -286,7 +338,16 @@ const Index = () => {
       setTitle(titleForShow(lastRun));
       scrollToMap();
     },
-    [runs]
+    [
+      runs,
+      setRunIndex,
+      setSelectedRun,
+      setIsAnimating,
+      setAnimatedGeoData,
+      setAnimationTrigger,
+      setViewState,
+      setTitle,
+    ]
   );
 
   // Auto locate activity when singleRunId is set and activities are loaded
@@ -464,6 +525,8 @@ const Index = () => {
                   changeYear={changeYear}
                   thisYear={year}
                   animationTrigger={animationTrigger}
+                  selectedRun={selectedRun}
+                  locateActivity={locateActivity}
                 />
               </Suspense>
             )}
@@ -472,12 +535,17 @@ const Index = () => {
             {year === 'Total' ? (
               <SVGStat />
             ) : (
-              <RunTable
-                runs={runs}
-                locateActivity={locateActivity}
-                runIndex={runIndex}
-                setRunIndex={setRunIndex}
-              />
+              <>
+                <Suspense fallback={null}>
+                  <YearCompareChart year={year} />
+                </Suspense>
+                <RunTable
+                  runs={runs}
+                  locateActivity={locateActivity}
+                  runIndex={runIndex}
+                  setRunIndex={setRunIndex}
+                />
+              </>
             )}
           </div>
         </section>
