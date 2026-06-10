@@ -25,7 +25,7 @@ const BrandTitle = ({
   return (
     <span
       className={joinClasses(
-        'inline-flex max-w-full items-baseline gap-[0.26em] whitespace-nowrap leading-[0.96] text-[color:var(--color-text-primary)]',
+        'inline-flex max-w-full items-baseline gap-[0.26em] leading-[0.96] whitespace-nowrap text-[color:var(--color-text-primary)]',
         className
       )}
     >
@@ -40,7 +40,7 @@ const BrandTitle = ({
       {titleSuffix && (
         <span
           className={joinClasses(
-            'relative top-[0.03em] font-[family:var(--font-logo-latin)] text-[0.98em] font-bold italic tracking-[0.01em]',
+            'relative top-[0.03em] text-[0.98em] font-[family:var(--font-logo-latin)] font-bold tracking-[0.01em] italic',
             suffixClassName
           )}
         >
