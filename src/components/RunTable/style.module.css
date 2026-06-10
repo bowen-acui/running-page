@@ -28,9 +28,42 @@
     padding: 0.34rem 0.42rem;
   }
 
+  /* Keep the run name visible while the table scrolls horizontally */
   .runTable th:first-child,
   .runTable td:first-child {
     min-width: 92px;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: color-mix(
+      in srgb,
+      var(--color-run-row-hover-background) 16%,
+      var(--color-background)
+    );
+  }
+
+  .runRow:hover td:first-child {
+    background: color-mix(
+      in srgb,
+      var(--color-primary) 5%,
+      color-mix(
+        in srgb,
+        var(--color-run-row-hover-background) 16%,
+        var(--color-background)
+      )
+    );
+  }
+
+  .selected td:first-child {
+    background: color-mix(
+      in srgb,
+      var(--color-primary) 7%,
+      color-mix(
+        in srgb,
+        var(--color-run-row-hover-background) 16%,
+        var(--color-background)
+      )
+    );
   }
 
   .runTable th:last-child,

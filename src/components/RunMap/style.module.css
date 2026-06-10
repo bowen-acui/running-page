@@ -93,9 +93,82 @@
   backdrop-filter: blur(12px);
 }
 
+.runStatsCard {
+  position: absolute;
+  right: 52px; /* clear the bottom-right zoom controls */
+  bottom: 18px;
+  max-width: min(74%, 26rem);
+  border-radius: 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
+  background: color-mix(in srgb, var(--color-background) 86%, transparent);
+  padding: 0.65rem 0.9rem 0.7rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 34px rgba(7, 54, 76, 0.08);
+}
+
+.runStatsTitle {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: var(--color-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.runStatsMetrics {
+  margin: 0;
+  display: flex;
+  gap: 1.1rem;
+}
+
+.runStatsMetrics > div {
+  min-width: 0;
+}
+
+.runStatsMetrics dt {
+  margin: 0 0 0.1rem;
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-run-date) 66%, transparent);
+}
+
+.runStatsMetrics dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
 @media only screen and (max-width: 768px) {
   .locationSVG {
     margin-top: 0.5rem;
+  }
+
+  .runStatsCard {
+    right: 44px;
+    bottom: 8px;
+    max-width: calc(100% - 60px);
+    padding: 0.5rem 0.7rem 0.55rem;
+  }
+
+  .runStatsTitle {
+    font-size: 0.66rem;
+  }
+
+  .runStatsMetrics {
+    gap: 0.8rem;
+  }
+
+  .runStatsMetrics dd {
+    font-size: 0.9rem;
   }
 
   .buttons {

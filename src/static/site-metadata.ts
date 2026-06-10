@@ -3,6 +3,7 @@ interface ISiteMetadataResult {
   siteUrl: string;
   description: string;
   logo: string;
+  activitySource: string;
   navLinks: {
     name: string;
     url: string;
@@ -19,6 +20,7 @@ const data: ISiteMetadataResult = {
   siteUrl: 'https://github.com/bowen-acui/running-page',
   logo: `${getBasePath()}/images/avatar.png`,
   description: 'Personal site and blog',
+  activitySource: 'Garmin',
   navLinks: [
     {
       name: 'Summary',

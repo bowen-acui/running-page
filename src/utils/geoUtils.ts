@@ -99,6 +99,7 @@ export const geoJsonForRuns = (
       type: 'Feature',
       properties: {
         color: color,
+        run_id: run.run_id,
         indoor: run.subtype === 'indoor' || run.subtype === 'treadmill',
       },
       geometry: {

@@ -12,6 +12,7 @@ interface ProcessedActivities {
   cities: Record<string, number>;
   runPeriod: Record<string, number>;
   thisYear: string;
+  lastSyncedAt: string | null;
 }
 
 const standardizeCountryName = (country: string): string => {
@@ -84,6 +85,13 @@ const processActivities = (activityData: Activity[]): ProcessedActivities => {
   const yearsArray = [...years].sort().reverse();
   const thisYear = yearsArray[0] || '';
 
+  // Latest activity time stands in for the data sync time
+  const lastSyncedAt = activityData.reduce<string | null>(
+    (latest, run) =>
+      !latest || run.start_date_local > latest ? run.start_date_local : latest,
+    null
+  );
+
   return {
     activities: activityData,
     years: yearsArray,
@@ -92,6 +100,7 @@ const processActivities = (activityData: Activity[]): ProcessedActivities => {
     cities,
     runPeriod,
     thisYear,
+    lastSyncedAt,
   };
 };
 

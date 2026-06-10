@@ -13,6 +13,7 @@ import Map, {
   NavigationControl,
   MapRef,
   MapInstance,
+  MapMouseEvent,
 } from 'react-map-gl/mapbox';
 import useActivities from '@/hooks/useActivities';
 import {
@@ -37,7 +38,15 @@ import {
   getMapStyle,
   isTouchDevice,
 } from '@/utils/geoUtils';
-import { prefersReducedMotion } from '@/utils/utils';
+import {
+  Activity,
+  DIST_UNIT,
+  formatPace,
+  formatRunTime,
+  M_TO_DIST,
+  prefersReducedMotion,
+  RunIds,
+} from '@/utils/utils';
 import { RouteAnimator } from '@/utils/routeAnimation';
 import RunMarker from './RunMarker';
 import RunMapButtons from './RunMapButtons';
@@ -58,6 +67,8 @@ interface IRunMapProps {
   geoData: FeatureCollection<RPGeometry>;
   thisYear: string;
   animationTrigger?: number; // Optional trigger to force animation replay
+  selectedRun?: Activity | null;
+  locateActivity?: (_runIds: RunIds) => void;
 }
 
 type MapStyleLayer = {
@@ -74,6 +85,8 @@ const RunMap = ({
   geoData,
   thisYear,
   animationTrigger,
+  selectedRun,
+  locateActivity,
 }: IRunMapProps) => {
   const { countries, provinces } = useActivities();
   const mapRef = useRef<MapRef>(null);
@@ -444,16 +457,28 @@ const RunMap = ({
     }
   }, [animationTrigger, isSingleRun, startRouteAnimation]);
 
-  const handleMapClick = useCallback(() => {
-    if (!isSingleRun) return;
-    startRouteAnimation();
-  }, [isSingleRun, startRouteAnimation]);
+  const handleMapClick = useCallback(
+    (event: MapMouseEvent) => {
+      // Clicking a route selects that run (same as clicking its table row)
+      const clickedRunId = event.features?.[0]?.properties?.run_id as
+        | number
+        | undefined;
+      if (clickedRunId !== undefined && locateActivity && !isSingleRun) {
+        locateActivity([clickedRunId]);
+        return;
+      }
+      if (!isSingleRun) return;
+      startRouteAnimation();
+    },
+    [isSingleRun, startRouteAnimation, locateActivity]
+  );
 
   return (
     <Map
       {...viewState}
       onMove={onMove}
       onClick={handleMapClick}
+      interactiveLayerIds={['runs2', 'runs2-indoor']}
       style={style}
       mapStyle={mapStyle}
       ref={mapRefCallback}
@@ -570,7 +595,35 @@ const RunMap = ({
           endLon={endLon}
         />
       )}
-      <span className={styles.runTitle}>{title}</span>
+      {isSingleRun && selectedRun ? (
+        <div className={styles.runStatsCard}>
+          <p className={styles.runStatsTitle}>{title}</p>
+          <dl className={styles.runStatsMetrics}>
+            <div>
+              <dt>{DIST_UNIT}</dt>
+              <dd>{(selectedRun.distance / M_TO_DIST).toFixed(2)}</dd>
+            </div>
+            {selectedRun.average_speed ? (
+              <div>
+                <dt>Pace</dt>
+                <dd>{formatPace(selectedRun.average_speed)}</dd>
+              </div>
+            ) : null}
+            <div>
+              <dt>Time</dt>
+              <dd>{formatRunTime(selectedRun.moving_time)}</dd>
+            </div>
+            {selectedRun.average_heartrate ? (
+              <div>
+                <dt>BPM</dt>
+                <dd>{selectedRun.average_heartrate.toFixed(0)}</dd>
+              </div>
+            ) : null}
+          </dl>
+        </div>
+      ) : (
+        <span className={styles.runTitle}>{title}</span>
+      )}
       <FullscreenControl style={fullscreenButton} />
       {!PRIVACY_MODE && <LightsControl setLights={setLights} lights={lights} />}
       <NavigationControl
