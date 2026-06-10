@@ -236,7 +236,7 @@ const Index = () => {
       // resets any single-run state since the hash no longer starts with run_
       setFilterHash(name.toLowerCase(), item);
     },
-    [thisYear]
+    [thisYear, setYear, setCurrentFilter, setRunIndex, setSelectedRun, setTitle]
   );
 
   const changeYear = useCallback(
@@ -254,7 +254,14 @@ const Index = () => {
       // Stop current animation
       setIsAnimating(false);
     },
-    [viewState.zoom, bounds, changeByItem]
+    [
+      viewState.zoom,
+      bounds,
+      changeByItem,
+      setYear,
+      setViewState,
+      setIsAnimating,
+    ]
   );
 
   const changeCity = useCallback(
@@ -331,7 +338,16 @@ const Index = () => {
       setTitle(titleForShow(lastRun));
       scrollToMap();
     },
-    [runs]
+    [
+      runs,
+      setRunIndex,
+      setSelectedRun,
+      setIsAnimating,
+      setAnimatedGeoData,
+      setAnimationTrigger,
+      setViewState,
+      setTitle,
+    ]
   );
 
   // Auto locate activity when singleRunId is set and activities are loaded
