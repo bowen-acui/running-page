@@ -7,6 +7,8 @@ import React, {
   useCallback,
   useMemo,
   useSyncExternalStore,
+  useDeferredValue,
+  startTransition,
 } from 'react';
 import VirtualList from 'rc-virtual-list';
 import { useNavigate } from 'react-router-dom';
@@ -72,8 +74,6 @@ const loadRoutePreview = () => import('@/components/RoutePreview');
 const RoutePreview = lazy(loadRoutePreview);
 const loadActivityChart = () => import('./ActivityChart');
 const ActivityChart = lazy(loadActivityChart);
-
-void loadActivityChart();
 
 const MonthOfLifeSvg = (sportType: string) => {
   const path = sportType === 'all' ? './mol.svg' : `./mol_${sportType}.svg`;
@@ -628,6 +628,8 @@ const ActivityCardInner: React.FC<ActivityCardProps> = ({
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const showChart = !compact && ['month', 'week', 'year'].includes(interval);
+  const showRoutePreview =
+    interval === 'day' && activities.length > 0 && isFlipped;
   const handleCardClick = useCallback(() => {
     if (interval === 'day' && activities.length > 0) {
       setIsFlipped((current) => !current);
@@ -754,9 +756,11 @@ const ActivityCardInner: React.FC<ActivityCardProps> = ({
         {interval === 'day' && activities.length > 0 && (
           <div className={styles.cardBack}>
             <div className={styles.routeContainer}>
-              <Suspense fallback={null}>
-                <RoutePreview activities={activities} />
-              </Suspense>
+              {showRoutePreview && (
+                <Suspense fallback={null}>
+                  <RoutePreview activities={activities} />
+                </Suspense>
+              )}
             </div>
           </div>
         )}
@@ -841,20 +845,30 @@ const ActivityList: React.FC = () => {
         // Move to newer year (left in UI, lower index since sorted descending)
         if (currentIndex === -1) {
           // No year selected, select the last (oldest) year
-          setSelectedYear(availableYears[availableYears.length - 1]);
+          startTransition(() => {
+            setSelectedYear(availableYears[availableYears.length - 1]);
+          });
         } else if (currentIndex > 0) {
-          setSelectedYear(availableYears[currentIndex - 1]);
+          startTransition(() => {
+            setSelectedYear(availableYears[currentIndex - 1]);
+          });
         } else if (currentIndex === 0) {
           // At the most recent year, deselect to show Life view
-          setSelectedYear(null);
+          startTransition(() => {
+            setSelectedYear(null);
+          });
         }
       } else if (e.key === 'ArrowRight') {
         // Move to older year (right in UI, higher index since sorted descending)
         if (currentIndex === -1) {
           // No year selected, select the first (most recent) year
-          setSelectedYear(availableYears[0]);
+          startTransition(() => {
+            setSelectedYear(availableYears[0]);
+          });
         } else if (currentIndex < availableYears.length - 1) {
-          setSelectedYear(availableYears[currentIndex + 1]);
+          startTransition(() => {
+            setSelectedYear(availableYears[currentIndex + 1]);
+          });
         }
       }
     };
@@ -871,18 +885,23 @@ const ActivityList: React.FC = () => {
 
   function toggleInterval(newInterval: IntervalType): void {
     if (newInterval === 'life' && sportType !== 'all') {
-      setSportType('all');
+      startTransition(() => {
+        setSportType('all');
+      });
     }
     if (newInterval === 'day') {
       void loadRoutePreview();
     }
-    setInterval(newInterval);
+    startTransition(() => {
+      setInterval(newInterval);
+    });
   }
 
   const dataList = useMemo(
     () => getPeriodSummaries(activityData, interval, sportType),
     [activityData, interval, sportType]
   );
+  const deferredDataList = useDeferredValue(dataList);
 
   const {
     itemsPerRow,
@@ -925,14 +944,14 @@ const ActivityList: React.FC = () => {
 
   const calcGroup: RowGroup[] = useMemo(() => {
     if (itemsPerRow < 1) return [];
-    const groupLength = Math.ceil(dataList.length / itemsPerRow);
+    const groupLength = Math.ceil(deferredDataList.length / itemsPerRow);
     const arr: RowGroup[] = [];
     for (let i = 0; i < groupLength; i++) {
       const start = i * itemsPerRow;
-      arr.push(dataList.slice(start, start + itemsPerRow));
+      arr.push(deferredDataList.slice(start, start + itemsPerRow));
     }
     return arr;
-  }, [dataList, itemsPerRow]);
+  }, [deferredDataList, itemsPerRow]);
 
   // compute a row width so we can center the VirtualList and keep cards left-aligned inside
   const rowWidth =

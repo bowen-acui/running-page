@@ -86,5 +86,34 @@ export default defineConfig({
     manifest: true,
     modulePreload: false,
     outDir: './dist', // for user easy to use, vercel use default dir -> dist
+    chunkSizeWarningLimit: 900,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          if (
+            id.includes('mapbox-gl') ||
+            id.includes('react-map-gl') ||
+            id.includes('@mapbox')
+          ) {
+            return 'mapbox';
+          }
+          if (id.includes('recharts')) {
+            return 'charts';
+          }
+          if (
+            id.includes('react/') ||
+            id.includes('react-dom') ||
+            id.includes('react-router')
+          ) {
+            return 'react-vendor';
+          }
+          if (id.includes('rc-virtual-list')) {
+            return 'list-vendor';
+          }
+          return 'vendor';
+        },
+      },
+    },
   },
 });

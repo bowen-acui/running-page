@@ -110,7 +110,9 @@ const Index = () => {
   // Animation trigger for single runs - increment this to force animation replay
   const [animationTrigger, setAnimationTrigger] = useState(0);
   const [isMapCollapsed, setIsMapCollapsed] = useState(isMobileViewport);
-  const [shouldRenderMap, setShouldRenderMap] = useState(() => !isMobileViewport());
+  const [shouldRenderMap, setShouldRenderMap] = useState(
+    () => !isMobileViewport()
+  );
   const mapPanelRef = useRef<HTMLDivElement | null>(null);
 
   // Memoize expensive calculations
@@ -377,7 +379,11 @@ const Index = () => {
 
   useEffect(() => {
     const node = mapPanelRef.current;
-    if (!node || shouldRenderMap || typeof IntersectionObserver === 'undefined') {
+    if (
+      !node ||
+      shouldRenderMap ||
+      typeof IntersectionObserver === 'undefined'
+    ) {
       return;
     }
 
@@ -404,8 +410,8 @@ const Index = () => {
       </Helmet>
       <div className="grid w-full gap-3 sm:gap-5 lg:grid-cols-[minmax(18rem,23rem)_minmax(0,1fr)] lg:items-start lg:gap-5 xl:gap-6">
         <section className="w-full lg:sticky lg:top-8">
-          <div className="mb-1 grid min-h-9 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-[1.625rem] pt-1 sm:mb-1.5 lg:mr-6">
-            <h1 className="min-w-0 overflow-visible pt-[0.08em] text-[clamp(0.86rem,3.5vw,1.02rem)] leading-none sm:text-[1.18rem]">
+          <div className="mb-2 grid min-h-8 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 pt-0.5 sm:mb-2.5 sm:px-3.5 lg:mr-6">
+            <h1 className="min-w-0 overflow-visible pt-[0.06em] text-[clamp(0.86rem,3.5vw,1rem)] leading-none sm:text-[1.14rem]">
               <BrandTitle
                 title={siteTitle}
                 prefixClassName="font-black tracking-[0.004em]"
@@ -414,7 +420,7 @@ const Index = () => {
             </h1>
             {summaryLink && (
               <a
-                className="inline-flex h-7 shrink-0 items-center justify-center self-start rounded-full border border-[color:var(--color-primary)]/10 bg-[color:var(--color-background)]/46 px-3 text-[0.56rem] font-semibold tracking-[0.1em] text-[color:var(--color-run-date)]/72 uppercase transition-colors hover:text-[color:var(--color-text-primary)]"
+                className="inline-flex h-7 shrink-0 items-center justify-center rounded-full border border-[color:var(--color-primary)]/8 bg-[color:var(--color-background)]/30 px-3 text-[0.54rem] font-semibold tracking-[0.1em] text-[color:var(--color-run-date)]/64 uppercase transition-colors hover:border-[color:var(--color-primary)]/14 hover:text-[color:var(--color-text-primary)]"
                 href={summaryLink.url}
               >
                 {summaryLink.name}
@@ -489,6 +495,7 @@ const Index = () => {
                     setViewState={setViewState}
                     changeYear={changeYear}
                     thisYear={year}
+                    selectedRun={runIndex >= 0 ? runs[runIndex] : null}
                     animationTrigger={animationTrigger}
                   />
                 </Suspense>

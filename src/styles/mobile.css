@@ -41,33 +41,6 @@
     max-width: 100%;
   }
 
-  /* Make main content areas mobile-friendly */
-  .lg\:w-1\/3,
-  .lg\:w-2\/3 {
-    width: 100% !important;
-    max-width: 100%;
-  }
-
-  /* Improve spacing on mobile */
-  .lg\:p-16 {
-    padding: 1rem !important;
-  }
-
-  /* Reduce title size on mobile */
-  .text-5xl {
-    font-size: 2.5rem !important;
-  }
-
-  /* Optimize margin for mobile */
-  .my-12 {
-    margin-top: 2rem !important;
-    margin-bottom: 2rem !important;
-  }
-
-  .mt-6 {
-    margin-top: 1rem !important;
-  }
-
   .github-svg {
     width: 700px !important;
     max-width: none;

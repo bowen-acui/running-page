@@ -37,6 +37,13 @@ import {
   getMapStyle,
   isTouchDevice,
 } from '@/utils/geoUtils';
+import {
+  Activity,
+  convertMovingTime2Sec,
+  DIST_UNIT,
+  formatPace,
+  M_TO_DIST,
+} from '@/utils/utils';
 import { RouteAnimator } from '@/utils/routeAnimation';
 import RunMarker from './RunMarker';
 import RunMapButtons from './RunMapButtons';
@@ -56,6 +63,7 @@ interface IRunMapProps {
   changeYear: (_year: string) => void;
   geoData: FeatureCollection<RPGeometry>;
   thisYear: string;
+  selectedRun?: Activity | null;
   animationTrigger?: number; // Optional trigger to force animation replay
 }
 
@@ -72,6 +80,7 @@ const RunMap = ({
   changeYear,
   geoData,
   thisYear,
+  selectedRun,
   animationTrigger,
 }: IRunMapProps) => {
   const { countries, provinces } = useActivities();
@@ -444,6 +453,23 @@ const RunMap = ({
     startRouteAnimation();
   }, [isSingleRun, startRouteAnimation]);
 
+  const selectedRunSummary = useMemo(() => {
+    if (!selectedRun) return null;
+
+    const movingSeconds = convertMovingTime2Sec(selectedRun.moving_time);
+    const movingMinutes = Math.max(1, Math.round(movingSeconds / 60));
+
+    return {
+      date: selectedRun.start_date_local.slice(0, 10),
+      distance: (selectedRun.distance / M_TO_DIST).toFixed(2),
+      pace: formatPace(selectedRun.average_speed),
+      time:
+        movingMinutes >= 60
+          ? `${Math.floor(movingMinutes / 60)}h ${movingMinutes % 60}m`
+          : `${movingMinutes}min`,
+    };
+  }, [selectedRun]);
+
   return (
     <Map
       {...viewState}
@@ -565,7 +591,29 @@ const RunMap = ({
           endLon={endLon}
         />
       )}
-      <span className={styles.runTitle}>{title}</span>
+      {selectedRunSummary ? (
+        <aside className={styles.runSummary} aria-label="Selected run summary">
+          <div className={styles.runSummaryHeader}>
+            <time>{selectedRunSummary.date}</time>
+          </div>
+          <dl className={styles.runSummaryMetrics}>
+            <div>
+              <dt>{DIST_UNIT}</dt>
+              <dd>{selectedRunSummary.distance}</dd>
+            </div>
+            <div>
+              <dt>Pace</dt>
+              <dd>{selectedRunSummary.pace}</dd>
+            </div>
+            <div>
+              <dt>Time</dt>
+              <dd>{selectedRunSummary.time}</dd>
+            </div>
+          </dl>
+        </aside>
+      ) : (
+        title && <span className={styles.runTitle}>{title}</span>
+      )}
       <FullscreenControl style={fullscreenButton} />
       {!PRIVACY_MODE && <LightsControl setLights={setLights} lights={lights} />}
       <NavigationControl

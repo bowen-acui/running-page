@@ -13,8 +13,29 @@ const Index = lazy(() => import('./pages'));
 const HomePage = lazy(() => import('@/pages/total'));
 const NotFound = lazy(() => import('./pages/404'));
 
+const RouteFallback = () => (
+  <div
+    style={{
+      minHeight: '100vh',
+      display: 'grid',
+      placeItems: 'center',
+      background: 'var(--color-background)',
+      color: 'var(--color-run-date)',
+      fontFamily: 'var(--font-sans)',
+      letterSpacing: '0.08em',
+      textTransform: 'uppercase',
+      fontSize: '0.72rem',
+      fontWeight: 700,
+    }}
+  >
+    Loading view...
+  </div>
+);
+
 const createRouteElement = (element: React.ReactElement) =>
-  withOptionalGAPageTracking(<Suspense fallback={null}>{element}</Suspense>);
+  withOptionalGAPageTracking(
+    <Suspense fallback={<RouteFallback />}>{element}</Suspense>
+  );
 
 if (USE_GOOGLE_ANALYTICS) {
   void initializeGoogleAnalytics();
