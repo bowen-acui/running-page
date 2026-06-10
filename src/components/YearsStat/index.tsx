@@ -38,7 +38,12 @@ const YearsStat = ({
   return (
     <div className="w-full space-y-3 pb-4 sm:space-y-4 sm:pb-6 lg:pr-6 lg:pb-10">
       {yearsArrayUpdate.map((yearItem) => (
-        <YearStat key={yearItem} year={yearItem} onClick={onClick} />
+        <YearStat
+          key={yearItem}
+          year={yearItem}
+          onClick={onClick}
+          selected={yearItem === year}
+        />
       ))}
       {YearSummarySVG && (
         <section className={styles.sidebarHeatmap}>

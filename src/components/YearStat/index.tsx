@@ -143,9 +143,11 @@ const Metric = ({ label, unit, value }: MetricProps) => (
 const YearStat = ({
   year,
   onClick,
+  selected = false,
 }: {
   year: string;
   onClick: (_year: string) => void;
+  selected?: boolean;
 }) => {
   const { activities } = useActivities();
   const summary = getYearStatSummaries(activities).get(year);
@@ -153,10 +155,23 @@ const YearStat = ({
 
   if (!summary) return null;
 
+  const selectedClass = selected
+    ? 'border-[color:var(--color-primary)]/32 ring-1 ring-[color:var(--color-primary)]/22'
+    : 'border-[color:var(--color-primary)]/10';
+
   return (
     <div
-      className="cursor-pointer overflow-hidden rounded-[1.7rem] border border-[color:var(--color-primary)]/10 bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-run-row-hover-background)_46%,white_18%),color-mix(in_srgb,var(--color-background)_88%,transparent))] p-3 shadow-[0_16px_46px_rgba(7,54,76,0.055)] transition-transform duration-200 hover:-translate-y-0.5 sm:p-3.5"
+      className={`cursor-pointer overflow-hidden rounded-[1.7rem] border ${selectedClass} bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-run-row-hover-background)_46%,white_18%),color-mix(in_srgb,var(--color-background)_88%,transparent))] p-3 shadow-[0_16px_46px_rgba(7,54,76,0.055)] transition-transform duration-200 hover:-translate-y-0.5 sm:p-3.5`}
       onClick={() => onClick(year)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick(year);
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-pressed={selected}
     >
       <section className="space-y-2.5">
         <div className="flex items-start justify-between gap-4 rounded-2xl bg-[color:var(--color-background)]/26 px-3 py-2.5">

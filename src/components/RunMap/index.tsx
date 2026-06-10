@@ -13,6 +13,7 @@ import Map, {
   NavigationControl,
   MapRef,
   MapInstance,
+  MapMouseEvent,
 } from 'react-map-gl/mapbox';
 import useActivities from '@/hooks/useActivities';
 import {
@@ -39,10 +40,12 @@ import {
 } from '@/utils/geoUtils';
 import {
   Activity,
-  convertMovingTime2Sec,
   DIST_UNIT,
   formatPace,
+  formatRunTime,
   M_TO_DIST,
+  prefersReducedMotion,
+  RunIds,
 } from '@/utils/utils';
 import { RouteAnimator } from '@/utils/routeAnimation';
 import RunMarker from './RunMarker';
@@ -65,6 +68,7 @@ interface IRunMapProps {
   thisYear: string;
   selectedRun?: Activity | null;
   animationTrigger?: number; // Optional trigger to force animation replay
+  locateActivity?: (_runIds: RunIds) => void;
 }
 
 type MapStyleLayer = {
@@ -82,6 +86,7 @@ const RunMap = ({
   thisYear,
   selectedRun,
   animationTrigger,
+  locateActivity,
 }: IRunMapProps) => {
   const { countries, provinces } = useActivities();
   const mapRef = useRef<MapRef>(null);
@@ -406,6 +411,10 @@ const RunMap = ({
     const points = geoData.features[0].geometry.coordinates as Coordinate[];
     if (!points || points.length < 2) return;
 
+    // Respect the user's reduced-motion preference: the static route layer
+    // already shows the full track, so skip the draw animation entirely.
+    if (prefersReducedMotion()) return;
+
     // Stop any existing animation
     if (routeAnimatorRef.current) {
       routeAnimatorRef.current.stop();
@@ -448,25 +457,30 @@ const RunMap = ({
     }
   }, [animationTrigger, isSingleRun, startRouteAnimation]);
 
-  const handleMapClick = useCallback(() => {
-    if (!isSingleRun) return;
-    startRouteAnimation();
-  }, [isSingleRun, startRouteAnimation]);
+  const handleMapClick = useCallback(
+    (event: MapMouseEvent) => {
+      // Clicking a route selects that run (same as clicking its table row)
+      const clickedRunId = event.features?.[0]?.properties?.run_id as
+        | number
+        | undefined;
+      if (clickedRunId !== undefined && locateActivity && !isSingleRun) {
+        locateActivity([clickedRunId]);
+        return;
+      }
+      if (!isSingleRun) return;
+      startRouteAnimation();
+    },
+    [isSingleRun, startRouteAnimation, locateActivity]
+  );
 
   const selectedRunSummary = useMemo(() => {
     if (!selectedRun) return null;
-
-    const movingSeconds = convertMovingTime2Sec(selectedRun.moving_time);
-    const movingMinutes = Math.max(1, Math.round(movingSeconds / 60));
 
     return {
       date: selectedRun.start_date_local.slice(0, 10),
       distance: (selectedRun.distance / M_TO_DIST).toFixed(2),
       pace: formatPace(selectedRun.average_speed),
-      time:
-        movingMinutes >= 60
-          ? `${Math.floor(movingMinutes / 60)}h ${movingMinutes % 60}m`
-          : `${movingMinutes}min`,
+      time: formatRunTime(selectedRun.moving_time),
     };
   }, [selectedRun]);
 
@@ -475,6 +489,7 @@ const RunMap = ({
       {...viewState}
       onMove={onMove}
       onClick={handleMapClick}
+      interactiveLayerIds={['runs2', 'runs2-indoor']}
       style={style}
       mapStyle={mapStyle}
       ref={mapRefCallback}

@@ -125,18 +125,27 @@ const RunTable = ({
         <thead>
           <tr>
             <th />
-            {sortKeys.map((k) => (
-              <th
-                key={k}
-                aria-sort={
-                  sortState?.key === k ? sortState.direction : undefined
-                }
-                className={styles.sortableHeader}
-                onClick={() => handleClick(k)}
-              >
-                {k}
-              </th>
-            ))}
+            {sortKeys.map((k) => {
+              const isActiveSort = sortState?.key === k;
+              return (
+                <th
+                  key={k}
+                  aria-sort={isActiveSort ? sortState.direction : undefined}
+                  className={styles.sortableHeader}
+                >
+                  <button type="button" onClick={() => handleClick(k)}>
+                    {k}
+                    <span className={styles.sortIndicator} aria-hidden="true">
+                      {isActiveSort
+                        ? sortState.direction === 'ascending'
+                          ? '▲'
+                          : '▼'
+                        : ''}
+                    </span>
+                  </button>
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
@@ -155,6 +164,11 @@ const RunTable = ({
           })}
         </tbody>
       </table>
+      {sortedRuns.length === 0 && (
+        <div className={styles.emptyState}>
+          <span>暂无符合条件的跑步记录</span>
+        </div>
+      )}
       {hiddenRunCount > 0 && (
         <div className={styles.tableHint}>
           <span>
