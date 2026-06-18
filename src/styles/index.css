@@ -205,6 +205,15 @@ img::-moz-selection {
   user-select: none;
 }
 
+/* The chart is a passive readout — never show the focus box that recharts'
+   accessibility layer would otherwise draw when the surface is clicked. */
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-visible,
+.recharts-surface:focus,
+.recharts-surface:focus-visible {
+  outline: none;
+}
+
 body {
   text-rendering: optimizeLegibility;
   -moz-osx-font-smoothing: grayscale;
