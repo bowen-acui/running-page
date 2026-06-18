@@ -107,10 +107,15 @@ const RunTable = ({
     (key: string) => {
       setRunIndex(-1);
       setSortState((currentState) => {
+        // First click on a column uses its natural starting direction
+        // (Date oldest-first, everything else largest-first); clicking the
+        // same column again always flips, so every column toggles both ways.
         const initialDirection = key === 'Date' ? 'ascending' : 'descending';
         const nextDirection =
-          currentState?.key === key && currentState.direction === 'descending'
-            ? 'ascending'
+          currentState?.key === key
+            ? currentState.direction === 'ascending'
+              ? 'descending'
+              : 'ascending'
             : initialDirection;
 
         return { key, direction: nextDirection };
