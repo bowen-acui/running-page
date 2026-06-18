@@ -83,6 +83,7 @@ const YearCompareChart = ({ year }: { year: string }) => {
         <LineChart
           data={data}
           margin={{ top: 8, right: 8, bottom: 0, left: -14 }}
+          accessibilityLayer={false}
         >
           <CartesianGrid
             stroke="var(--color-hr-primary)"
