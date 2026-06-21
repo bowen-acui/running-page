@@ -51,12 +51,17 @@ test('summarizeActivities uses latest-year running activities only', () => {
 });
 
 test('buildFallbackSummary returns concise static advice', () => {
-  const fallback = buildFallbackSummary(summarizeActivities(sampleActivities));
+  const fallback = buildFallbackSummary(
+    summarizeActivities(sampleActivities),
+    null,
+    '稳定跑到 5 km'
+  );
 
   assert.equal(fallback.source, 'local');
+  assert.equal(fallback.trainingGoal, '稳定跑到 5 km');
   assert.ok(fallback.items.length > 0);
   assert.ok(fallback.items.length <= 3);
-  assert.match(fallback.items[0], /2026/);
+  assert.match(fallback.items[0], /每周 3 次/);
   assert.match(fallback.items[2], /心率记录不足/);
 });
 
@@ -69,9 +74,14 @@ test('normalizeDeepSeekSummary keeps at most three useful lines', () => {
 });
 
 test('buildPrompt constrains DeepSeek to data-backed short advice', () => {
-  const prompt = buildPrompt(summarizeActivities(sampleActivities));
+  const prompt = buildPrompt(
+    summarizeActivities(sampleActivities),
+    '稳定跑到 5 km'
+  );
 
   assert.match(prompt, /只根据给定 JSON/);
+  assert.match(prompt, /稳定跑到 5 km/);
+  assert.match(prompt, /下一步行动/);
   assert.match(prompt, /heartRateSampleSize < 3/);
   assert.match(prompt, /不要标题/);
 });

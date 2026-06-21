@@ -65,6 +65,7 @@ interface StaticAiSummary {
   source: 'deepseek' | 'local';
   model: string;
   fallbackReason: string | null;
+  trainingGoal?: string;
   items: string[];
 }
 
@@ -987,6 +988,11 @@ const ActivityList: React.FC = () => {
             <span key={item}>{item}</span>
           ))}
         </div>
+        {aiSummaryMeta.trainingGoal && !selectedMonth && (
+          <small className={styles.aiHint}>
+            当前目标：{aiSummaryMeta.trainingGoal}
+          </small>
+        )}
         {aiSummaryMeta.fallbackReason && !selectedMonth && (
           <small className={styles.aiHint}>
             DeepSeek 未生成：{aiSummaryMeta.fallbackReason}

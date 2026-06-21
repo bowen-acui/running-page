@@ -6,6 +6,8 @@ const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const activitiesPath = resolve(rootDir, 'src/static/activities.json');
 const outputPath = resolve(rootDir, 'src/static/ai-summary.json');
 const deepSeekUrl = 'https://api.deepseek.com/chat/completions';
+const defaultTrainingGoal =
+  '建立稳定跑步习惯：每周 3 次左右，以轻松跑为主，逐步把单次距离稳定到 5 km，并避免心率长期偏高。';
 
 const toSeconds = (movingTime) => {
   if (!movingTime) return 0;
@@ -203,15 +205,23 @@ export const summarizeActivities = (activities) => {
   };
 };
 
-export const buildFallbackSummary = (summary, fallbackReason = null) => {
+export const buildFallbackSummary = (
+  summary,
+  fallbackReason = null,
+  trainingGoal = defaultTrainingGoal
+) => {
+  const hasHeartRateSignal =
+    summary.heartRateSampleSize >= 3 && summary.averageHeartRate;
   const items = [
-    `${summary.year} 年已完成 ${summary.count} 次跑步，累计 ${summary.distanceKm.toFixed(1)} km，平均配速 ${summary.averagePace}。`,
-    summary.peakMonth
-      ? `${summary.peakMonth}是跑量最集中的月份，最长连续跑步 ${summary.longestStreak} 天。`
-      : `当前跑步样本还少，最长连续跑步 ${summary.longestStreak} 天。`,
-    summary.heartRateSampleSize >= 3 && summary.averageHeartRate
-      ? `心率样本覆盖 ${Math.round(summary.heartRateCoverage * 100)}%，平均约 ${summary.averageHeartRate} bpm，只作强度参考。`
-      : `心率记录不足，暂不判断训练强度；${summary.highFrequencyDays.join('和') || '固定日期'} 是目前更常出现的跑步节奏。`,
+    summary.count < 12
+      ? '样本还少，先把跑步固定到每周 3 次，再谈提速。'
+      : `今年已有 ${summary.count} 次记录，本周目标先保持 3 次轻松跑。`,
+    summary.longestStreak < 3
+      ? `连续跑最长 ${summary.longestStreak} 天，先固定每周 3 次，不急着加速。`
+      : `连续跑已有 ${summary.longestStreak} 天，保持节奏比单次冲量更重要。`,
+    hasHeartRateSignal
+      ? `心率样本覆盖 ${Math.round(summary.heartRateCoverage * 100)}%，轻松跑日把配速放慢 15-30 秒。`
+      : `心率记录不足；优先观察跑后恢复感和第二天是否疲劳。`,
   ];
 
   return {
@@ -219,6 +229,7 @@ export const buildFallbackSummary = (summary, fallbackReason = null) => {
     source: 'local',
     model: 'rule-based',
     fallbackReason,
+    trainingGoal,
     items: items.slice(0, 3),
   };
 };
@@ -230,18 +241,20 @@ export const normalizeDeepSeekSummary = (content) =>
     .filter(Boolean)
     .slice(0, 3);
 
-export const buildPrompt = (summary) =>
+export const buildPrompt = (summary, trainingGoal = defaultTrainingGoal) =>
   [
-    '你是克制、准确的跑步训练观察助手，目标是解释“我是怎么跑出来的”。',
-    '请只根据给定 JSON 生成 3 条以内中文短句，每条不超过 34 个汉字。',
-    '优先观察：月度跑量节奏、最近训练变化、跑步习惯、配速稳定性。',
+    '你是克制、准确的跑步训练观察助手，目标是把用户的跑步数据转成可执行建议。',
+    `用户目标：${trainingGoal}`,
+    '请只根据给定 JSON 生成 3 条以内中文短句，每条 18-42 个汉字。',
+    '每条必须包含：数据依据 + 下一步行动。不要只复述数据。',
+    '优先建议：每周频率、轻松跑比例、单次距离稳定性、恢复和心率控制。',
     '心率规则：heartRateSampleSize < 3 时必须写“心率记录不足”，不得判断强度；样本不足或覆盖率低时只能弱提示。',
-    '禁止：鸡汤、医疗诊断、夸张警告、排行榜语气、重复首页总距离/总次数。',
-    '风格：安静、简洁、像年度跑步手账。只输出短句，不要标题。',
+    '禁止：鸡汤、医疗诊断、夸张警告、排行榜语气、空泛鼓励、重复首页总距离/总次数。',
+    '风格：安静、具体、像年度跑步手账。只输出短句，不要标题。',
     `数据：${JSON.stringify(summary)}`,
   ].join('\n');
 
-const requestDeepSeekSummary = async (apiKey, summary) => {
+const requestDeepSeekSummary = async (apiKey, summary, trainingGoal) => {
   const response = await fetch(deepSeekUrl, {
     method: 'POST',
     headers: {
@@ -258,11 +271,11 @@ const requestDeepSeekSummary = async (apiKey, summary) => {
         },
         {
           role: 'user',
-          content: buildPrompt(summary),
+          content: buildPrompt(summary, trainingGoal),
         },
       ],
-      temperature: 0.35,
-      max_tokens: 260,
+      temperature: 0.2,
+      max_tokens: 320,
     }),
   });
 
@@ -282,26 +295,29 @@ const requestDeepSeekSummary = async (apiKey, summary) => {
     source: 'deepseek',
     model: payload?.model || process.env.DEEPSEEK_MODEL || 'deepseek-chat',
     fallbackReason: null,
+    trainingGoal,
     items,
   };
 };
 
 export const generateAiSummary = async ({
   apiKey = process.env.DEEPSEEK_API_KEY,
+  trainingGoal = process.env.RUNNING_TRAINING_GOAL || defaultTrainingGoal,
   inputPath = activitiesPath,
   targetPath = outputPath,
 } = {}) => {
   const activities = JSON.parse(await readFile(inputPath, 'utf8'));
   const summary = summarizeActivities(activities);
-  let result = buildFallbackSummary(summary);
+  let result = buildFallbackSummary(summary, null, trainingGoal);
 
   if (apiKey) {
     try {
-      result = await requestDeepSeekSummary(apiKey, summary);
+      result = await requestDeepSeekSummary(apiKey, summary, trainingGoal);
     } catch (error) {
       result = buildFallbackSummary(
         summary,
-        error instanceof Error ? error.message : 'DeepSeek request failed'
+        error instanceof Error ? error.message : 'DeepSeek request failed',
+        trainingGoal
       );
     }
   }
