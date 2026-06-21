@@ -7,7 +7,7 @@ const activitiesPath = resolve(rootDir, 'src/static/activities.json');
 const outputPath = resolve(rootDir, 'src/static/ai-summary.json');
 const deepSeekUrl = 'https://api.deepseek.com/chat/completions';
 const defaultTrainingGoal =
-  '建立稳定跑步习惯：每周 3 次左右，以轻松跑为主，逐步把单次距离稳定到 5 km，并避免心率长期偏高。';
+  '为了健康体态和长期体能维护而跑步：不追求成绩、距离或提速，优先关注心率是否过高、恢复是否充分、跑步是否轻松可持续。';
 
 const toSeconds = (movingTime) => {
   if (!movingTime) return 0;
@@ -214,13 +214,13 @@ export const buildFallbackSummary = (
     summary.heartRateSampleSize >= 3 && summary.averageHeartRate;
   const items = [
     summary.count < 12
-      ? '样本还少，先把跑步固定到每周 3 次，再谈提速。'
-      : `今年已有 ${summary.count} 次记录，本周目标先保持 3 次轻松跑。`,
+      ? '样本还少，先保持轻松可持续，不用追求距离或速度。'
+      : `今年已有 ${summary.count} 次记录，继续以轻松跑维持体能即可。`,
     summary.longestStreak < 3
-      ? `连续跑最长 ${summary.longestStreak} 天，先固定每周 3 次，不急着加速。`
-      : `连续跑已有 ${summary.longestStreak} 天，保持节奏比单次冲量更重要。`,
+      ? `连续跑最长 ${summary.longestStreak} 天，不需要补跑；跑后舒服比连续天数更重要。`
+      : `连续跑已有 ${summary.longestStreak} 天，留出恢复日比继续叠加更健康。`,
     hasHeartRateSignal
-      ? `心率样本覆盖 ${Math.round(summary.heartRateCoverage * 100)}%，轻松跑日把配速放慢 15-30 秒。`
+      ? `心率样本覆盖 ${Math.round(summary.heartRateCoverage * 100)}%，若跑后疲劳明显，下次主动放慢。`
       : `心率记录不足；优先观察跑后恢复感和第二天是否疲劳。`,
   ];
 
@@ -243,12 +243,14 @@ export const normalizeDeepSeekSummary = (content) =>
 
 export const buildPrompt = (summary, trainingGoal = defaultTrainingGoal) =>
   [
-    '你是克制、准确的跑步训练观察助手，目标是把用户的跑步数据转成可执行建议。',
+    '你是克制、准确的健康跑步观察助手，目标是把跑步数据转成健康维护建议。',
     `用户目标：${trainingGoal}`,
     '请只根据给定 JSON 生成 3 条以内中文短句，每条 18-42 个汉字。',
     '每条必须包含：数据依据 + 下一步行动。不要只复述数据。',
-    '优先建议：每周频率、轻松跑比例、单次距离稳定性、恢复和心率控制。',
+    '优先建议：心率是否偏高、跑后恢复、轻松跑比例、是否需要降强度、是否需要休息。',
+    '不要建议追求速度、PB、配速进步、距离增长、训练计划升级或比赛目标。',
     '心率规则：heartRateSampleSize < 3 时必须写“心率记录不足”，不得判断强度；样本不足或覆盖率低时只能弱提示。',
+    '如果 averageHeartRate 偏高，只能建议放慢、缩短、改走跑结合或增加恢复日，不要医疗诊断。',
     '禁止：鸡汤、医疗诊断、夸张警告、排行榜语气、空泛鼓励、重复首页总距离/总次数。',
     '风格：安静、具体、像年度跑步手账。只输出短句，不要标题。',
     `数据：${JSON.stringify(summary)}`,
