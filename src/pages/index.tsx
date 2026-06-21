@@ -432,6 +432,16 @@ const Index = () => {
     }
   }, [singleRunId]);
 
+  // Keep the table highlight and the map readout card in sync with the URL:
+  // when the run hash clears (e.g. the browser Back button or an edited hash),
+  // drop the selected-run state so a stale row stays highlighted no longer.
+  useEffect(() => {
+    if (singleRunId === null) {
+      setRunIndex(-1);
+      setSelectedRun(null);
+    }
+  }, [singleRunId]);
+
   useEffect(() => {
     if (!isMapCollapsed) {
       setShouldRenderMap(true);

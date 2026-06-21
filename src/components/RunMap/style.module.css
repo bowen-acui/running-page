@@ -80,9 +80,10 @@
 
 .runTitle {
   position: absolute;
-  right: 16px;
+  right: 52px; /* clear the bottom-right zoom control */
   bottom: 18px;
   max-width: min(72%, 40rem);
+  pointer-events: none;
   border-radius: 0.85rem;
   border: 1px solid color-mix(in srgb, var(--color-primary) 5%, transparent);
   background: color-mix(in srgb, var(--color-background) 64%, transparent);
@@ -99,7 +100,10 @@
   right: 16px;
   bottom: 18px;
   width: min(21rem, calc(100% - 32px));
-  padding: 0.3rem 0.4rem;
+  /* extra right padding keeps the metrics clear of the bottom-right zoom control */
+  padding: 0.3rem 3rem 0.3rem 0.4rem;
+  /* purely a readout overlay — never intercept taps meant for the map/zoom */
+  pointer-events: none;
   color: var(--color-primary);
   text-shadow:
     0 1px 2px color-mix(in srgb, var(--color-background) 92%, transparent),
@@ -126,7 +130,6 @@
   justify-content: end;
   gap: 1.45rem;
   margin: 0;
-  padding-right: 1.25rem;
 }
 
 .runSummaryMetrics div {
@@ -249,9 +252,9 @@
 
   .runTitle {
     font-size: 0.72rem;
-    right: 8px;
+    right: 48px;
     bottom: 8px;
-    max-width: calc(100% - 24px);
+    max-width: calc(100% - 64px);
     padding: 0.42rem 0.62rem;
   }
 
@@ -259,7 +262,7 @@
     right: 1.1rem;
     bottom: 8px;
     width: min(18rem, calc(100% - 2.25rem));
-    padding: 0.25rem 0.35rem;
+    padding: 0.25rem 3rem 0.25rem 0.35rem;
   }
 
   .runSummaryHeader {
@@ -268,7 +271,6 @@
 
   .runSummaryMetrics {
     gap: 1.05rem;
-    padding-right: 1.15rem;
   }
 
   .runSummaryMetrics dd {

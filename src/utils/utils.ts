@@ -82,9 +82,14 @@ const formatRunTime = (moving_time: string): string => {
 
 // for scroll to the map
 const scrollToMap = () => {
-  const mapContainer = document.getElementById('map-container');
-  if (mapContainer) {
-    mapContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Prefer the map panel itself: on mobile the data table is ordered above the
+  // map inside #map-container, so scrolling to the container would stop at the
+  // table and leave the just-selected route off-screen below.
+  const target =
+    document.querySelector<HTMLElement>('.home-map-panel') ??
+    document.getElementById('map-container');
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 };
 

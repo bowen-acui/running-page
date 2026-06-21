@@ -155,6 +155,22 @@
       border-color 0.2s ease,
       transform 0.2s ease;
   }
+
+  /* This is a tap-driven dashboard, not an article: tapping a card, button,
+     chart or table row should act, not pop the iOS selection / copy / look-up
+     menu. Suppress the long-press callout, the grey tap-flash, and accidental
+     text selection on interactive chrome. */
+  a,
+  button,
+  select,
+  summary,
+  [role='button'],
+  [tabindex] {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -177,6 +193,25 @@ img::selection {
 
 img::-moz-selection {
   background: transparent;
+}
+
+/* Recharts renders selectable SVG text; on touch a tap was selecting the whole
+   chart and popping the copy menu. Make the chart non-selectable. */
+.recharts-wrapper,
+.recharts-surface,
+.recharts-wrapper text {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* The chart is a passive readout — never show the focus box that recharts'
+   accessibility layer would otherwise draw when the surface is clicked. */
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-visible,
+.recharts-surface:focus,
+.recharts-surface:focus-visible {
+  outline: none;
 }
 
 body {
