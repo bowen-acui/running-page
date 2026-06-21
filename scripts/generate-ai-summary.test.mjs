@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildFallbackSummary,
+  buildPrompt,
   normalizeDeepSeekSummary,
   summarizeActivities,
 } from './generate-ai-summary.mjs';
@@ -43,6 +44,10 @@ test('summarizeActivities uses latest-year running activities only', () => {
   assert.equal(summary.count, 2);
   assert.equal(summary.distanceKm, 11.5);
   assert.equal(summary.averageHeartRate, 170);
+  assert.equal(summary.heartRateSampleSize, 2);
+  assert.equal(summary.heartRateCoverage, 1);
+  assert.equal(summary.monthly.length, 1);
+  assert.equal(summary.recentRuns.length, 2);
 });
 
 test('buildFallbackSummary returns concise static advice', () => {
@@ -52,6 +57,7 @@ test('buildFallbackSummary returns concise static advice', () => {
   assert.ok(fallback.items.length > 0);
   assert.ok(fallback.items.length <= 3);
   assert.match(fallback.items[0], /2026/);
+  assert.match(fallback.items[2], /心率记录不足/);
 });
 
 test('normalizeDeepSeekSummary keeps at most three useful lines', () => {
@@ -60,4 +66,12 @@ test('normalizeDeepSeekSummary keeps at most three useful lines', () => {
   );
 
   assert.deepEqual(normalized, ['第一条建议', '第二条建议', '第三条建议']);
+});
+
+test('buildPrompt constrains DeepSeek to data-backed short advice', () => {
+  const prompt = buildPrompt(summarizeActivities(sampleActivities));
+
+  assert.match(prompt, /只根据给定 JSON/);
+  assert.match(prompt, /heartRateSampleSize < 3/);
+  assert.match(prompt, /不要标题/);
 });

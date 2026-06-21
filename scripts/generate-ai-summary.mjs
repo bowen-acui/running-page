@@ -38,6 +38,15 @@ const getAverage = (values) =>
     ? values.reduce((sum, value) => sum + value, 0) / values.length
     : 0;
 
+const getStandardDeviation = (values) => {
+  if (values.length < 2) return 0;
+  const average = getAverage(values);
+  const variance = getAverage(
+    values.map((value) => (value - average) ** 2)
+  );
+  return Math.sqrt(variance);
+};
+
 const getLongestStreak = (runs) => {
   const dayTimes = Array.from(
     new Set(
@@ -60,6 +69,26 @@ const getLongestStreak = (runs) => {
   return longest;
 };
 
+const getLongestGap = (runs) => {
+  const dayTimes = Array.from(
+    new Set(
+      runs.map((run) => {
+        const date = new Date(run.date);
+        date.setHours(0, 0, 0, 0);
+        return date.getTime();
+      })
+    )
+  ).sort((a, b) => a - b);
+
+  let longest = 0;
+  for (let index = 1; index < dayTimes.length; index += 1) {
+    const gap =
+      Math.round((dayTimes[index] - dayTimes[index - 1]) / 86400000) - 1;
+    longest = Math.max(longest, gap);
+  }
+  return longest;
+};
+
 const pickTopLabels = (items) => {
   const maxCount = Math.max(...items.map((item) => item.count), 0);
   return items
@@ -79,6 +108,7 @@ export const summarizeActivities = (activities) => {
       const seconds = toSeconds(activity.moving_time);
       return {
         date,
+        dateKey: activity.start_date_local.slice(0, 10),
         distanceKm,
         seconds,
         paceSeconds: distanceKm > 0 ? seconds / distanceKm : 0,
@@ -110,6 +140,12 @@ export const summarizeActivities = (activities) => {
       distanceKm: Number(
         monthRuns.reduce((sum, run) => sum + run.distanceKm, 0).toFixed(1)
       ),
+      averagePace: formatPace(
+        monthRuns.reduce((sum, run) => sum + run.distanceKm, 0) > 0
+          ? monthRuns.reduce((sum, run) => sum + run.seconds, 0) /
+              monthRuns.reduce((sum, run) => sum + run.distanceKm, 0)
+          : 0
+      ),
     };
   });
   const weekdayCounts = [
@@ -137,11 +173,31 @@ export const summarizeActivities = (activities) => {
     count: yearRuns.length,
     distanceKm,
     averagePace: formatPace(distanceKm > 0 ? totalSeconds / distanceKm : 0),
+    paceStabilitySeconds: Math.round(
+      getStandardDeviation(
+        yearRuns
+          .map((run) => run.paceSeconds)
+          .filter((pace) => Number.isFinite(pace) && pace > 0)
+      )
+    ),
     averageHeartRate: heartRates.length
       ? Math.round(getAverage(heartRates))
       : null,
+    heartRateSampleSize: heartRates.length,
+    heartRateCoverage: yearRuns.length
+      ? Number((heartRates.length / yearRuns.length).toFixed(2))
+      : 0,
     longestStreak: getLongestStreak(yearRuns),
+    longestGap: getLongestGap(yearRuns),
     peakMonth: peakMonth.count ? peakMonth.label : null,
+    monthly: monthCounts.filter((month) => month.count > 0),
+    recentRuns: yearRuns.slice(0, 6).map((run) => ({
+      date: run.dateKey,
+      distanceKm: Number(run.distanceKm.toFixed(2)),
+      pace: formatPace(run.paceSeconds),
+      heartRate: run.heartRate ? Math.round(run.heartRate) : null,
+      timeBand: run.timeBand,
+    })),
     highFrequencyDays: pickTopLabels(weekdayCounts),
     highFrequencyTimeBands: pickTopLabels(timeBandCounts),
   };
@@ -153,9 +209,9 @@ export const buildFallbackSummary = (summary, fallbackReason = null) => {
     summary.peakMonth
       ? `${summary.peakMonth}是跑量最集中的月份，最长连续跑步 ${summary.longestStreak} 天。`
       : `当前跑步样本还少，最长连续跑步 ${summary.longestStreak} 天。`,
-    summary.averageHeartRate
-      ? `有心率记录的平均心率约 ${summary.averageHeartRate} bpm，近期训练强度需要留意恢复。`
-      : `${summary.highFrequencyDays.join('和') || '固定日期'} 是目前更常出现的跑步节奏。`,
+    summary.heartRateSampleSize >= 3 && summary.averageHeartRate
+      ? `心率样本覆盖 ${Math.round(summary.heartRateCoverage * 100)}%，平均约 ${summary.averageHeartRate} bpm，只作强度参考。`
+      : `心率记录不足，暂不判断训练强度；${summary.highFrequencyDays.join('和') || '固定日期'} 是目前更常出现的跑步节奏。`,
   ];
 
   return {
@@ -174,12 +230,14 @@ export const normalizeDeepSeekSummary = (content) =>
     .filter(Boolean)
     .slice(0, 3);
 
-const buildPrompt = (summary) =>
+export const buildPrompt = (summary) =>
   [
-    '你是克制、准确的跑步训练观察助手。',
-    '请根据下面的年度跑步数据，输出最多 3 条中文短句。',
-    '要求：不要鸡汤，不要医疗诊断，不要使用夸张警告，不要重复首页总览。',
-    '风格：安静、简洁、像年度跑步手账。',
+    '你是克制、准确的跑步训练观察助手，目标是解释“我是怎么跑出来的”。',
+    '请只根据给定 JSON 生成 3 条以内中文短句，每条不超过 34 个汉字。',
+    '优先观察：月度跑量节奏、最近训练变化、跑步习惯、配速稳定性。',
+    '心率规则：heartRateSampleSize < 3 时必须写“心率记录不足”，不得判断强度；样本不足或覆盖率低时只能弱提示。',
+    '禁止：鸡汤、医疗诊断、夸张警告、排行榜语气、重复首页总距离/总次数。',
+    '风格：安静、简洁、像年度跑步手账。只输出短句，不要标题。',
     `数据：${JSON.stringify(summary)}`,
   ].join('\n');
 
@@ -193,6 +251,11 @@ const requestDeepSeekSummary = async (apiKey, summary) => {
     body: JSON.stringify({
       model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
       messages: [
+        {
+          role: 'system',
+          content:
+            '你只做跑步训练观察，不做医疗建议。输出必须可从用户数据直接推导。',
+        },
         {
           role: 'user',
           content: buildPrompt(summary),
