@@ -2,7 +2,6 @@ import ActivityList from '@/components/ActivityList';
 import { Helmet } from 'react-helmet-async';
 import { useTheme } from '@/hooks/useTheme';
 import { useEffect } from 'react';
-import Layout from '@/components/Layout';
 
 const HomePage = () => {
   const { theme } = useTheme();
@@ -13,14 +12,20 @@ const HomePage = () => {
   }, [theme]);
 
   return (
-    <Layout>
+    <>
       <Helmet>
         <html lang="en" data-theme={theme} />
+        <title>阿崔 Running Summary</title>
+        <meta name="description" content="阿崔的年度跑步数据总览" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, shrink-to-fit=no"
+        />
       </Helmet>
-      <div className="w-full">
+      <main className="mx-auto min-h-dvh w-full max-w-screen-xl px-3 py-4 sm:px-5 sm:py-6 lg:px-8 lg:py-10">
         <ActivityList />
-      </div>
-    </Layout>
+      </main>
+    </>
   );
 };
 

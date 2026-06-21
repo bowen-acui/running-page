@@ -1,747 +1,927 @@
 .activityList {
-  padding: 18px;
-  background: color-mix(in srgb, var(--color-background) 92%, white 8%);
-  border: 1px solid color-mix(in srgb, var(--color-primary) 8%, transparent);
-  border-radius: 30px;
-  box-shadow: 0 16px 48px rgba(7, 54, 76, 0.045);
-  color: var(--color-primary);
-}
+  --journal-paper: #faf8f2;
+  --journal-paper-deep: #f3f0e8;
+  --journal-ink: #242624;
+  --journal-muted: #777b78;
+  --journal-faint: #e9e5dc;
+  --journal-line: rgba(36, 38, 36, 0.1);
+  --journal-level-0: #ece9df;
+  --journal-level-1: #cbc8be;
+  --journal-level-2: #7d817d;
+  --journal-level-3: #2f3433;
 
-/* Default scrollbar color variables for this component. You can override these in a higher-level CSS or :root. */
-:root {
-  --color-scrollbar-thumb: var(--color-primary, rgba(0, 0, 0, 0.4));
-  --color-scrollbar-thumb-hover: var(--color-primary, rgba(0, 0, 0, 0.6));
-}
-
-/* rc-virtual-list renders its scrollbar elements with classnames we can target globally. */
-:global(.rc-virtual-list-scrollbar) {
-  background: transparent;
-}
-
-:global(.rc-virtual-list-scrollbar-thumb) {
-  background: var(--color-scrollbar-thumb) !important;
-  border-radius: 4px;
-}
-
-:global(.rc-virtual-list-scrollbar-thumb:hover) {
-  background: var(--color-scrollbar-thumb-hover) !important;
-}
-
-.filterContainer {
-  position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  gap: 12px;
-  margin-bottom: 14px;
-  padding: 0 0 16px;
-  overflow: visible;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  width: 100%;
-}
-
-.filterContainer::after {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 2px;
-  border-radius: 9999px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--color-primary) 12%, transparent) 8%,
-    color-mix(in srgb, var(--color-primary) 12%, transparent) 92%,
-    transparent
-  );
-  content: '';
-}
-
-.filterContainer select {
-  appearance: none;
-  min-width: 124px;
-  padding: 12px 14px;
-  border-radius: 9999px;
-  border: 1px solid
-    color-mix(in srgb, var(--color-run-table-thead) 20%, transparent);
-  background-color: color-mix(
-    in srgb,
-    var(--color-background) 78%,
-    transparent
-  );
-  color: var(--color-run-table-thead);
-  cursor: pointer;
-  text-align: center;
-  text-transform: capitalize;
-  box-sizing: border-box;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-}
-
-.filterContainer select:focus,
-.smallHomeButton:focus {
-  outline: none;
-}
-
-.filterContainer select:focus-visible,
-.smallHomeButton:focus-visible {
-  outline: none;
-  border-color: color-mix(in srgb, var(--color-primary) 36%, transparent);
-  box-shadow: 0 0 0 3px
-    color-mix(in srgb, var(--color-secondary) 24%, transparent);
-}
-
-.summaryContainer {
-  /* display: grid;
-  justify-content: center;
-  grid-template-columns: repeat(auto-fit, minmax(280px, auto));
-  gap: 20px; */
-  /* position: relative; */
-  width: 100%;
-  height: 100%;
-  padding-top: 4px;
-  /* overflow: auto;
-  will-change: transform; */
-}
-
-.activityCard {
-  background: color-mix(in srgb, var(--color-background) 86%, white 14%);
-  border: 1px solid color-mix(in srgb, var(--color-primary) 9%, transparent);
-  border-radius: 22px;
-  padding: 16px;
-  width: 100%;
-  max-width: 280px;
-  box-shadow: 0 12px 34px rgba(7, 54, 76, 0.045);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-  position: relative;
+  width: min(100%, 1120px);
+  margin: 0 auto;
+  padding: clamp(18px, 3.5vw, 42px);
   overflow: hidden;
+  border: 1px solid var(--journal-line);
+  border-radius: clamp(24px, 4vw, 38px);
+  background: var(--journal-paper);
+  color: var(--journal-ink);
+  box-shadow: 0 22px 70px rgba(36, 38, 36, 0.035);
 }
 
-.activityCard::before {
-  display: none;
-}
-
-.activityCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 42px rgba(7, 54, 76, 0.065);
-}
-
-.activityCardDay {
-  min-height: 0;
-}
-
-.activityCardDay.activityCardFlippable {
-  padding: 14px;
-}
-
-.activityCardDay .cardHeader {
-  margin-bottom: 10px;
-}
-
-.activityCardDay .activityName {
-  padding: 4px 0;
-  font-size: 1.04rem;
-  letter-spacing: -0.02em;
-}
-
-.activityCardDay .primaryMetric {
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 17px;
-}
-
-.activityCardDay .primaryMetric strong {
-  font-size: 1.78rem;
-}
-
-.activityCardDay .activityDetails {
-  grid-template-columns: 1fr 1fr;
-}
-
-.activityCardDay .activityDetails p {
-  padding: 8px 9px;
-}
-
-/* Flip card styles */
-.activityCardFlippable {
-  perspective: 1000px;
-  padding: 0;
-  /* Remove padding for flippable cards */
-}
-
-.cardInner {
-  position: relative;
-  width: 100%;
-  transition: transform 0.6s;
-  transform-style: preserve-3d;
-}
-
-.cardInner.flipped {
-  transform: rotateY(180deg);
-}
-
-.cardFront,
-.cardBack {
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  border-radius: 22px;
-  padding: 0;
-  box-sizing: border-box;
-  background-color: transparent;
-}
-
-.cardBack {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  transform: rotateY(180deg);
+.pageHeader {
   display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  overflow: hidden;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: clamp(22px, 4vw, 40px);
+  border-bottom: 1px solid var(--journal-line);
 }
 
-.routeContainer {
-  flex: 1;
+.pageHeader p,
+.panelHeader p,
+.insightPanel p {
+  margin: 0 0 7px;
+  color: var(--journal-muted);
+  font-family: var(--font-mono), monospace;
+  font-size: clamp(0.66rem, 1.3vw, 0.76rem);
+  font-weight: 760;
+  letter-spacing: 0.18em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.pageHeader h1 {
+  margin: 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(2.2rem, 6vw, 5.2rem);
+  font-weight: 760;
+  letter-spacing: -0.06em;
+  line-height: 1.03;
+}
+
+.pageHeader span {
+  display: block;
+  margin-top: 10px;
+  color: var(--journal-muted);
+  font-size: clamp(0.92rem, 1.8vw, 1.05rem);
+  line-height: 1.45;
+}
+
+.headerActions {
   display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.homeLink {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin: 0;
-  padding: 16px;
-  max-height: 100%;
-  overflow: hidden;
+  min-width: 92px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--journal-line);
+  border-radius: 999px;
+  color: var(--journal-ink);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 720;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease;
 }
 
-.cardHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+.homeLink:hover,
+.homeLink:focus-visible {
+  background: rgba(36, 38, 36, 0.05);
+  border-color: rgba(36, 38, 36, 0.16);
+  outline: none;
 }
 
-.activityName {
-  font-size: 1.18rem;
-  margin: 0;
-  color: var(--color-primary);
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-}
-
-.activityCount {
+.viewSwitch {
+  display: inline-flex;
   flex: 0 0 auto;
-  padding: 5px 9px;
-  border-radius: 9999px;
-  background: color-mix(in srgb, var(--color-secondary) 42%, transparent);
-  color: var(--color-primary);
-  font-size: 0.76rem;
-  font-weight: 800;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--journal-line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.viewSwitch button {
+  min-width: 44px;
+  height: 36px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--journal-muted);
+  cursor: pointer;
+  font-weight: 760;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.viewSwitch .activeSwitch {
+  background: var(--journal-ink);
+  color: var(--journal-paper);
+}
+
+.viewSwitch button:hover,
+.viewSwitch button:focus-visible {
+  background: rgba(36, 38, 36, 0.06);
+  color: var(--journal-ink);
+  outline: none;
+}
+
+.viewSwitch .activeSwitch:hover,
+.viewSwitch .activeSwitch:focus-visible {
+  background: var(--journal-ink);
+  color: var(--journal-paper);
+}
+
+.contextStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: clamp(18px, 3vw, 28px) 0;
+}
+
+.contextStrip span {
+  padding: 7px 11px;
+  border: 1px solid var(--journal-line);
+  border-radius: 999px;
+  color: var(--journal-muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+  font-weight: 720;
   line-height: 1;
 }
 
-.primaryMetric {
-  display: grid;
-  gap: 4px;
-  padding: 14px 14px 12px;
-  margin-bottom: 12px;
-  border-radius: 18px;
-  background: color-mix(
-    in srgb,
-    var(--color-run-row-hover-background) 48%,
-    transparent
-  );
+.panel,
+.insightPanel {
+  min-width: 0;
+  border: 1px solid var(--journal-line);
+  border-radius: clamp(22px, 3vw, 30px);
+  background: rgba(255, 255, 255, 0.24);
 }
 
-.primaryMetric span {
-  color: color-mix(in srgb, var(--color-run-table-thead) 76%, transparent);
-  font-size: 0.76rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+.panel {
+  padding: clamp(18px, 3vw, 30px);
 }
 
-.primaryMetric strong {
+.panelHeader {
   display: flex;
-  align-items: baseline;
-  gap: 6px;
-  color: var(--color-primary);
-  font-family: var(--font-display), sans-serif;
-  font-size: 2rem;
-  font-weight: 900;
-  line-height: 0.95;
-  letter-spacing: -0.04em;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: clamp(18px, 3vw, 28px);
 }
 
-.primaryMetric small {
-  color: color-mix(in srgb, var(--color-run-table-thead) 78%, transparent);
-  font-family: inherit;
-  font-size: 0.86rem;
-  font-weight: 800;
-  letter-spacing: 0;
-}
-
-.activityDetails {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.activityDetails p {
-  display: grid;
-  gap: 3px;
+.panelHeader h2 {
   margin: 0;
-  padding: 9px 10px;
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--color-background) 44%, transparent);
-  color: var(--color-run-table-thead);
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-weight: 760;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+}
+
+.panelHeader > span {
+  max-width: 18rem;
+  color: var(--journal-muted);
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.heatmapGrid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, minmax(0, 1fr));
+  gap: clamp(3px, 0.55vw, 7px);
+  width: 100%;
+  min-width: 0;
+  animation: fadeIn 160ms ease-out both;
+}
+
+.monthHeatmapGrid {
+  grid-auto-flow: row;
+  grid-template-rows: 1fr;
+  gap: clamp(3px, 0.45vw, 6px);
+  justify-content: stretch;
+  align-items: center;
+  width: 100%;
+}
+
+.heatCell,
+.blankCell,
+.legend i {
+  aspect-ratio: 1;
+  border-radius: 5px;
+}
+
+.heatCell {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: var(--journal-level-0);
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    opacity 140ms ease;
+}
+
+.heatCell:hover,
+.heatCell:focus-visible {
+  transform: scale(1.16);
+  outline: 1px solid rgba(36, 38, 36, 0.28);
+  outline-offset: 2px;
+}
+
+.monthHeatmapGrid .heatCell,
+.monthHeatmapGrid .blankCell {
+  border-radius: 6px;
+}
+
+.monthHeatmapGrid .heatCell:hover,
+.monthHeatmapGrid .heatCell:focus-visible {
+  transform: scale(1.06);
+}
+
+.blankCell {
+  display: block;
+}
+
+.heatLevel0 {
+  background: var(--journal-level-0);
+}
+
+.heatLevel1 {
+  background: var(--journal-level-1);
+}
+
+.heatLevel2 {
+  background: var(--journal-level-2);
+}
+
+.heatLevel3 {
+  background: var(--journal-level-3);
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-top: 16px;
+  color: var(--journal-muted);
+  font-size: 0.72rem;
+}
+
+.legend i {
+  width: 12px;
+}
+
+.detailCard {
+  margin-bottom: clamp(18px, 3vw, 24px);
+  padding: clamp(14px, 2.4vw, 20px);
+  border: 1px solid var(--journal-line);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.detailCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.detailCardHeader p,
+.detailItem span,
+.aiHint {
+  margin: 0;
+  color: var(--journal-muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 720;
+  letter-spacing: 0.12em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.detailCardHeader h3 {
+  margin: 6px 0 0;
+  font-size: clamp(1.02rem, 1.8vw, 1.28rem);
+  font-weight: 760;
+  letter-spacing: -0.03em;
   line-height: 1.2;
 }
 
-.activityDetails span {
-  color: color-mix(in srgb, var(--color-run-table-thead) 70%, transparent);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+.detailCardHeader span {
+  max-width: 18rem;
+  margin-top: 0;
+  color: var(--journal-muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  text-align: right;
 }
 
-.activityDetails strong {
-  color: var(--color-primary);
-  font-size: 0.88rem;
-  font-weight: 850;
-  letter-spacing: -0.01em;
-}
-
-.chart {
-  height: 132px;
-  width: 100%;
-  background-color: color-mix(
-    in srgb,
-    var(--color-activity-card) 38%,
-    transparent
-  );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 12px;
-  border-radius: 16px;
-  padding: 8px;
-  opacity: 0.72;
-  overflow: hidden;
-}
-
-.smallHomeButton {
-  min-width: 124px;
-  padding: 12px 14px;
-  background-color: var(--color-primary);
-  color: var(--color-background);
-  border: none;
-  border-radius: 9999px;
-  cursor: pointer;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  box-shadow: 0 10px 22px rgba(7, 54, 76, 0.16);
-}
-
-.smallHomeButton:hover {
-  background-color: var(--color-secondary);
-}
-
-.lifeContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.yearSelector {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  margin-bottom: 20px;
-  padding: 10px 0;
-}
-
-.yearButton {
-  padding: 10px 16px;
-  background-color: transparent;
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  border-radius: 9999px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-  font-weight: 700;
-}
-
-.yearButton:hover {
-  background-color: var(--color-primary);
-  color: var(--color-background);
-}
-
-.yearButtonActive {
-  background-color: var(--color-primary);
-  color: var(--color-background);
-}
-
-.yearSummarySvg {
-  max-width: 100%;
-  height: auto;
-  max-height: 80vh;
-}
-
-.yearSummaryFrame {
-  width: 100%;
-  max-width: 720px;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
-  border-radius: 1.55rem;
-  background: color-mix(in srgb, var(--color-background) 94%, white 6%);
-  padding: 0.85rem;
-}
-
-.lifeSvg {
-  max-width: 100%;
-  height: auto;
-  max-height: 80vh;
-}
-
-.yearSummarySvg,
-.lifeSvg {
-  overflow: hidden;
-  border-radius: 1.45rem;
-  background: transparent;
-}
-
-.yearSummarySvg > rect:first-child,
-.lifeSvg > rect:first-child {
-  fill: transparent;
-}
-
-.yearSummarySvg text,
-.lifeSvg text {
-  font-family: var(--font-sans) !important;
-  fill: color-mix(in srgb, var(--color-run-date) 78%, transparent);
-}
-
-.yearSummarySvg text[y='285.5806451612903'] {
-  display: none;
-}
-
-.yearSummarySvg text[fill='#FFFFFF'],
-.lifeSvg text[fill='#FFFFFF'] {
-  fill: var(--color-primary);
-}
-
-.yearSummarySvg text[style*='font-size:12px'],
-.lifeSvg text[style*='font-size:12px'] {
-  font-family: var(--font-display) !important;
-  font-size: 8px !important;
-  font-weight: 700 !important;
-  letter-spacing: -0.02em;
-}
-
-.yearSummarySvg text[style*='font-size:10px'],
-.lifeSvg text[style*='font-size:10px'] {
-  font-family: var(--font-display) !important;
-  font-size: 7.2px !important;
-  font-weight: 700 !important;
-}
-
-.yearSummarySvg text[style*='font-size:9px'],
-.lifeSvg text[style*='font-size:9px'],
-.yearSummarySvg text[style*='font-size:8px'],
-.lifeSvg text[style*='font-size:8px'] {
-  font-family: var(--font-display) !important;
-  font-size: 6px !important;
-  font-weight: 700 !important;
-}
-
-.yearSummarySvg text[style*='font-size:7px'],
-.lifeSvg text[style*='font-size:7px'] {
-  font-size: 5.2px !important;
-}
-
-.yearSummarySvg text[style*='font-size:6px'],
-.lifeSvg text[style*='font-size:6px'] {
-  font-size: 4.6px !important;
-}
-
-.yearSummarySvg text[style*='font-size:5px'],
-.lifeSvg text[style*='font-size:5px'] {
-  font-size: 4px !important;
-}
-
-.yearSummarySvg text[style*='font-size:4px'],
-.lifeSvg text[style*='font-size:4px'] {
-  font-size: 3.4px !important;
-}
-
-.yearSummarySvg text[style*='font-size:3px'],
-.lifeSvg text[style*='font-size:3px'] {
-  font-size: 2.8px !important;
-}
-
-.yearSummarySvg circle[fill='gray'],
-.lifeSvg circle[fill='gray'],
-.yearSummarySvg circle[fill='#555555'],
-.lifeSvg circle[fill='#555555'],
-.yearSummarySvg circle[fill='#444444'],
-.lifeSvg circle[fill='#444444'] {
-  fill: color-mix(in srgb, var(--color-run-date) 16%, transparent);
-}
-
-/* Inner wrapper to center the virtual list rows and constrain width */
-.summaryInner {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0;
-}
-
-.mobileCardList {
+.detailGrid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.detailItem {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--journal-line);
+  border-radius: 16px;
+  background: rgba(250, 248, 242, 0.52);
+}
+
+.detailItem strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--journal-ink);
+  font-size: clamp(0.98rem, 1.8vw, 1.14rem);
+  font-weight: 760;
+  line-height: 1.3;
+}
+
+.splitGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(14px, 2.4vw, 22px);
+  margin-top: clamp(14px, 2.4vw, 22px);
+}
+
+.monthChart {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: clamp(4px, 0.7vw, 8px);
+  align-items: end;
+  height: 188px;
+  animation: fadeIn 160ms ease-out both;
+}
+
+.monthBar {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  justify-items: center;
+  gap: 7px;
+  height: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--journal-muted);
+  cursor: pointer;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 720;
+}
+
+.monthBar i {
+  align-self: end;
+  justify-self: center;
+  width: min(100%, 34px);
+  min-height: 6px;
+  border-radius: 8px;
+  background: var(--journal-level-1);
+  transition:
+    background 140ms ease,
+    opacity 140ms ease;
+}
+
+.peakBar i,
+.selectedBar i {
+  background: var(--journal-level-3);
+}
+
+.selectedBar span {
+  color: var(--journal-ink);
+}
+
+.monthBar:hover i,
+.monthBar:focus-visible i {
+  background: var(--journal-level-2);
+}
+
+.peakBar:hover i,
+.peakBar:focus-visible i,
+.selectedBar:hover i,
+.selectedBar:focus-visible i {
+  background: var(--journal-level-3);
+}
+
+.monthBar:focus-visible {
+  outline: 1px solid rgba(36, 38, 36, 0.24);
+  outline-offset: 4px;
+}
+
+.monthBar span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 17px;
+  border: 1px solid var(--journal-line);
+  border-radius: 7px;
+  font-size: 0.56rem;
+  line-height: 1;
+}
+
+.lineChart,
+.heartChart {
+  min-height: 220px;
+  animation: fadeIn 160ms ease-out both;
+}
+
+.lineChart svg {
+  display: block;
   width: 100%;
-  padding-bottom: 20px;
+  height: 220px;
+  overflow: visible;
 }
 
-/* Prevent content from sitting flush against the custom scrollbar. The inner wrapper (direct child) gets right padding. */
-.summaryInner > div {
-  padding-right: 16px;
-  box-sizing: content-box;
+.gridLine {
+  fill: none;
+  stroke: var(--journal-line);
+  stroke-width: 1;
 }
 
-/* Row container used by VirtualList rows */
-.rowContainer {
+.trendPath {
+  fill: none;
+  stroke: var(--journal-level-3);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.4;
+}
+
+.chartDot {
+  fill: var(--journal-paper);
+  stroke: var(--journal-level-3);
+  stroke-width: 1.2;
+  cursor: pointer;
+}
+
+.chartDot:hover,
+.chartDot:focus-visible {
+  fill: var(--journal-level-3);
+  outline: 0;
+}
+
+.heartChart {
   display: flex;
-  padding: 4px 0 16px;
-  justify-content: flex-start;
-  align-items: stretch;
-  padding-right: 12px;
-  box-sizing: border-box;
+  align-items: end;
+  gap: 6px;
+  height: 220px;
 }
 
-/* rc-virtual-list view and body panes: ensure there's a little inner spacing so content doesn't overlap scrollbar */
-:global(.rc-virtual-list-holder-inner),
-:global(.rc-virtual-list-holder) {
-  padding-right: 4px;
+.heartChart button {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
-.lifeContainer > svg,
-.lifeContainer :global(svg) {
-  max-width: 100%;
-  height: auto;
+.heartChart i {
+  display: block;
+  width: 100%;
+  min-height: 12px;
+  border-radius: 999px 999px 4px 4px;
+  background: var(--journal-level-1);
 }
 
-@media only screen and (max-width: 768px) {
+.heartChart .highHeartBar i {
+  background: var(--journal-level-2);
+}
+
+.heartChart button:hover i,
+.heartChart button:focus-visible i {
+  background: var(--journal-level-3);
+}
+
+.heartChart button:focus-visible {
+  outline: 1px solid rgba(36, 38, 36, 0.24);
+  outline-offset: 4px;
+}
+
+.habitMatrix,
+.timeBandMatrix {
+  display: grid;
+  gap: 9px;
+}
+
+.habitMatrix {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.timeBandMatrix {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--journal-line);
+}
+
+.habitMatrix button,
+.timeBandMatrix button {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--journal-muted);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.habitMatrix button:focus-visible,
+.timeBandMatrix button:focus-visible {
+  outline: 1px solid rgba(36, 38, 36, 0.2);
+  outline-offset: 4px;
+}
+
+.habitMatrix button:hover,
+.timeBandMatrix button:hover,
+.habitMatrix button:focus-visible,
+.timeBandMatrix button:focus-visible {
+  color: var(--journal-ink);
+}
+
+.habitMatrix i,
+.timeBandMatrix i {
+  display: block;
+  width: min(100%, 34px);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: var(--journal-level-3);
+}
+
+.insightPanel {
+  margin-top: clamp(14px, 2.4vw, 22px);
+  padding: clamp(18px, 3vw, 28px);
+}
+
+.insightHeader {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--journal-line);
+}
+
+.insightHeader p {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.3em;
+  padding-left: 2px;
+  margin-bottom: 8px;
+  overflow: visible;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-style: normal;
+  line-height: 1.3;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+}
+
+.insightHeader h2 {
+  font-size: clamp(1.42rem, 3vw, 1.9rem);
+  line-height: 1.18;
+}
+
+.insightHeader > span {
+  max-width: 20rem;
+  color: var(--journal-muted);
+  font-size: clamp(0.78rem, 1.3vw, 0.88rem);
+  font-weight: 640;
+  line-height: 1.65;
+}
+
+.insightBody {
+  display: grid;
+  gap: 1px;
+  overflow: hidden;
+  border-radius: 18px;
+}
+
+.insightBody span {
+  display: block;
+  padding: 16px 0;
+  border-top: 1px solid var(--journal-line);
+  color: var(--journal-ink);
+  font-size: clamp(0.96rem, 1.8vw, 1.12rem);
+  line-height: 1.72;
+}
+
+.insightBody span:first-child {
+  border-top: 0;
+}
+
+.aiHint {
+  display: block;
+  margin-top: 16px;
+  letter-spacing: normal;
+  line-height: 1.6;
+  text-transform: none;
+}
+
+.quietEmpty {
+  display: grid;
+  min-height: 220px;
+  place-content: center;
+  margin: 0;
+  color: var(--journal-muted);
+  font-size: 0.92rem;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.emptyState {
+  display: grid;
+  min-height: 420px;
+  place-content: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.emptyState p,
+.emptyState h1,
+.emptyState span {
+  margin: 0;
+}
+
+.emptyState p {
+  color: var(--journal-muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  font-weight: 760;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.emptyState h1 {
+  max-width: 14em;
+  font-size: clamp(1.8rem, 7vw, 3.4rem);
+  font-weight: 760;
+  letter-spacing: -0.05em;
+  line-height: 1.12;
+}
+
+.emptyState span {
+  color: var(--journal-muted);
+  line-height: 1.6;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media only screen and (max-width: 860px) {
+  .splitGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media only screen and (max-width: 620px) {
   .activityList {
-    padding: 8px;
+    width: 100%;
+    padding: 12px;
     border-radius: 20px;
-    background: color-mix(in srgb, var(--color-background) 94%, white 6%);
-    border-color: color-mix(in srgb, var(--color-primary) 7%, transparent);
+    box-shadow: none;
   }
 
-  .filterContainer {
-    position: sticky;
-    top: 6px;
-    z-index: 10;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+  .pageHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 18px;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .pageHeader h1 {
+    font-size: 2.35rem;
+    letter-spacing: -0.04em;
+  }
+
+  .pageHeader span {
+    margin-top: 6px;
+    font-size: 0.9rem;
+  }
+
+  .homeLink,
+  .viewSwitch button {
+    height: 34px;
+  }
+
+  .homeLink {
+    min-width: 82px;
+    padding: 0 12px;
+    font-size: 0.74rem;
+  }
+
+  .viewSwitch {
+    padding: 3px;
+  }
+
+  .viewSwitch button {
+    min-width: 38px;
+  }
+
+  .panelHeader {
+    align-items: flex-start;
+    flex-direction: column;
     gap: 6px;
-    margin-bottom: 8px;
-    padding: 4px;
-    border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
-    border-radius: 9999px;
-    background: color-mix(in srgb, var(--color-background) 88%, transparent);
-    backdrop-filter: blur(14px);
-    width: 100%;
-    box-shadow: none;
+    margin-bottom: 14px;
   }
 
-  .filterContainer::after {
-    display: none;
+  .panelHeader h2 {
+    font-size: 1.32rem;
   }
 
-  .filterContainer > * {
-    flex: 1 1 calc(50% - 6px);
-  }
-
-  .filterContainer select,
-  .smallHomeButton {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    min-width: 0;
-    height: 44px;
-    padding: 0 8px;
-    border-radius: 9999px;
-    font-size: 0.78rem;
-    letter-spacing: 0.02em;
-    line-height: 1;
-    text-align: center;
-    box-shadow: none;
-  }
-
-  .filterContainer select {
-    border-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
-    background: color-mix(in srgb, var(--color-background) 72%, transparent);
-    text-align-last: center;
-  }
-
-  .smallHomeButton {
-    border: 1px solid color-mix(in srgb, var(--color-primary) 16%, transparent);
-    background: color-mix(in srgb, var(--color-primary) 11%, transparent);
-    color: var(--color-primary);
-  }
-
-  .activityCard {
+  .panelHeader > span {
     max-width: none;
-    border-radius: 18px;
-    padding: 11px;
-    background: color-mix(in srgb, var(--color-background) 90%, white 10%);
-    border-color: color-mix(in srgb, var(--color-primary) 8%, transparent);
-    box-shadow: none;
+    font-size: 0.76rem;
+    text-align: left;
   }
 
-  .cardHeader {
-    margin-bottom: 8px;
+  .insightHeader {
+    gap: 8px;
+    padding-bottom: 12px;
   }
 
-  .activityCardDay .activityName {
-    font-size: 0.92rem;
+  .insightHeader p {
+    margin-bottom: 6px;
+    font-size: 0.64rem;
+    line-height: 1.35;
+    letter-spacing: 0.15em;
   }
 
-  .activityCardDay .primaryMetric strong {
-    font-size: 1.48rem;
+  .insightHeader h2 {
+    font-size: 1.42rem;
+    line-height: 1.2;
   }
 
-  .activityName {
-    margin: 0;
-    font-size: 0.96rem;
-    letter-spacing: -0.02em;
+  .insightHeader > span {
+    max-width: none;
+    font-size: 0.74rem;
+    line-height: 1.55;
+    text-align: left;
   }
 
-  .activityCount {
-    padding: 4px 8px;
-    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
-    font-size: 0.68rem;
+  .insightBody span {
+    padding: 13px 0;
+    font-size: 0.94rem;
+    line-height: 1.68;
   }
 
-  .activityDetails {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
+  .detailCardHeader {
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
   }
 
-  .activityDetails p {
-    margin: 0;
-    padding: 8px;
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--color-background) 50%, transparent);
-    font-size: 0.82rem;
-    line-height: 1.22;
+  .detailCardHeader span {
+    max-width: none;
+    text-align: left;
   }
 
-  .primaryMetric {
-    padding: 10px 11px;
-    margin-bottom: 8px;
-    border-radius: 15px;
-    background: color-mix(
-      in srgb,
-      var(--color-run-row-hover-background) 42%,
-      transparent
-    );
-  }
-
-  .primaryMetric strong {
-    font-size: 1.62rem;
-  }
-
-  .mobileCardList {
+  .detailGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 
-  .chart {
-    height: 220px;
+  .contextStrip {
+    gap: 6px;
+    margin: 14px 0;
   }
 
-  .yearSelector {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    overflow-x: auto;
-    width: 100%;
-    padding-bottom: 6px;
-    scrollbar-width: none;
+  .contextStrip span {
+    padding: 6px 8px;
+    font-size: 0.7rem;
   }
 
-  .yearSelector::-webkit-scrollbar {
-    display: none;
+  .panel,
+  .insightPanel {
+    padding: 14px;
+    border-radius: 20px;
   }
 
-  .yearButton {
-    flex: 0 0 auto;
+  .heatmapGrid {
+    gap: 2px;
   }
 
-  .yearSummaryFrame {
-    max-width: 100%;
-    padding: 0.7rem;
-    border-radius: 1.35rem;
+  .monthHeatmapGrid {
+    gap: 2px;
   }
 
-  .yearSummarySvg {
-    width: 100%;
-    max-height: none;
+  .heatCell,
+  .blankCell {
+    border-radius: 3px;
   }
 
-  .summaryInner > div {
-    width: 100% !important;
-    padding-right: 0;
+  .monthHeatmapGrid .heatCell,
+  .monthHeatmapGrid .blankCell {
+    border-radius: 4px;
   }
 
-  .rowContainer {
-    width: 100%;
-    padding-right: 0;
-    padding-bottom: 12px;
+  .monthChart,
+  .lineChart,
+  .lineChart svg,
+  .heartChart,
+  .quietEmpty {
+    min-height: 132px;
+    height: 132px;
+  }
+
+  .monthChart {
+    gap: 3px;
+  }
+
+  .monthBar {
+    gap: 5px;
+  }
+
+  .monthBar i {
+    width: min(100%, 18px);
+    min-height: 5px;
+    border-radius: 6px;
+  }
+
+  .monthBar span {
+    width: 16px;
+    height: 15px;
+    border-radius: 6px;
+    font-size: 0.5rem;
+  }
+
+  .lineChart svg {
+    height: 132px;
+  }
+
+  .splitGrid {
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .detailCard {
+    margin-bottom: 14px;
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .detailItem {
+    padding: 9px 10px;
+    border-radius: 14px;
+  }
+
+  .detailItem strong {
+    font-size: 0.96rem;
+  }
+
+  .habitMatrix {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .timeBandMatrix {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media only screen and (max-width: 480px) {
-  .filterContainer {
-    grid-template-columns: 1fr 1fr 1fr;
+@media only screen and (max-width: 390px) {
+  .monthChart {
+    gap: 2px;
   }
 
-  .smallHomeButton {
-    grid-column: auto;
+  .monthBar {
+    font-size: 0.62rem;
   }
 
-  .activityDetails {
+  .monthBar span {
+    width: 15px;
+    height: 14px;
+    border-radius: 5px;
+    font-size: 0.48rem;
+  }
+
+  .detailGrid {
     grid-template-columns: 1fr;
-    gap: 6px;
   }
 
-  .activityDetails p {
-    grid-template-columns: minmax(68px, 0.65fr) 1fr;
-    align-items: baseline;
-    gap: 6px;
-    padding: 7px 9px;
-  }
-
-  .activityDetails strong {
-    text-align: right;
-  }
-
-  .activityCardDay .activityDetails {
-    grid-template-columns: 1fr;
+  .contextStrip span {
+    padding: 6px 8px;
   }
 }

@@ -1,0 +1,259 @@
+import { readFile, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const activitiesPath = resolve(rootDir, 'src/static/activities.json');
+const outputPath = resolve(rootDir, 'src/static/ai-summary.json');
+const deepSeekUrl = 'https://api.deepseek.com/chat/completions';
+
+const toSeconds = (movingTime) => {
+  if (!movingTime) return 0;
+  const parts = movingTime.split(', ');
+  const dayPart = parts.length === 2 ? Number.parseInt(parts[0], 10) : 0;
+  const [hours, minutes, seconds] = parts[parts.length - 1]
+    .split(':')
+    .map(Number);
+  return ((dayPart * 24 + hours) * 60 + minutes) * 60 + seconds;
+};
+
+const formatPace = (secondsPerKm) => {
+  if (!Number.isFinite(secondsPerKm) || secondsPerKm <= 0) return '-';
+  const minutes = Math.floor(secondsPerKm / 60);
+  const seconds = Math.round(secondsPerKm % 60);
+  return `${minutes}'${seconds.toString().padStart(2, '0')}"`;
+};
+
+const getMondayFirstWeekday = (date) => (date.getDay() + 6) % 7;
+
+const getTimeBand = (hour) => {
+  if (hour < 9) return '清晨';
+  if (hour < 12) return '上午';
+  if (hour < 18) return '午后';
+  return '夜间';
+};
+
+const getAverage = (values) =>
+  values.length
+    ? values.reduce((sum, value) => sum + value, 0) / values.length
+    : 0;
+
+const getLongestStreak = (runs) => {
+  const dayTimes = Array.from(
+    new Set(
+      runs.map((run) => {
+        const date = new Date(run.date);
+        date.setHours(0, 0, 0, 0);
+        return date.getTime();
+      })
+    )
+  ).sort((a, b) => a - b);
+
+  let longest = 0;
+  let current = 0;
+  let previous = 0;
+  dayTimes.forEach((time) => {
+    current = previous && time - previous === 86400000 ? current + 1 : 1;
+    longest = Math.max(longest, current);
+    previous = time;
+  });
+  return longest;
+};
+
+const pickTopLabels = (items) => {
+  const maxCount = Math.max(...items.map((item) => item.count), 0);
+  return items
+    .filter((item) => item.count === maxCount && item.count > 0)
+    .slice(0, 2)
+    .map((item) => item.label);
+};
+
+export const summarizeActivities = (activities) => {
+  const runs = activities
+    .filter(
+      (activity) => activity.type === 'Run' || activity.type === 'running'
+    )
+    .map((activity) => {
+      const date = new Date(activity.start_date_local.replace(' ', 'T'));
+      const distanceKm = activity.distance / 1000;
+      const seconds = toSeconds(activity.moving_time);
+      return {
+        date,
+        distanceKm,
+        seconds,
+        paceSeconds: distanceKm > 0 ? seconds / distanceKm : 0,
+        heartRate:
+          typeof activity.average_heartrate === 'number' &&
+          activity.average_heartrate > 0
+            ? activity.average_heartrate
+            : null,
+        weekday: getMondayFirstWeekday(date),
+        timeBand: getTimeBand(date.getHours()),
+      };
+    })
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  const year = runs[0]?.date.getFullYear() ?? new Date().getFullYear();
+  const yearRuns = runs.filter((run) => run.date.getFullYear() === year);
+  const totalSeconds = yearRuns.reduce((sum, run) => sum + run.seconds, 0);
+  const distanceKm = Number(
+    yearRuns.reduce((sum, run) => sum + run.distanceKm, 0).toFixed(1)
+  );
+  const heartRates = yearRuns
+    .map((run) => run.heartRate)
+    .filter((rate) => rate !== null);
+  const monthCounts = Array.from({ length: 12 }, (_, index) => {
+    const monthRuns = yearRuns.filter((run) => run.date.getMonth() === index);
+    return {
+      label: `${index + 1}月`,
+      count: monthRuns.length,
+      distanceKm: Number(
+        monthRuns.reduce((sum, run) => sum + run.distanceKm, 0).toFixed(1)
+      ),
+    };
+  });
+  const weekdayCounts = [
+    '周一',
+    '周二',
+    '周三',
+    '周四',
+    '周五',
+    '周六',
+    '周日',
+  ].map((label, index) => ({
+    label,
+    count: yearRuns.filter((run) => run.weekday === index).length,
+  }));
+  const timeBandCounts = ['清晨', '上午', '午后', '夜间'].map((label) => ({
+    label,
+    count: yearRuns.filter((run) => run.timeBand === label).length,
+  }));
+  const peakMonth = monthCounts.reduce((best, item) =>
+    item.distanceKm > best.distanceKm ? item : best
+  );
+
+  return {
+    year,
+    count: yearRuns.length,
+    distanceKm,
+    averagePace: formatPace(distanceKm > 0 ? totalSeconds / distanceKm : 0),
+    averageHeartRate: heartRates.length
+      ? Math.round(getAverage(heartRates))
+      : null,
+    longestStreak: getLongestStreak(yearRuns),
+    peakMonth: peakMonth.count ? peakMonth.label : null,
+    highFrequencyDays: pickTopLabels(weekdayCounts),
+    highFrequencyTimeBands: pickTopLabels(timeBandCounts),
+  };
+};
+
+export const buildFallbackSummary = (summary, fallbackReason = null) => {
+  const items = [
+    `${summary.year} 年已完成 ${summary.count} 次跑步，累计 ${summary.distanceKm.toFixed(1)} km，平均配速 ${summary.averagePace}。`,
+    summary.peakMonth
+      ? `${summary.peakMonth}是跑量最集中的月份，最长连续跑步 ${summary.longestStreak} 天。`
+      : `当前跑步样本还少，最长连续跑步 ${summary.longestStreak} 天。`,
+    summary.averageHeartRate
+      ? `有心率记录的平均心率约 ${summary.averageHeartRate} bpm，近期训练强度需要留意恢复。`
+      : `${summary.highFrequencyDays.join('和') || '固定日期'} 是目前更常出现的跑步节奏。`,
+  ];
+
+  return {
+    generatedAt: new Date().toISOString(),
+    source: 'local',
+    model: 'rule-based',
+    fallbackReason,
+    items: items.slice(0, 3),
+  };
+};
+
+export const normalizeDeepSeekSummary = (content) =>
+  content
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^\s*[-*]?\s*\d*[.)、]?\s*/, '').trim())
+    .filter(Boolean)
+    .slice(0, 3);
+
+const buildPrompt = (summary) =>
+  [
+    '你是克制、准确的跑步训练观察助手。',
+    '请根据下面的年度跑步数据，输出最多 3 条中文短句。',
+    '要求：不要鸡汤，不要医疗诊断，不要使用夸张警告，不要重复首页总览。',
+    '风格：安静、简洁、像年度跑步手账。',
+    `数据：${JSON.stringify(summary)}`,
+  ].join('\n');
+
+const requestDeepSeekSummary = async (apiKey, summary) => {
+  const response = await fetch(deepSeekUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
+      messages: [
+        {
+          role: 'user',
+          content: buildPrompt(summary),
+        },
+      ],
+      temperature: 0.35,
+      max_tokens: 260,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`DeepSeek request failed: ${response.status}`);
+  }
+
+  const payload = await response.json();
+  const content = payload?.choices?.[0]?.message?.content;
+  const items = normalizeDeepSeekSummary(content || '');
+  if (!items.length) {
+    throw new Error('DeepSeek returned empty summary');
+  }
+
+  return {
+    generatedAt: new Date().toISOString(),
+    source: 'deepseek',
+    model: payload?.model || process.env.DEEPSEEK_MODEL || 'deepseek-chat',
+    fallbackReason: null,
+    items,
+  };
+};
+
+export const generateAiSummary = async ({
+  apiKey = process.env.DEEPSEEK_API_KEY,
+  inputPath = activitiesPath,
+  targetPath = outputPath,
+} = {}) => {
+  const activities = JSON.parse(await readFile(inputPath, 'utf8'));
+  const summary = summarizeActivities(activities);
+  let result = buildFallbackSummary(summary);
+
+  if (apiKey) {
+    try {
+      result = await requestDeepSeekSummary(apiKey, summary);
+    } catch (error) {
+      result = buildFallbackSummary(
+        summary,
+        error instanceof Error ? error.message : 'DeepSeek request failed'
+      );
+    }
+  }
+
+  await writeFile(targetPath, `${JSON.stringify(result, null, 2)}\n`);
+  return result;
+};
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  generateAiSummary()
+    .then((result) => {
+      console.log(`AI summary generated from ${result.source}`);
+    })
+    .catch((error) => {
+      console.error(error);
+      process.exitCode = 1;
+    });
+}

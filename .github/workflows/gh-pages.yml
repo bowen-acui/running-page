@@ -96,6 +96,11 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+      - name: Generate AI summary
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_MODEL: ${{ secrets.DEEPSEEK_MODEL }}
+        run: pnpm ai:summary
       - name: Build
         env:
           REPO_NAME: ${{ github.event.repository.name }}
