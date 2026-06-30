@@ -238,12 +238,12 @@
   width: 100%;
   min-width: 0;
   padding: clamp(10px, 1.8vw, 16px);
-  border: 1px solid color-mix(in srgb, var(--journal-line) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--journal-line) 92%, transparent);
   border-radius: clamp(18px, 2.6vw, 24px);
   background: color-mix(
     in srgb,
-    var(--color-run-row-hover-background) 34%,
-    var(--color-background) 66%
+    var(--color-run-row-hover-background) 52%,
+    var(--color-background) 48%
   );
   box-sizing: border-box;
   animation: fadeIn 160ms ease-out both;
