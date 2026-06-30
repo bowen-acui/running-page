@@ -1280,7 +1280,7 @@ wheels = [
 
 [[package]]
 name = "timezonefinder"
-version = "6.6.3"
+version = "8.2.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cffi" },
@@ -1288,7 +1288,7 @@ dependencies = [
     { name = "h3" },
     { name = "numpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/16/ba/afd800aea55eb1c25e3203cbb5333f99ce3bdcf81cbef97ff9dea5e1c06b/timezonefinder-6.6.3.tar.gz", hash = "sha256:f942afeeb70cdc68dfa06161abec1c98812c13011084ce560741ad5c2db1dad3", size = 52907618, upload-time = "2025-07-21T11:55:36.954Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/67/f2/77f407fac773a72e18e91657896fdec9b61ed4e31b35adf7270d8f5f71b0/timezonefinder-8.2.4.tar.gz", hash = "sha256:d80fae37adf1497729cc3e69826c22f3b2fec16db07932bf389b6ae545400b42", size = 54286323, upload-time = "2026-05-01T12:47:22.142Z" }
 
 [[package]]
 name = "tinycss2"
