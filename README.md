@@ -1176,7 +1176,9 @@ For more display effects, see:
 1. Go to repository's `Settings -> GitHub Pages -> Source`, choose `GitHub Actions`
 
 2. Go to the repository's `Actions -> Workflows -> All Workflows`, choose `Run Data Sync` from the left panel, and click `Run workflow`.
-   - The `Run Data Sync` will update data and then trigger the `Publish GitHub Pages` workflow
+   - The workflow now defaults to file import mode (`only_gpx`), no longer depends on the Strava API, and does not run on a daily schedule.
+   - If your exported files are FIT or TCX, update `RUN_TYPE` in `.github/workflows/run_data_sync.yml` to `only_fit` or `only_tcx` before running it.
+   - The `Run Data Sync` workflow will update data and then trigger the `Publish GitHub Pages` workflow.
    - Make sure the workflow runs without errors.
 
 3. Open your website to check on the results

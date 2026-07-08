@@ -1301,6 +1301,8 @@ python3 run_page/auto_share_sync.py --api_key xxxxxxxxx --base_url xxxxxxxx --da
 1. 进入仓库的 "Settings -> GitHub Pages -> Source"，选择 "GitHub Actions"
 
 2. 进入仓库的 "Actions -> Workflows -> All Workflows"，选择左侧面板的 "Run Data Sync"，然后点击 "Run workflow"
+   - 该工作流当前默认使用仓库中的文件数据导入模式 (`only_gpx`)，不再依赖 Strava API，也不会每日自动运行
+   - 如果您的导出文件是 FIT 或 TCX，请先把 `.github/workflows/run_data_sync.yml` 里的 `RUN_TYPE` 改成 `only_fit` 或 `only_tcx`
    - "Run Data Sync" 将更新数据，然后触发 "Publish GitHub Pages" 工作流
    - 确认工作流运行没有错误
 
