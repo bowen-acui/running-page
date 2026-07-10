@@ -76,13 +76,13 @@ const computeStats = (runs) => {
       : '0.0',
     minKm: runs.length
       ? (
-          runs.reduce((min, r) => Math.min(min, r.distance || Infinity), Infinity) /
-          M_TO_DIST
+          runs.reduce(
+            (min, r) => Math.min(min, r.distance || Infinity),
+            Infinity
+          ) / M_TO_DIST
         ).toFixed(1)
       : '0.0',
-    weekly: spanDays
-      ? (runs.length / (spanDays / 7)).toFixed(1)
-      : '0.0',
+    weekly: spanDays ? (runs.length / (spanDays / 7)).toFixed(1) : '0.0',
   };
 };
 
@@ -122,7 +122,11 @@ const replaceValueAfterLabel = (svg, label, newValue, unitFontAnchor) => {
         replacedWindow.slice(afterValue + unitWindow.length);
     }
   }
-  return svg.slice(0, windowStart) + replacedWindow + svg.slice(windowStart + window.length);
+  return (
+    svg.slice(0, windowStart) +
+    replacedWindow +
+    svg.slice(windowStart + window.length)
+  );
 };
 
 const refreshYearSummary = async (year, stats) => {
@@ -131,7 +135,10 @@ const refreshYearSummary = async (year, stats) => {
   let svg = await readFile(svgPath, 'utf8');
   const original = svg;
 
-  svg = svg.replace(/Running for \d+ Days/, `Running for ${stats.spanDays} Days`);
+  svg = svg.replace(
+    /Running for \d+ Days/,
+    `Running for ${stats.spanDays} Days`
+  );
   svg = replaceValueAfterLabel(svg, 'Distance', stats.distanceKm, {
     unit: 'km',
     valueX: 11,
