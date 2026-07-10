@@ -27,7 +27,7 @@ const DataStatusBar = () => {
           </strong>
         </span>
         <span>
-          同步{' '}
+          最近活动{' '}
           <strong className="font-semibold text-[color:var(--color-text-primary)]">
             {formatSyncTime(lastSyncedAt)}
           </strong>

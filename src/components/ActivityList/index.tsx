@@ -976,11 +976,7 @@ const ActivityList: React.FC = () => {
             <h2>训练建议</h2>
           </div>
           <span>
-            {aiSummaryMeta.source === 'deepseek'
-              ? `DeepSeek · ${aiSummaryMeta.model}`
-              : selectedMonth
-                ? '当前月份使用页面内本地洞察。'
-                : '本地规则生成，配置 DeepSeek 后会自动替换。'}
+            {selectedMonth ? '基于当前月份的训练数据。' : '基于全年训练数据。'}
           </span>
         </div>
         <div className={styles.insightBody}>
@@ -991,11 +987,6 @@ const ActivityList: React.FC = () => {
         {aiSummaryMeta.trainingGoal && !selectedMonth && (
           <small className={styles.aiHint}>
             当前目标：{aiSummaryMeta.trainingGoal}
-          </small>
-        )}
-        {aiSummaryMeta.fallbackReason && !selectedMonth && (
-          <small className={styles.aiHint}>
-            DeepSeek 未生成：{aiSummaryMeta.fallbackReason}
           </small>
         )}
       </section>
