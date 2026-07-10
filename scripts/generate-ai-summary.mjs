@@ -43,9 +43,7 @@ const getAverage = (values) =>
 const getStandardDeviation = (values) => {
   if (values.length < 2) return 0;
   const average = getAverage(values);
-  const variance = getAverage(
-    values.map((value) => (value - average) ** 2)
-  );
+  const variance = getAverage(values.map((value) => (value - average) ** 2));
   return Math.sqrt(variance);
 };
 
