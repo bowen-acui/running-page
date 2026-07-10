@@ -593,8 +593,8 @@ const ActivityList: React.FC = () => {
           }`}
           style={{
             gridTemplateColumns: selectedMonth
-              ? `repeat(${dailyCells.length}, minmax(0, 1fr))`
-              : `repeat(${heatmapColumns}, minmax(0, 1fr))`,
+              ? `repeat(${dailyCells.length}, minmax(var(--heat-cell-min, 0px), 1fr))`
+              : `repeat(${heatmapColumns}, minmax(var(--heat-cell-min, 0px), 1fr))`,
           }}
           aria-label="跑步热力图"
         >
