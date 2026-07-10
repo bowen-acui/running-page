@@ -1,15 +1,8 @@
-export const yearStats = import.meta.glob('./year_*.svg', {
-  import: 'ReactComponent',
-});
+// Only globs that are actually rendered somewhere belong here — every matched
+// file becomes a build chunk, so unused patterns silently bloat the bundle.
 export const yearSummaryStats = import.meta.glob('./year_summary_*.svg', {
   import: 'ReactComponent',
 });
-export const githubYearStats = import.meta.glob('./github_*.svg', {
+export const totalStat = import.meta.glob('./github.svg', {
   import: 'ReactComponent',
 });
-export const totalStat = import.meta.glob(
-  ['./github.svg', './grid.svg', './mol*.svg'],
-  {
-    import: 'ReactComponent',
-  }
-);
