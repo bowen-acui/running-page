@@ -15,6 +15,16 @@ updates:
       interval: monthly
     commit-message:
       prefix: npm
+    groups:
+      # react and react-dom must resolve to the exact same version — a
+      # partial bump ships a runtime crash (React error #527) that
+      # build-time CI cannot catch, so the ecosystem updates as one PR.
+      react:
+        patterns:
+          - react
+          - react-dom
+          - '@types/react'
+          - '@types/react-dom'
 
   - package-ecosystem: pip
     directory: /
