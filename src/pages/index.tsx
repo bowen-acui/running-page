@@ -546,7 +546,7 @@ const Index = () => {
             </h1>
             {summaryLink && (
               <a
-                className="inline-flex h-7 shrink-0 items-center justify-center rounded-full border border-[color:var(--color-primary)]/8 bg-[color:var(--color-background)]/30 px-3 text-[0.54rem] font-semibold tracking-[0.1em] text-[color:var(--color-run-date)]/64 uppercase transition-colors hover:border-[color:var(--color-primary)]/14 hover:text-[color:var(--color-text-primary)]"
+                className="relative inline-flex h-7 shrink-0 items-center justify-center rounded-full border border-[color:var(--color-primary)]/8 bg-[color:var(--color-background)]/30 px-3 text-[0.54rem] font-semibold tracking-[0.1em] text-[color:var(--color-run-date)]/64 uppercase transition-colors before:absolute before:inset-x-0 before:-inset-y-2.5 before:content-[''] hover:border-[color:var(--color-primary)]/14 hover:text-[color:var(--color-text-primary)]"
                 href={summaryLink.url}
               >
                 {summaryLink.name}

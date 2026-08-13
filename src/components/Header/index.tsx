@@ -101,7 +101,7 @@ const Header = () => {
           <div className="min-w-0 flex-1">
             <Link
               to="/"
-              className="inline-flex max-w-full items-baseline pt-[0.04em] text-[1.02rem] sm:text-[1.12rem] lg:text-[1.34rem]"
+              className="relative inline-flex max-w-full items-baseline pt-[0.04em] text-[1.02rem] before:absolute before:inset-x-0 before:-inset-y-3.5 before:content-[''] sm:text-[1.12rem] lg:text-[1.34rem]"
             >
               <BrandTitle
                 title={siteTitle}

@@ -198,7 +198,11 @@ const YearStat = ({
             unit={DIST_UNIT}
             label="Distance"
           />
-          <Metric value={summary.averagePace} label="Avg Pace" />
+          <Metric
+            value={summary.averagePace}
+            unit={`/${DIST_UNIT}`}
+            label="Avg Pace"
+          />
           <Metric value={summary.streak} unit="day" label="Streak" />
           {summary.hasHeartRate && (
             <Metric
