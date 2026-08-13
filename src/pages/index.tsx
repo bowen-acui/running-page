@@ -9,6 +9,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { Analytics } from '@vercel/analytics/react';
+import type { FeatureCollection, LineString } from 'geojson';
 import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/Layout';
 import LocationStat from '@/components/LocationStat';
@@ -32,11 +33,7 @@ import {
   titleForShow,
   RunIds,
 } from '@/utils/utils';
-import {
-  geoJsonForRuns,
-  getBoundsForGeoData,
-  type IViewState,
-} from '@/utils/geoUtils';
+import type { IViewState } from '@/utils/mapTypes';
 import { useTheme, useThemeChangeCounter } from '@/hooks/useTheme';
 
 const HASH_RUN_CHANGE_EVENT = 'running-page-hash-run-change';
@@ -50,6 +47,18 @@ const FILTER_FUNCS = {
 } as const;
 
 type FilterKind = keyof typeof FILTER_FUNCS;
+type GeoUtilsModule = typeof import('@/utils/geoUtils');
+
+const EMPTY_GEO_DATA: FeatureCollection<LineString> = {
+  type: 'FeatureCollection',
+  features: [],
+};
+
+const DEFAULT_VIEW_STATE: IViewState = {
+  longitude: 20,
+  latitude: 20,
+  zoom: 3,
+};
 
 // Parse a shareable filter hash like #year_2025 / #city_上海 / #title_晨跑
 const getFilterFromHash = (): { kind: FilterKind; value: string } | null => {
@@ -151,10 +160,18 @@ const Index = () => {
   // Animation trigger for single runs - increment this to force animation replay
   const [animationTrigger, setAnimationTrigger] = useState(0);
   const [isMapCollapsed, setIsMapCollapsed] = useState(isMobileViewport);
-  const [shouldRenderMap, setShouldRenderMap] = useState(
-    () => !isMobileViewport()
-  );
+  const [shouldRenderMap, setShouldRenderMap] = useState(false);
   const mapPanelRef = useRef<HTMLDivElement | null>(null);
+  const geoUtilsRef = useRef<Promise<GeoUtilsModule> | null>(null);
+  const geoJsonForRunsRef = useRef<GeoUtilsModule['geoJsonForRuns'] | null>(
+    null
+  );
+  const currentGeoDataRef =
+    useRef<FeatureCollection<LineString>>(EMPTY_GEO_DATA);
+  const locateRequestRef = useRef(0);
+  const isSingleRunView = singleRunId !== null;
+  const isMapExpanded = !isMapCollapsed || isSingleRunView;
+  const shouldDisplayMap = shouldRenderMap || isSingleRunView;
 
   // Memoize expensive calculations
   const runs = useMemo(() => {
@@ -166,29 +183,29 @@ const Index = () => {
     );
   }, [activities, currentFilter.item, currentFilter.func]);
 
-  const geoData = useMemo(() => {
-    void themeChangeCounter;
-    return geoJsonForRuns(runs);
-  }, [runs, themeChangeCounter]);
+  const loadGeoUtils = useCallback(() => {
+    geoUtilsRef.current ??= import('@/utils/geoUtils');
+    return geoUtilsRef.current;
+  }, []);
 
-  // for auto zoom
-  const bounds = useMemo(() => {
-    return getBoundsForGeoData(geoData);
-  }, [geoData]);
-
-  const [viewState, setViewState] = useState<IViewState>(() => ({
-    ...bounds,
-  }));
+  const [viewState, setViewState] = useState<IViewState>(DEFAULT_VIEW_STATE);
 
   // Add state for animated geoData to handle the animation effect
-  const [animatedGeoData, setAnimatedGeoData] = useState(geoData);
+  const [animatedGeoData, setAnimatedGeoData] =
+    useState<FeatureCollection<LineString>>(EMPTY_GEO_DATA);
 
   // Use useInterval for animation instead of intervalIdRef
   useInterval(
     () => {
       if (!isAnimating || currentAnimationIndex >= animationRuns.length) {
         setIsAnimating(false);
-        setAnimatedGeoData(geoData);
+        setAnimatedGeoData(currentGeoDataRef.current);
+        return;
+      }
+
+      const geoJsonForRuns = geoJsonForRunsRef.current;
+      if (!geoJsonForRuns) {
+        setIsAnimating(false);
         return;
       }
 
@@ -201,28 +218,29 @@ const Index = () => {
 
       if (nextIndex >= runsNum) {
         setIsAnimating(false);
-        setAnimatedGeoData(geoData);
+        setAnimatedGeoData(currentGeoDataRef.current);
       }
     },
     isAnimating ? 300 : null
   );
 
   // Helper function to start animation
-  const startAnimation = useCallback(
-    (runsToAnimate: Activity[]) => {
-      if (runsToAnimate.length === 0 || prefersReducedMotion()) {
-        setAnimatedGeoData(geoData);
-        return;
-      }
+  const startAnimation = useCallback((runsToAnimate: Activity[]) => {
+    const geoJsonForRuns = geoJsonForRunsRef.current;
+    if (!geoJsonForRuns) {
+      return;
+    }
+    if (runsToAnimate.length === 0 || prefersReducedMotion()) {
+      setAnimatedGeoData(currentGeoDataRef.current);
+      return;
+    }
 
-      const sliceNum =
-        runsToAnimate.length >= 8 ? Math.ceil(runsToAnimate.length / 8) : 1;
-      setAnimationRuns(runsToAnimate);
-      setCurrentAnimationIndex(sliceNum);
-      setIsAnimating(true);
-    },
-    [geoData]
-  );
+    const sliceNum =
+      runsToAnimate.length >= 8 ? Math.ceil(runsToAnimate.length / 8) : 1;
+    setAnimationRuns(runsToAnimate);
+    setCurrentAnimationIndex(sliceNum);
+    setIsAnimating(true);
+  }, []);
 
   const changeByItem = useCallback(
     (
@@ -230,6 +248,7 @@ const Index = () => {
       name: string,
       func: (_run: Activity, _value: string) => boolean
     ) => {
+      locateRequestRef.current += 1;
       scrollToMap();
       if (name != 'Year') {
         setYear(thisYear);
@@ -237,6 +256,7 @@ const Index = () => {
       setCurrentFilter({ item, func });
       setRunIndex(-1);
       setSelectedRun(null);
+      setIsAnimating(false);
       setTitle(`${item} ${name} Running Heatmap`);
       // Reflect the filter in the URL so the view is shareable; this also
       // resets any single-run state since the hash no longer starts with run_
@@ -250,24 +270,9 @@ const Index = () => {
       // default year
       setYear(y);
 
-      if ((viewState.zoom ?? 0) > 3 && bounds) {
-        setViewState({
-          ...bounds,
-        });
-      }
-
       changeByItem(y, 'Year', filterYearRuns);
-      // Stop current animation
-      setIsAnimating(false);
     },
-    [
-      viewState.zoom,
-      bounds,
-      changeByItem,
-      setYear,
-      setViewState,
-      setIsAnimating,
-    ]
+    [changeByItem, setYear]
   );
 
   const changeCity = useCallback(
@@ -286,6 +291,7 @@ const Index = () => {
 
   const locateActivity = useCallback(
     (runIds: RunIds) => {
+      const requestId = ++locateRequestRef.current;
       const ids = new Set(runIds);
 
       const selectedRuns = !runIds.length
@@ -322,29 +328,33 @@ const Index = () => {
         clearRunHash();
       }
 
-      // Create geoData for selected runs and calculate new bounds
-      const selectedGeoData = geoJsonForRuns(selectedRuns);
-      const selectedBounds = getBoundsForGeoData(selectedGeoData);
+      void (async () => {
+        const { geoJsonForRuns, getBoundsForGeoData } = await loadGeoUtils();
+        if (requestId !== locateRequestRef.current) {
+          return;
+        }
+        geoJsonForRunsRef.current = geoJsonForRuns;
 
-      // Stop any existing animation
-      setIsAnimating(false);
+        const selectedGeoData = geoJsonForRuns(selectedRuns);
+        const selectedBounds = getBoundsForGeoData(selectedGeoData);
+        currentGeoDataRef.current = selectedGeoData;
 
-      // Update the animated geoData immediately to trigger RunMap animation
-      setAnimatedGeoData(selectedGeoData);
+        setIsAnimating(false);
+        setAnimatedGeoData(selectedGeoData);
 
-      // For single run, trigger animation by incrementing the trigger
-      if (runIds.length === 1) {
-        setAnimationTrigger((prev) => prev + 1);
-      }
+        if (runIds.length === 1) {
+          setAnimationTrigger((prev) => prev + 1);
+        }
 
-      // Update view state
-      setViewState({
-        ...selectedBounds,
-      });
-      setTitle(titleForShow(lastRun));
-      scrollToMap();
+        setViewState({
+          ...selectedBounds,
+        });
+        setTitle(titleForShow(lastRun));
+        scrollToMap();
+      })();
     },
     [
+      loadGeoUtils,
       runs,
       setRunIndex,
       setSelectedRun,
@@ -393,26 +403,54 @@ const Index = () => {
     }
   }, [runs, singleRunId, locateActivity]);
 
-  // Update bounds when geoData changes
   useEffect(() => {
-    if (singleRunId === null) {
-      const frameId = requestAnimationFrame(() => {
-        setViewState((prev) => ({
-          ...prev,
-          ...bounds,
-        }));
-      });
-      return () => cancelAnimationFrame(frameId);
+    if (!shouldDisplayMap || singleRunId !== null) {
+      return;
     }
-  }, [bounds, singleRunId]);
 
-  // Animate geoData when runs change
-  useEffect(() => {
-    if (singleRunId === null) {
-      const frameId = requestAnimationFrame(() => startAnimation(runs));
-      return () => cancelAnimationFrame(frameId);
-    }
-  }, [runs, startAnimation, singleRunId]);
+    let isCancelled = false;
+    let frameId: number | null = null;
+    const requestId = locateRequestRef.current;
+
+    void (async () => {
+      const { geoJsonForRuns, getBoundsForGeoData } = await loadGeoUtils();
+      if (isCancelled || requestId !== locateRequestRef.current) {
+        return;
+      }
+
+      void themeChangeCounter;
+      geoJsonForRunsRef.current = geoJsonForRuns;
+      const nextGeoData = geoJsonForRuns(runs);
+      currentGeoDataRef.current = nextGeoData;
+      const nextBounds = getBoundsForGeoData(nextGeoData);
+
+      setViewState((prev) => ({
+        ...prev,
+        ...nextBounds,
+      }));
+      setAnimatedGeoData(nextGeoData);
+
+      frameId = requestAnimationFrame(() => {
+        if (!isCancelled && requestId === locateRequestRef.current) {
+          startAnimation(runs);
+        }
+      });
+    })();
+
+    return () => {
+      isCancelled = true;
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId);
+      }
+    };
+  }, [
+    loadGeoUtils,
+    runs,
+    shouldDisplayMap,
+    singleRunId,
+    startAnimation,
+    themeChangeCounter,
+  ]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -425,28 +463,45 @@ const Index = () => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  useEffect(() => {
-    if (singleRunId !== null) {
-      setIsMapCollapsed(false);
-      setShouldRenderMap(true);
-    }
-  }, [singleRunId]);
-
   // Keep the table highlight and the map readout card in sync with the URL:
   // when the run hash clears (e.g. the browser Back button or an edited hash),
   // drop the selected-run state so a stale row stays highlighted no longer.
   useEffect(() => {
     if (singleRunId === null) {
-      setRunIndex(-1);
-      setSelectedRun(null);
+      const frameId = requestAnimationFrame(() => {
+        setRunIndex(-1);
+        setSelectedRun(null);
+      });
+      return () => cancelAnimationFrame(frameId);
     }
   }, [singleRunId]);
 
   useEffect(() => {
-    if (!isMapCollapsed) {
-      setShouldRenderMap(true);
+    if (!isMapExpanded || shouldRenderMap || typeof window === 'undefined') {
+      return;
     }
-  }, [isMapCollapsed]);
+
+    const idleCallback = window.requestIdleCallback?.bind(window);
+    const cancelIdleCallback = window.cancelIdleCallback?.bind(window);
+    let timeoutId: number | null = null;
+    let idleId: number | null = null;
+    const enableMap = () => setShouldRenderMap(true);
+
+    if (idleCallback) {
+      idleId = idleCallback(enableMap, { timeout: 900 });
+    } else {
+      timeoutId = window.setTimeout(enableMap, 180);
+    }
+
+    return () => {
+      if (idleId !== null && cancelIdleCallback) {
+        cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [isMapExpanded, shouldRenderMap]);
 
   useEffect(() => {
     const node = mapPanelRef.current;
@@ -511,9 +566,9 @@ const Index = () => {
         <section className="min-w-0 space-y-4 sm:space-y-6" id="map-container">
           <div
             ref={mapPanelRef}
-            className={`home-map-panel map-shell ${isMapCollapsed ? 'map-shell-collapsed' : ''} overflow-hidden rounded-[1.75rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-3`}
+            className={`home-map-panel map-shell ${isMapExpanded ? '' : 'map-shell-collapsed'} overflow-hidden rounded-[1.75rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-3`}
           >
-            {isMapCollapsed ? (
+            {!isMapExpanded ? (
               <button
                 type="button"
                 className="group relative flex min-h-44 w-full items-center justify-between overflow-hidden rounded-[1.35rem] border border-[color:var(--color-primary)]/8 bg-[color:var(--color-background)]/28 px-5 py-4 text-left text-[color:var(--color-run-date)] transition-colors duration-200 hover:bg-[color:var(--color-background)]/42"
@@ -550,28 +605,30 @@ const Index = () => {
                   </svg>
                 </span>
               </button>
+            ) : shouldDisplayMap ? (
+              <Suspense
+                fallback={
+                  <div className="flex min-h-[var(--map-height,320px)] items-center justify-center rounded-[1.35rem] bg-[color:var(--color-background)]/28 text-sm font-semibold text-[color:var(--color-run-date)]/72">
+                    加载路线地图...
+                  </div>
+                }
+              >
+                <RunMap
+                  title={title}
+                  viewState={viewState}
+                  geoData={animatedGeoData}
+                  setViewState={setViewState}
+                  changeYear={changeYear}
+                  thisYear={year}
+                  animationTrigger={animationTrigger}
+                  selectedRun={selectedRun}
+                  locateActivity={locateActivity}
+                />
+              </Suspense>
             ) : (
-              shouldRenderMap && (
-                <Suspense
-                  fallback={
-                    <div className="flex min-h-[var(--map-height,320px)] items-center justify-center rounded-[1.35rem] bg-[color:var(--color-background)]/28 text-sm font-semibold text-[color:var(--color-run-date)]/72">
-                      加载路线地图...
-                    </div>
-                  }
-                >
-                  <RunMap
-                    title={title}
-                    viewState={viewState}
-                    geoData={animatedGeoData}
-                    setViewState={setViewState}
-                    changeYear={changeYear}
-                    thisYear={year}
-                    animationTrigger={animationTrigger}
-                    selectedRun={selectedRun}
-                    locateActivity={locateActivity}
-                  />
-                </Suspense>
-              )
+              <div className="flex min-h-[var(--map-height,320px)] items-center justify-center rounded-[1.35rem] border border-[color:var(--color-primary)]/6 bg-[color:var(--color-background)]/24 text-sm font-semibold text-[color:var(--color-run-date)]/66">
+                准备路线地图...
+              </div>
             )}
           </div>
           <div className="home-data-panel min-w-0 overflow-hidden rounded-[1.75rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-5">

@@ -22,14 +22,7 @@ import {
 } from './const';
 import type { Activity } from './utils';
 import { locationForRun } from './utils';
-
-export type Coordinate = [number, number];
-
-export interface IViewState {
-  longitude?: number;
-  latitude?: number;
-  zoom?: number;
-}
+import type { Coordinate, IViewState } from './mapTypes';
 
 export const pathForRun = (run: Activity): Coordinate[] => {
   try {

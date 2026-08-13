@@ -184,12 +184,6 @@ export const updateSvgSpecialColors = (): void => {
 };
 
 /**
- * @deprecated Use updateSvgSpecialColors instead
- * Updates GitHub SVG special colors dynamically based on current theme
- */
-export const updateGithubSvgSpecialColors = updateSvgSpecialColors;
-
-/**
  * Initializes SVG color adjustments for both GitHub and Grid SVGs
  * Call this function when the page loads or when theme changes
  */
@@ -215,9 +209,3 @@ export const initSvgColorAdjustments = (): void => {
     attributeFilter: ['data-theme'],
   });
 };
-
-/**
- * @deprecated Use initSvgColorAdjustments instead
- * Initializes GitHub SVG color adjustments
- */
-export const initGithubSvgColorAdjustments = initSvgColorAdjustments;

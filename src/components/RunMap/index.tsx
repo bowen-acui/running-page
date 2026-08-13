@@ -31,13 +31,8 @@ import {
   MAP_TILE_ACCESS_TOKEN,
   getRuntimeSingleRunColor,
 } from '@/utils/const';
-import {
-  Coordinate,
-  IViewState,
-  geoJsonForMap,
-  getMapStyle,
-  isTouchDevice,
-} from '@/utils/geoUtils';
+import { geoJsonForMap, getMapStyle, isTouchDevice } from '@/utils/geoUtils';
+import type { Coordinate, IViewState } from '@/utils/mapTypes';
 import {
   Activity,
   DIST_UNIT,
@@ -90,7 +85,11 @@ const RunMap = ({
 }: IRunMapProps) => {
   const { countries, provinces } = useActivities();
   const mapRef = useRef<MapRef>(null);
+  const initialStyleDataHandlerRef = useRef<
+    ((event: { dataType?: string }) => void) | null
+  >(null);
   const [lights, setLights] = useState(PRIVACY_MODE ? false : LIGHTS_ON);
+  const lightsRef = useRef(lights);
   const [mapGeoData, setMapGeoData] =
     useState<FeatureCollection<RPGeometry> | null>(null);
   const isLoadingMapDataRef = useRef(false);
@@ -109,10 +108,13 @@ const RunMap = ({
     () => getMapStyle(MAP_TILE_VENDOR, currentMapTheme, MAP_TILE_ACCESS_TOKEN),
     [currentMapTheme]
   );
-
   // Mapbox GL JS requires a token even when using other vendors
   // Always use the MAPBOX_TOKEN from const.ts (user may have set their own token)
   const mapboxAccessToken = MAPBOX_TOKEN;
+
+  useEffect(() => {
+    lightsRef.current = lights;
+  }, [lights]);
 
   /**
    * Toggle visibility of map layers based on lights setting
@@ -159,7 +161,7 @@ const RunMap = ({
             map.setPitch(currentPitch);
 
             // Reapply layer visibility settings with current lights state
-            switchLayerVisibility(map, lights);
+            switchLayerVisibility(map, lightsRef.current);
           } catch (error) {
             console.warn('Error applying map style changes:', error);
           }
@@ -175,7 +177,7 @@ const RunMap = ({
         }
       };
     }
-  }, [mapStyle, lights, switchLayerVisibility]); // Include lights to ensure layer visibility updates correctly when theme changes
+  }, [mapStyle, switchLayerVisibility]);
 
   useEffect(() => {
     if (mapRef.current) {
@@ -266,14 +268,14 @@ const RunMap = ({
     (ref: MapRef) => {
       if (ref !== null) {
         const map = ref.getMap();
-        if (map && IS_CHINESE) {
+        if (map && IS_CHINESE && !mapRef.current) {
           map.addControl(new MapboxLanguage({ defaultLanguage: 'zh-Hans' }));
         }
         // all style resources have been downloaded
         // and the first visually complete rendering of the base style has occurred.
         // it's odd. when use style other than mapbox, the style.load event is not triggered.Add commentMore actions
         // so I use data event instead of style.load event and make sure we handle it only once.
-        map.on('data', (event) => {
+        const handleInitialStyleData = (event: { dataType?: string }) => {
           if (event.dataType !== 'style' || mapRef.current) {
             return;
           }
@@ -292,16 +294,34 @@ const RunMap = ({
             });
           }
           mapRef.current = ref;
-          switchLayerVisibility(map, lights);
-        });
+          switchLayerVisibility(map, lightsRef.current);
+          map.off('data', handleInitialStyleData);
+          initialStyleDataHandlerRef.current = null;
+        };
+
+        if (!initialStyleDataHandlerRef.current) {
+          initialStyleDataHandlerRef.current = handleInitialStyleData;
+          map.on('data', handleInitialStyleData);
+        }
       }
       if (mapRef.current) {
         const map = mapRef.current.getMap();
-        switchLayerVisibility(map, lights);
+        switchLayerVisibility(map, lightsRef.current);
       }
     },
-    [lights, switchLayerVisibility]
+    [switchLayerVisibility]
   );
+
+  useEffect(() => {
+    return () => {
+      const map = mapRef.current?.getMap();
+      const handler = initialStyleDataHandlerRef.current;
+      if (map && handler) {
+        map.off('data', handler);
+      }
+      initialStyleDataHandlerRef.current = null;
+    };
+  }, []);
 
   const initGeoDataLength = geoData.features.length;
   const isBigMap = (viewState.zoom ?? 0) <= 3;
