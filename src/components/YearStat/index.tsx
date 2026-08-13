@@ -1,27 +1,14 @@
-import { lazy, Suspense } from 'react';
-import Stat from '@/components/Stat';
 import useActivities from '@/hooks/useActivities';
 import type { Activity } from '@/utils/utils';
-import { formatPace } from '@/utils/utils';
-import useHover from '@/hooks/useHover';
-import { yearStats, githubYearStats } from '@assets/index';
-import { loadSvgComponent } from '@/utils/svgUtils';
+import {
+  DIST_UNIT,
+  formatPace,
+  intComma,
+  isRunActivity,
+  M_TO_DIST,
+  M_TO_ELEV,
+} from '@/utils/utils';
 import { SHOW_ELEVATION_GAIN } from '@/utils/const';
-import { DIST_UNIT, M_TO_DIST, M_TO_ELEV } from '@/utils/utils';
-
-const yearSvgs = Object.fromEntries(
-  Object.keys(yearStats).map((path) => [
-    path,
-    lazy(() => loadSvgComponent(yearStats, path)),
-  ])
-);
-
-const githubYearSvgs = Object.fromEntries(
-  Object.keys(githubYearStats).map((path) => [
-    path,
-    lazy(() => loadSvgComponent(githubYearStats, path)),
-  ])
-);
 
 interface YearStatAccumulator {
   averageHeartRateTotal: number;
@@ -42,6 +29,12 @@ interface YearStatSummary {
   streak: number;
   totalDistance: number;
   totalElevationGain: string;
+}
+
+interface MetricProps {
+  label: string;
+  unit?: string;
+  value: number | string;
 }
 
 const createAccumulator = (): YearStatAccumulator => ({
@@ -110,7 +103,7 @@ const getYearStatSummaries = (activityData: Activity[]) => {
   const accumulators = new Map<string, YearStatAccumulator>();
   accumulators.set('Total', createAccumulator());
 
-  activityData.forEach((run) => {
+  activityData.filter(isRunActivity).forEach((run) => {
     const year = run.start_date_local.slice(0, 4);
     if (!accumulators.has(year)) {
       accumulators.set(year, createAccumulator());
@@ -129,51 +122,100 @@ const getYearStatSummaries = (activityData: Activity[]) => {
   return summaries;
 };
 
+const Metric = ({ label, unit, value }: MetricProps) => (
+  <div className="flex min-h-[4.1rem] flex-col justify-between rounded-2xl border border-[color:var(--color-primary)]/8 bg-[color:var(--color-background)]/38 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] sm:min-h-[4.55rem]">
+    <span className="text-[0.58rem] font-semibold tracking-[0.1em] text-[color:var(--color-run-date)]/66 uppercase not-italic">
+      {label}
+    </span>
+    <div className="flex items-baseline gap-1.5 font-[family:var(--font-display)] whitespace-nowrap">
+      <span className="text-[clamp(1.18rem,4.6vw,1.74rem)] leading-none font-semibold tracking-[-0.018em] text-[color:var(--color-text-primary)] not-italic">
+        {intComma(value.toString())}
+      </span>
+      {unit && (
+        <span className="text-[0.62rem] font-medium tracking-[0.01em] text-[color:var(--color-text-primary)]/55 uppercase sm:text-[0.7rem]">
+          {unit}
+        </span>
+      )}
+    </div>
+  </div>
+);
+
 const YearStat = ({
   year,
   onClick,
+  selected = false,
 }: {
   year: string;
   onClick: (_year: string) => void;
+  selected?: boolean;
 }) => {
   const { activities } = useActivities();
-  // for hover
-  const [hovered, eventHandlers] = useHover();
-  // lazy Component
-  const YearSVG = yearSvgs[`./year_${year}.svg`];
-  const GithubYearSVG = githubYearSvgs[`./github_${year}.svg`];
   const summary = getYearStatSummaries(activities).get(year);
+  const titleLabel = year === 'Total' ? 'All Time' : 'Journey';
 
   if (!summary) return null;
 
+  const selectedClass = selected
+    ? 'border-[color:var(--color-primary)]/32 ring-1 ring-[color:var(--color-primary)]/22'
+    : 'border-[color:var(--color-primary)]/10';
+
   return (
-    <div className="cursor-pointer" onClick={() => onClick(year)}>
-      <section {...eventHandlers}>
-        <Stat value={year} description=" Journey" />
-        <Stat value={summary.runCount} description=" Runs" />
-        <Stat value={summary.totalDistance} description={` ${DIST_UNIT}`} />
+    <div
+      className={`cursor-pointer overflow-hidden rounded-[1.7rem] border ${selectedClass} bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-run-row-hover-background)_46%,white_18%),color-mix(in_srgb,var(--color-background)_88%,transparent))] p-3 shadow-[0_16px_46px_rgba(7,54,76,0.055)] transition-transform duration-200 hover:-translate-y-0.5 sm:p-3.5`}
+      onClick={() => onClick(year)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick(year);
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-pressed={selected}
+    >
+      <section className="space-y-2.5">
+        <div className="flex items-start justify-between gap-4 rounded-2xl bg-[color:var(--color-background)]/26 px-3 py-2.5">
+          <div>
+            <p className="text-[0.58rem] font-semibold tracking-[0.12em] text-[color:var(--color-run-date)]/66 uppercase">
+              {titleLabel}
+            </p>
+            <h2 className="text-[clamp(1.45rem,5.5vw,2.2rem)] leading-none font-[family:var(--font-display)] font-semibold tracking-[-0.026em] text-[color:var(--color-text-primary)]">
+              {year}
+            </h2>
+          </div>
+          <div className="flex flex-col items-end px-0.5 py-0.5 text-right">
+            <p className="text-[0.56rem] font-semibold tracking-[0.12em] text-[color:var(--color-run-date)]/66 uppercase">
+              Runs
+            </p>
+            <p className="text-[clamp(1.18rem,4.8vw,1.76rem)] leading-none font-[family:var(--font-display)] font-semibold tracking-[-0.018em] text-[color:var(--color-text-primary)]">
+              {intComma(summary.runCount.toString())}
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <Metric
+            value={summary.totalDistance}
+            unit={DIST_UNIT}
+            label="Distance"
+          />
+          <Metric
+            value={summary.averagePace}
+            unit={`/${DIST_UNIT}`}
+            label="Avg Pace"
+          />
+          <Metric value={summary.streak} unit="day" label="Streak" />
+          {summary.hasHeartRate && (
+            <Metric
+              value={summary.averageHeartRate}
+              unit="bpm"
+              label="Avg HR"
+            />
+          )}
+        </div>
         {SHOW_ELEVATION_GAIN && (
-          <Stat
-            value={summary.totalElevationGain}
-            description=" Elevation Gain"
-          />
-        )}
-        <Stat value={summary.averagePace} description=" Avg Pace" />
-        <Stat value={`${summary.streak} day`} description=" Streak" />
-        {summary.hasHeartRate && (
-          <Stat
-            value={summary.averageHeartRate}
-            description=" Avg Heart Rate"
-          />
+          <Metric value={summary.totalElevationGain} label="Elevation" />
         )}
       </section>
-      {year !== 'Total' && hovered && YearSVG && GithubYearSVG && (
-        <Suspense fallback="loading...">
-          <YearSVG className="year-svg my-4 h-4/6 w-4/6 border-0 p-0" />
-          <GithubYearSVG className="github-year-svg my-4 h-auto w-full border-0 p-0" />
-        </Suspense>
-      )}
-      <hr />
     </div>
   );
 };

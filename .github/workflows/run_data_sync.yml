@@ -2,31 +2,11 @@ name: Run Data Sync
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'
-  push:
-    branches:
-      - master
-    paths:
-      - run_page/nike_sync.py
-      - run_page/nike_to_strava_sync.py
-      - run_page/strava_sync.py
-      - run_page/gen_svg.py
-      - run_page/garmin_sync.py
-      - run_page/coros_sync.py
-      - run_page/keep_sync.py
-      - run_page/gpx_sync.py
-      - run_page/tcx_sync.py
-      - run_page/tcx_to_garmin_sync.py
-      - run_page/garmin_to_strava_sync.py
-      - run_page/keep_to_strava_sync.py
-      - run_page/oppo_sync.py
-      - run_page/intervals_icu_sync.py
-      - requirements.txt
 
 env:
-  # please change to your own config.
-  RUN_TYPE: strava # support strava/nike/garmin/coros/garmin_cn/garmin_sync_cn_global/keep/only_gpx/only_fit/nike_to_strava/strava_to_garmin/tcx_to_garmin/strava_to_garmin_cn/garmin_to_strava/garmin_to_strava_cn/oppo/intervals_icu/db_updater, Please change the 'pass' it to your own
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+  # Manual file import mode. Change to only_fit or only_tcx if your exported files use those formats.
+  RUN_TYPE: only_gpx # support strava/nike/garmin/coros/garmin_cn/garmin_sync_cn_global/keep/only_gpx/only_fit/only_tcx/nike_to_strava/strava_to_garmin/tcx_to_garmin/strava_to_garmin_cn/garmin_to_strava/garmin_to_strava_cn/oppo/intervals_icu/db_updater
   ATHLETE: 阿崔
   TITLE: 阿崔 Running
   MIN_GRID_DISTANCE: 10 # change min distance here
@@ -56,14 +36,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: true
 
       - name: Set up Python
         id: setup_python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: pip
@@ -94,7 +74,7 @@ jobs:
 
       - name: Cache Data Files
         if: env.SAVE_DATA_IN_GITHUB_CACHE == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             activities
@@ -105,6 +85,7 @@ jobs:
             Workouts
             run_page/data.db
             src/static/activities.json
+            src/static/ai-summary.json
             imported.json
           key: ${{ env.DATA_CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}
           restore-keys: |
@@ -209,7 +190,7 @@ jobs:
         if: env.RUN_TYPE == 'tulipsport'
         run: |
           python run_page/tulipsport_sync.py ${{ secrets.TULIPSPORT_TOKEN }} --with-gpx
- 
+
       - name: Run sync Oppo heytap script, note currently this script is not worked
         if: env.RUN_TYPE == 'oppo'
         run: |

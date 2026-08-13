@@ -22,14 +22,7 @@ import {
 } from './const';
 import type { Activity } from './utils';
 import { locationForRun } from './utils';
-
-export type Coordinate = [number, number];
-
-export interface IViewState {
-  longitude?: number;
-  latitude?: number;
-  zoom?: number;
-}
+import type { Coordinate, IViewState } from './mapTypes';
 
 export const pathForRun = (run: Activity): Coordinate[] => {
   try {
@@ -99,6 +92,7 @@ export const geoJsonForRuns = (
       type: 'Feature',
       properties: {
         color: color,
+        run_id: run.run_id,
         indoor: run.subtype === 'indoor' || run.subtype === 'treadmill',
       },
       geometry: {

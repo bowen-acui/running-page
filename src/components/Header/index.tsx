@@ -1,14 +1,40 @@
 import { Link } from 'react-router-dom';
 import type { ReactElement } from 'react';
+import BrandTitle from '@/components/BrandTitle';
 import getSiteMetadata from '@/hooks/useSiteMetadata';
-import { useTheme, Theme } from '@/hooks/useTheme';
+import { useTheme, ThemePreference } from '@/hooks/useTheme';
 import styles from './style.module.css';
 
 const Header = () => {
-  const { logo, siteUrl, navLinks } = getSiteMetadata();
-  const { theme, setTheme } = useTheme();
+  const { logo, siteTitle } = getSiteMetadata();
+  const { preference, theme, setTheme } = useTheme();
 
-  const icons: Record<Theme, ReactElement> = {
+  const icons: Record<ThemePreference, ReactElement> = {
+    system: (
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 22 22"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect
+          x="3.5"
+          y="4.5"
+          width="15"
+          height="11"
+          rx="2.5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M8 18H14M11 15.5V18"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
     dark: (
       <svg
         width="22"
@@ -45,46 +71,57 @@ const Header = () => {
     ),
   };
 
-  const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
+  const nextTheme: ThemePreference =
+    preference === 'system'
+      ? 'light'
+      : preference === 'light'
+        ? 'dark'
+        : 'system';
 
   const handleToggle = () => {
     setTheme(nextTheme);
   };
 
   return (
-    <>
-      <nav className="mx-auto mt-12 flex w-full max-w-screen-2xl min-w-max items-center justify-between pl-6 lg:px-16">
-        <div className="w-1/4">
-          <Link to={siteUrl}>
+    <header className="mx-auto mt-3 w-full max-w-screen-2xl px-3 sm:px-4 lg:mt-8 lg:px-16">
+      <nav className="flex items-center justify-between gap-3 rounded-3xl border border-[color:var(--color-hr-primary)]/22 bg-[color:var(--color-background)] px-3 py-3 shadow-[0_8px_22px_rgba(15,23,42,0.02)] sm:px-4 sm:py-4 lg:px-6">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+          <Link
+            to="/"
+            className="shrink-0 rounded-full ring-1 ring-[color:var(--color-hr-primary)]/30 transition-transform duration-200 hover:scale-[1.03]"
+          >
             <picture>
-              <img className="h-16 w-16 rounded-full" alt="logo" src={logo} />
+              <img
+                className="h-11 w-11 rounded-full object-cover sm:h-14 sm:w-14"
+                alt="logo"
+                src={logo}
+              />
             </picture>
           </Link>
-        </div>
-        <div className="flex w-3/4 items-center justify-end text-right">
-          {navLinks.map((n) => (
-            <a
-              key={n.url}
-              href={n.url}
-              className="mr-3 text-lg lg:mr-4 lg:text-base"
+          <div className="min-w-0 flex-1">
+            <Link
+              to="/"
+              className="relative inline-flex max-w-full items-baseline pt-[0.04em] text-[1.02rem] before:absolute before:inset-x-0 before:-inset-y-3.5 before:content-[''] sm:text-[1.12rem] lg:text-[1.34rem]"
             >
-              {n.name}
-            </a>
-          ))}
-          <div className="ml-4 flex items-center space-x-2">
-            <button
-              type="button"
-              onClick={handleToggle}
-              className={`${styles.themeButton} ${styles.themeButtonActive}`}
-              aria-label={`Switch to ${nextTheme} theme`}
-              title={`Switch to ${nextTheme} theme`}
-            >
-              <div className={styles.iconWrapper}>{icons[theme]}</div>
-            </button>
+              <BrandTitle
+                title={siteTitle}
+                prefixClassName="font-black tracking-[0.004em]"
+                suffixClassName="top-[0.04em] text-[0.97em] font-semibold tracking-[0.006em]"
+              />
+            </Link>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleToggle}
+          className={`${styles.themeButton} ${styles.themeButtonActive}`}
+          aria-label={`Switch to ${nextTheme} theme`}
+          title={`Current: ${preference} (${theme}). Switch to ${nextTheme}`}
+        >
+          <div className={styles.iconWrapper}>{icons[preference]}</div>
+        </button>
       </nav>
-    </>
+    </header>
   );
 };
 

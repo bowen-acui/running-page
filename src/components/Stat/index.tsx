@@ -11,16 +11,29 @@ interface IStatProperties {
 const Stat = ({
   value,
   description,
-  className = 'pb-2 w-full',
+  className = 'w-full pb-3',
   citySize,
   onClick,
-}: IStatProperties) => (
-  <div className={`${className}`} onClick={onClick}>
-    <span className={`text-${citySize || 5}xl font-bold italic`}>
-      {intComma(value.toString())}
-    </span>
-    <span className="text-lg font-semibold italic">{description}</span>
-  </div>
-);
+}: IStatProperties) => {
+  const valueSizeClass =
+    citySize === 3
+      ? 'text-2xl md:text-3xl'
+      : citySize === 4
+        ? 'text-3xl md:text-4xl'
+        : 'text-4xl md:text-5xl';
+
+  return (
+    <div className={className} onClick={onClick}>
+      <span
+        className={`${valueSizeClass} block leading-none font-black tracking-tight italic`}
+      >
+        {intComma(value.toString())}
+      </span>
+      <span className="mt-1 block text-sm font-semibold text-[color:var(--color-run-date)] italic md:text-base">
+        {description}
+      </span>
+    </div>
+  );
+};
 
 export default Stat;

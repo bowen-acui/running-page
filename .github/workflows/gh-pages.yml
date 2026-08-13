@@ -2,6 +2,18 @@ name: Publish GitHub Pages
 
 # Controls when the action will run.
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/gh-pages.yml'
+      - 'assets/**'
+      - 'index.html'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'scripts/generate-ai-summary.mjs'
+      - 'src/**'
+      - 'vite.config.ts'
   workflow_dispatch:
     inputs:
       save_data_in_github_cache:
@@ -23,10 +35,14 @@ on:
         type: string
         default: track_data
 
-# Allow one concurrent deployment
+# Queue deployments instead of cancelling in-flight ones: a burst of merges
+# once left the live site serving a half-superseded artifact set.
 concurrency:
   group: 'pages'
-  cancel-in-progress: true
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -45,7 +61,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # This repository now uses `main` as the default branch.
           ref: main
@@ -54,7 +70,7 @@ jobs:
 
       - name: Cache Data Files
         if: inputs.save_data_in_github_cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             activities
@@ -72,7 +88,7 @@ jobs:
             ${{ inputs.data_cache_prefix }}-
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
       - name: Enable corepack
@@ -83,7 +99,7 @@ jobs:
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         name: Setup pnpm cache
         with:
           path: ${{ env.STORE_PATH }}
@@ -93,19 +109,37 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+      - name: Generate AI summary
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_MODEL: ${{ secrets.DEEPSEEK_MODEL }}
+          RUNNING_TRAINING_GOAL: ${{ secrets.RUNNING_TRAINING_GOAL }}
+        run: pnpm ai:summary
+      - name: Refresh SVG stats from activities.json
+        run: pnpm svg:refresh-stats
       - name: Build
         env:
           REPO_NAME: ${{ github.event.repository.name }}
         run: PATH_PREFIX=/$REPO_NAME pnpm build
 
+      # A green build is not a working site: the react/react-dom mismatch
+      # incident shipped a blank page past every build-time check. Render the
+      # built site in a real browser and block the deploy if it doesn't mount.
+      - name: Install smoke-test browser
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Smoke test built site
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: SMOKE_BASE_PATH=/$REPO_NAME pnpm test:smoke
+
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           # Upload dist repository
           name: pages-artifact
           path: './dist'
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
         with:
           artifact_name: pages-artifact

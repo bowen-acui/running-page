@@ -1,7 +1,16 @@
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import YearStat from '@/components/YearStat';
 import useActivities from '@/hooks/useActivities';
-import { INFO_MESSAGE } from '@/utils/const';
+import { yearSummaryStats } from '@assets/index';
+import { loadSvgComponent } from '@/utils/svgUtils';
+import styles from './style.module.css';
+
+const yearSummarySvgs = Object.fromEntries(
+  Object.keys(yearSummaryStats).map((path) => [
+    path,
+    lazy(() => loadSvgComponent(yearSummaryStats, path)),
+  ])
+);
 
 const YearsStat = ({
   year,
@@ -12,33 +21,45 @@ const YearsStat = ({
 }) => {
   const { years } = useActivities();
 
-  // Memoize the years array calculation
   const yearsArrayUpdate = useMemo(() => {
-    // make sure the year click on front
     let updatedYears = years.slice();
-    updatedYears.push('Total');
+    if (years.length > 1) {
+      updatedYears.push('Total');
+    }
     updatedYears = updatedYears.filter((x) => x !== year);
     updatedYears.unshift(year);
     return updatedYears;
   }, [years, year]);
+  const heatmapYear = year === 'Total' ? years[0] : year;
+  const YearSummarySVG = heatmapYear
+    ? yearSummarySvgs[`./year_summary_${heatmapYear}.svg`]
+    : null;
 
-  const infoMessage = useMemo(() => {
-    return INFO_MESSAGE(years.length, year);
-  }, [years.length, year]);
-
-  // for short solution need to refactor
   return (
-    <div className="w-full pr-16 pb-16 lg:w-full lg:pr-16">
-      <section className="pb-0">
-        <p className="leading-relaxed">
-          {infoMessage}
-          <br />
-        </p>
-      </section>
-      <hr />
+    <div className="w-full space-y-3 pb-4 sm:space-y-4 sm:pb-6 lg:pr-6 lg:pb-10">
       {yearsArrayUpdate.map((yearItem) => (
-        <YearStat key={yearItem} year={yearItem} onClick={onClick} />
+        <YearStat
+          key={yearItem}
+          year={yearItem}
+          onClick={onClick}
+          selected={yearItem === year}
+        />
       ))}
+      {YearSummarySVG && (
+        <section className={styles.sidebarHeatmap}>
+          <div className={styles.heatmapHeader}>
+            <span>Year Heatmap</span>
+            <strong>{heatmapYear}</strong>
+          </div>
+          <div className={styles.heatmapViewport}>
+            <Suspense
+              fallback={<div className={styles.loading}>加载中...</div>}
+            >
+              <YearSummarySVG className={styles.heatmapSvg} />
+            </Suspense>
+          </div>
+        </section>
+      )}
     </div>
   );
 };

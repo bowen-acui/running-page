@@ -1,8 +1,4 @@
 import YearStat from '@/components/YearStat';
-import {
-  CHINESE_LOCATION_INFO_MESSAGE_FIRST,
-  CHINESE_LOCATION_INFO_MESSAGE_SECOND,
-} from '@/utils/const';
 import CitiesStat from './CitiesStat';
 import LocationSummary from './LocationSummary';
 import PeriodStat from './PeriodStat';
@@ -18,20 +14,7 @@ const LocationStat = ({
   changeCity,
   changeTitle,
 }: ILocationStatProps) => (
-  <div className="w-full pb-16 lg:w-full lg:pr-16">
-    <section className="pb-0">
-      <p className="leading-relaxed">
-        {CHINESE_LOCATION_INFO_MESSAGE_FIRST}
-        .
-        <br />
-        {CHINESE_LOCATION_INFO_MESSAGE_SECOND}
-        .
-        <br />
-        <br />
-        Yesterday you said tomorrow.
-      </p>
-    </section>
-    <hr />
+  <div className="w-full pb-10 lg:pr-8">
     <LocationSummary />
     <CitiesStat onClick={changeCity} />
     <PeriodStat onClick={changeTitle} />

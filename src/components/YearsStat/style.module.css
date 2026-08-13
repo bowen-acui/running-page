@@ -1,0 +1,77 @@
+.sidebarHeatmap {
+  display: none;
+}
+
+@media only screen and (min-width: 1024px) {
+  .sidebarHeatmap {
+    display: block;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--color-primary) 8%, transparent);
+    border-radius: 1.7rem;
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--color-run-row-hover-background) 38%, white 12%),
+      color-mix(in srgb, var(--color-background) 92%, transparent)
+    );
+    box-shadow: 0 16px 46px rgba(7, 54, 76, 0.045);
+    padding: 0.75rem;
+  }
+}
+
+.heatmapHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+  padding: 0 0.2rem;
+  color: color-mix(in srgb, var(--color-text-primary) 64%, transparent);
+  font-size: 0.64rem;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.heatmapHeader strong {
+  color: var(--color-primary);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+}
+
+.heatmapViewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--color-background) 50%, transparent);
+  padding: 0.5rem;
+  max-height: clamp(21rem, 48vh, 28rem);
+  scrollbar-width: thin;
+}
+
+.heatmapSvg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  opacity: 0.9;
+}
+
+.heatmapSvg > rect:first-child {
+  fill: transparent;
+}
+
+.heatmapSvg text {
+  fill: color-mix(in srgb, var(--color-text-primary) 74%, transparent);
+  font-family: var(--font-sans) !important;
+}
+
+.heatmapSvg text[y='285.5806451612903'] {
+  display: none;
+}
+
+.loading {
+  min-height: 9rem;
+  display: grid;
+  place-items: center;
+  color: color-mix(in srgb, var(--color-text-primary) 54%, transparent);
+  font-size: 0.8rem;
+}

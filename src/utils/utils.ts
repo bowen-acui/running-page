@@ -82,9 +82,14 @@ const formatRunTime = (moving_time: string): string => {
 
 // for scroll to the map
 const scrollToMap = () => {
-  const mapContainer = document.getElementById('map-container');
-  if (mapContainer) {
-    mapContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Prefer the map panel itself: on mobile the data table is ordered above the
+  // map inside #map-container, so scrolling to the container would stop at the
+  // table and leave the just-selected route off-screen below.
+  const target =
+    document.querySelector<HTMLElement>('.home-map-panel') ??
+    document.getElementById('map-container');
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 };
 
@@ -273,15 +278,17 @@ const filterCityRuns = (run: Activity, city: string) => {
 const filterTitleRuns = (run: Activity, title: string) =>
   titleForRun(run) === title;
 
+const isRunActivity = (activity: Activity) => activity.type === 'Run';
+
 const filterAndSortRuns = (
   activities: Activity[],
   item: string,
   filterFunc: (_run: Activity, _bvalue: string) => boolean,
   sortFunc: (_a: Activity, _b: Activity) => number
 ) => {
-  let s = activities.slice();
+  let s = activities.filter(isRunActivity);
   if (item !== 'Total') {
-    s = activities.filter((run) => filterFunc(run, item));
+    s = s.filter((run) => filterFunc(run, item));
   }
   return s.sort(sortFunc);
 };
@@ -294,6 +301,10 @@ const sortDateFunc = (a: Activity, b: Activity) => {
 };
 const sortDateFuncReverse = (a: Activity, b: Activity) => sortDateFunc(b, a);
 
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 export {
   titleForShow,
   formatPace,
@@ -304,9 +315,11 @@ export {
   filterYearRuns,
   filterCityRuns,
   filterTitleRuns,
+  isRunActivity,
   filterAndSortRuns,
   sortDateFunc,
   sortDateFuncReverse,
   formatRunTime,
   convertMovingTime2Sec,
+  prefersReducedMotion,
 };

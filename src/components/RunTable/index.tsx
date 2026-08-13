@@ -27,6 +27,8 @@ interface SortState {
   key: string;
 }
 
+const DEFAULT_VISIBLE_ROWS = 20;
+
 const RunTable = ({
   runs,
   locateActivity,
@@ -34,6 +36,7 @@ const RunTable = ({
   setRunIndex,
 }: IRunTableProperties) => {
   const [sortState, setSortState] = useState<SortState | null>(null);
+  const [showAllRows, setShowAllRows] = useState(false);
 
   const sortKeys = useMemo(() => {
     const keys = [DIST_UNIT, 'Elev', 'Pace', 'BPM', 'Time', 'Date'];
@@ -74,14 +77,26 @@ const RunTable = ({
     []
   );
 
-  const displayedRuns = useMemo(() => {
-    if (!sortState) return runs;
+  const sortedRuns = useMemo(() => {
+    const sortedRuns = (() => {
+      if (!sortState) return runs;
 
-    const sortFunction = getSortFunction(sortState.key, sortState.direction);
-    if (!sortFunction) return runs;
+      const sortFunction = getSortFunction(sortState.key, sortState.direction);
+      if (!sortFunction) return runs;
 
-    return runs.slice().sort(sortFunction);
+      return runs.slice().sort(sortFunction);
+    })();
+
+    return sortedRuns;
   }, [getSortFunction, runs, sortState]);
+
+  const displayedRuns = useMemo(
+    () =>
+      showAllRows ? sortedRuns : sortedRuns.slice(0, DEFAULT_VISIBLE_ROWS),
+    [showAllRows, sortedRuns]
+  );
+
+  const hiddenRunCount = Math.max(0, sortedRuns.length - displayedRuns.length);
 
   const runIndexById = useMemo(
     () => new Map(runs.map((run, index) => [run.run_id, index])),
@@ -92,10 +107,15 @@ const RunTable = ({
     (key: string) => {
       setRunIndex(-1);
       setSortState((currentState) => {
+        // First click on a column uses its natural starting direction
+        // (Date oldest-first, everything else largest-first); clicking the
+        // same column again always flips, so every column toggles both ways.
         const initialDirection = key === 'Date' ? 'ascending' : 'descending';
         const nextDirection =
-          currentState?.key === key && currentState.direction === 'descending'
-            ? 'ascending'
+          currentState?.key === key
+            ? currentState.direction === 'ascending'
+              ? 'descending'
+              : 'ascending'
             : initialDirection;
 
         return { key, direction: nextDirection };
@@ -110,18 +130,27 @@ const RunTable = ({
         <thead>
           <tr>
             <th />
-            {sortKeys.map((k) => (
-              <th
-                key={k}
-                aria-sort={
-                  sortState?.key === k ? sortState.direction : undefined
-                }
-                className={styles.sortableHeader}
-                onClick={() => handleClick(k)}
-              >
-                {k}
-              </th>
-            ))}
+            {sortKeys.map((k) => {
+              const isActiveSort = sortState?.key === k;
+              return (
+                <th
+                  key={k}
+                  aria-sort={isActiveSort ? sortState.direction : undefined}
+                  className={styles.sortableHeader}
+                >
+                  <button type="button" onClick={() => handleClick(k)}>
+                    {k}
+                    <span className={styles.sortIndicator} aria-hidden="true">
+                      {isActiveSort
+                        ? sortState.direction === 'ascending'
+                          ? '▲'
+                          : '▼'
+                        : ''}
+                    </span>
+                  </button>
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
@@ -140,6 +169,29 @@ const RunTable = ({
           })}
         </tbody>
       </table>
+      {sortedRuns.length === 0 && (
+        <div className={styles.emptyState}>
+          <span>暂无符合条件的跑步记录</span>
+        </div>
+      )}
+      {hiddenRunCount > 0 && (
+        <div className={styles.tableHint}>
+          <span>
+            仅显示前 {DEFAULT_VISIBLE_ROWS} 条 / 共 {sortedRuns.length} 条
+          </span>
+          <button type="button" onClick={() => setShowAllRows(true)}>
+            显示全部
+          </button>
+        </div>
+      )}
+      {showAllRows && sortedRuns.length > DEFAULT_VISIBLE_ROWS && (
+        <div className={styles.tableHint}>
+          <span>已显示全部 {sortedRuns.length} 条</span>
+          <button type="button" onClick={() => setShowAllRows(false)}>
+            收起
+          </button>
+        </div>
+      )}
     </div>
   );
 };

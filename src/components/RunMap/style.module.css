@@ -6,68 +6,283 @@
   padding: 0;
 }
 
+:global(.mapboxgl-map) {
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border-radius: 1.45rem;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-background) 92%, white 8%);
+}
+
+:global(.mapboxgl-canvas-container),
+:global(.mapboxgl-canvas),
+:global(.mapboxgl-control-container) {
+  border-radius: inherit;
+}
+
 .buttons {
   font-family: var(--font-mono);
   position: absolute;
-  top: 0px;
-  left: 10px;
-  margin: 0 auto;
-  padding-right: 70px;
+  top: 14px;
+  left: 14px;
+  right: 72px;
+  display: flex;
+  gap: 7px;
+  margin: 0;
+  overflow-x: auto;
+  padding: 7px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-background) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 28px rgba(7, 54, 76, 0.05);
+  scrollbar-width: none;
 }
 
-@media only screen and (max-width: 768px) {
-  .buttons {
-    padding-right: 10px;
-    flex-wrap: wrap;
-  }
+.buttons::-webkit-scrollbar {
+  display: none;
 }
 
 .button {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
   cursor: pointer;
-  padding: 0.5rem 0.4rem;
-  margin-top: 0.1rem;
-  font-size: 1rem;
+  padding: 0.52rem 0.95rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-align: center;
   color: var(--color-run-date);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
-@media only screen and (max-width: 768px) {
-  .button {
-    padding: 0.8rem 0.3rem;
-    font-size: 0.9rem;
-  }
+.button:hover {
+  background: color-mix(
+    in srgb,
+    var(--color-run-row-hover-background) 84%,
+    transparent
+  );
+  transform: translateY(-1px);
 }
 
 .selected {
   color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 7%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--color-primary) 8%, transparent);
 }
 
 .runTitle {
-  height: 29px;
-  width: 710px;
   position: absolute;
-  bottom: 0px;
-  left: 120px;
-  cursor: pointer;
+  right: 52px; /* clear the bottom-right zoom control */
+  bottom: 18px;
+  max-width: min(72%, 40rem);
+  pointer-events: none;
+  border-radius: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 5%, transparent);
+  background: color-mix(in srgb, var(--color-background) 64%, transparent);
+  padding: 0.45rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--color-primary) 76%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+.runSummary {
+  position: absolute;
+  right: 16px;
+  bottom: 18px;
+  width: min(21rem, calc(100% - 32px));
+  /* extra right padding keeps the metrics clear of the bottom-right zoom control */
+  padding: 0.3rem 3rem 0.3rem 0.4rem;
+  /* purely a readout overlay — never intercept taps meant for the map/zoom */
+  pointer-events: none;
   color: var(--color-primary);
+  text-shadow:
+    0 1px 2px color-mix(in srgb, var(--color-background) 92%, transparent),
+    0 0 8px color-mix(in srgb, var(--color-background) 82%, transparent);
+}
+
+.runSummaryHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  margin-bottom: 0.3rem;
+  font-family: var(--font-mono);
+}
+
+.runSummaryHeader time {
+  flex: none;
+  color: color-mix(in srgb, var(--color-run-date) 52%, transparent);
+  font-size: 0.56rem;
+}
+
+.runSummaryMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  justify-content: end;
+  gap: 1.45rem;
+  margin: 0;
+}
+
+.runSummaryMetrics div {
+  min-width: 0;
+}
+
+.runSummaryMetrics dt {
+  margin-bottom: 0.08rem;
+  color: color-mix(in srgb, var(--color-run-date) 50%, transparent);
+  font-size: 0.5rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.runSummaryMetrics dd {
+  margin: 0;
+  overflow: visible;
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 650;
+  font-style: italic;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.runStatsCard {
+  position: absolute;
+  right: 52px; /* clear the bottom-right zoom controls */
+  bottom: 18px;
+  max-width: min(74%, 26rem);
+  border-radius: 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
+  background: color-mix(in srgb, var(--color-background) 86%, transparent);
+  padding: 0.65rem 0.9rem 0.7rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 34px rgba(7, 54, 76, 0.08);
+}
+
+.runStatsTitle {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: var(--color-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.runStatsMetrics {
+  margin: 0;
+  display: flex;
+  gap: 1.1rem;
+}
+
+.runStatsMetrics > div {
+  min-width: 0;
+}
+
+.runStatsMetrics dt {
+  margin: 0 0 0.1rem;
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-run-date) 66%, transparent);
+}
+
+.runStatsMetrics dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+  white-space: nowrap;
 }
 
 @media only screen and (max-width: 768px) {
+  .locationSVG {
+    margin-top: 0.5rem;
+  }
+
+  .runStatsCard {
+    right: 44px;
+    bottom: 8px;
+    max-width: calc(100% - 60px);
+    padding: 0.5rem 0.7rem 0.55rem;
+  }
+
+  .runStatsTitle {
+    font-size: 0.66rem;
+  }
+
+  .runStatsMetrics {
+    gap: 0.8rem;
+  }
+
+  .runStatsMetrics dd {
+    font-size: 0.9rem;
+  }
+
+  .buttons {
+    right: 58px;
+    top: 8px;
+    left: 8px;
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .button {
+    padding: 0.42rem 0.62rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+  }
+
   .runTitle {
-    width: calc(100% - 40px);
-    left: 20px;
-    font-size: 0.8rem;
-    bottom: 5px;
+    font-size: 0.72rem;
+    right: 48px;
+    bottom: 8px;
+    max-width: calc(100% - 64px);
+    padding: 0.42rem 0.62rem;
+  }
+
+  .runSummary {
+    right: 1.1rem;
+    bottom: 8px;
+    width: min(18rem, calc(100% - 2.25rem));
+    padding: 0.25rem 3rem 0.25rem 0.35rem;
+  }
+
+  .runSummaryHeader {
+    margin-bottom: 0.25rem;
+  }
+
+  .runSummaryMetrics {
+    gap: 1.05rem;
+  }
+
+  .runSummaryMetrics dd {
+    font-size: 0.92rem;
   }
 }
 
 .lights {
   position: absolute;
   margin-top: 62px;
-  right: 10px;
-  opacity: 0.3;
+  right: 12px;
+  opacity: 0.45;
   width: 29px;
   height: 38px;
 }
@@ -92,7 +307,7 @@
 
 .mapErrorNotification {
   position: absolute;
-  top: 20px;
+  top: 72px;
   left: 50%;
   transform: translateX(-50%);
   background: #ff4444;
@@ -102,6 +317,8 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 1000;
   display: flex;
+  max-width: min(92vw, 42rem);
+  flex-wrap: wrap;
   gap: 12px;
   align-items: center;
   font-size: 14px;
@@ -127,9 +344,11 @@
 
 /* Base styles for map controls */
 :global(.mapboxgl-ctrl-group) {
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 4px;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-background) 90%, transparent);
+  box-shadow: 0 8px 22px rgba(7, 54, 76, 0.04);
+  overflow: hidden;
 }
 
 :global(.mapboxgl-ctrl-group > button) {

@@ -1,7 +1,5 @@
-/* IBM Plex Sans and IBM Plex Mono fonts */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
-
+/* Webfonts are loaded from <link> tags in index.html so they download in
+   parallel with this stylesheet instead of chained behind it. */
 @import 'tailwindcss';
 @import './mobile.css';
 
@@ -23,87 +21,92 @@
   --svg-color-active-cell: var(--svg-color-inactive-cell);
   /* fonts */
   --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
   --font-mono: var(--font-mono);
+  --font-logo: 'LXGW WenKai Screen', var(--font-display);
+  --font-logo-latin: 'Cormorant Garamond', var(--font-display);
 }
 
 /* 1. System Theme (Base) */
 @media (prefers-color-scheme: light) {
   :root {
-    --color-brand: var(--color-sky-900);
-    --color-secondary: var(--color-sky-800);
-    --color-bg: var(--color-neutral-100);
-    --color-tx: var(--color-sky-900);
-    --color-hr: var(--color-neutral-300);
-    --color-selected: var(--color-sky-900);
-    --color-run-date: var(--color-neutral-800);
-    --color-run-table-thead: var(--color-neutral-800);
-    --color-run-row-hover-background: var(--color-neutral-200);
-    --color-activity-card: var(--color-neutral-300);
-    --svg-color-active-cell: var(--color-neutral-400);
-    --svg-special-color: #d4a574;
-    --svg-special-color2: #c5756b;
+    --color-brand: #07516c;
+    --color-secondary: #c9f43d;
+    --color-bg: #f4efe4;
+    --color-tx: #07364c;
+    --color-hr: #d6cec0;
+    --color-selected: #07516c;
+    --color-run-date: #22313b;
+    --color-run-table-thead: #2f3d44;
+    --color-run-row-hover-background: #e8ece1;
+    --color-activity-card: #d8e2d9;
+    --svg-color-active-cell: #40c9f4;
+    --svg-special-color: #dfff35;
+    --svg-special-color2: #ff684d;
     --font-sans: 'IBM Plex Sans', sans-serif;
+    --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
   }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* const nike = 'rgb(224,237,94)'; */
-    --color-brand: #e0ed5e;
-    --color-secondary: #ccd94a;
+    --color-brand: #d9dddc;
+    --color-secondary: #8d9a91;
     --color-bg: var(--color-neutral-900);
     --color-tx: var(--color-brand);
-    --color-hr: var(--color-red-500);
+    --color-hr: #333a2e;
     --color-selected: var(--color-brand);
     --color-run-date: var(--color-neutral-300);
     --color-run-table-thead: var(--color-zinc-300);
-    --color-run-row-hover-background: var(--color-neutral-800);
-    --color-activity-card: var(--color-neutral-700);
+    --color-run-row-hover-background: #1f2420;
+    --color-activity-card: #2a3028;
     --svg-color-active-cell: #4dd2ff;
-    --svg-special-color: #f7d02c;
-    --svg-special-color2: #f56c6c;
+    --svg-special-color: #c6cf6f;
+    --svg-special-color2: #d46a5f;
     --font-sans: 'IBM Plex Sans', sans-serif;
+    --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
   }
 }
 
 /* 2. Manual Override (Higher Priority) */
 [data-theme='light'] {
-  --color-brand: var(--color-sky-900);
-  --color-secondary: var(--color-sky-800);
-  --color-bg: var(--color-neutral-100);
-  --color-tx: var(--color-sky-900);
-  --color-hr: var(--color-neutral-300);
-  --color-selected: var(--color-sky-900);
-  --color-run-date: var(--color-neutral-800);
-  --color-run-table-thead: var(--color-neutral-800);
-  --color-run-row-hover-background: var(--color-neutral-200);
-  --color-activity-card: var(--color-neutral-300);
-  --svg-color-inactive-cell: var(--color-neutral-600);
-  --svg-color-active-cell: var(--color-neutral-400);
-  --svg-special-color: #d4a574;
-  --svg-special-color2: #c5756b;
+  --color-brand: #07516c;
+  --color-secondary: #c9f43d;
+  --color-bg: #f4efe4;
+  --color-tx: #07364c;
+  --color-hr: #d6cec0;
+  --color-selected: #07516c;
+  --color-run-date: #22313b;
+  --color-run-table-thead: #2f3d44;
+  --color-run-row-hover-background: #e8ece1;
+  --color-activity-card: #d8e2d9;
+  --svg-color-inactive-cell: #c5cbbf;
+  --svg-color-active-cell: #40c9f4;
+  --svg-special-color: #dfff35;
+  --svg-special-color2: #ff684d;
   --font-sans: 'IBM Plex Sans', sans-serif;
+  --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 }
 
 [data-theme='dark'] {
-  /* const nike = 'rgb(224,237,94)'; */
-  --color-brand: #e0ed5e;
-  --color-secondary: #ccd94a;
+  --color-brand: #d9dddc;
+  --color-secondary: #8d9a91;
   --color-bg: var(--color-neutral-900);
   --color-tx: var(--color-brand);
-  --color-hr: var(--color-red-500);
+  --color-hr: #333a2e;
   --color-selected: var(--color-brand);
   --color-run-date: var(--color-neutral-300);
   --color-run-table-thead: var(--color-zinc-300);
-  --color-run-row-hover-background: var(--color-neutral-800);
-  --color-activity-card: var(--color-neutral-700);
+  --color-run-row-hover-background: #1f2420;
+  --color-activity-card: #2a3028;
   --svg-color-active-cell: #4dd2ff;
-  --svg-special-color: #f7d02c;
-  --svg-special-color2: #f56c6c;
+  --svg-special-color: #c6cf6f;
+  --svg-special-color2: #d46a5f;
   --font-sans: 'IBM Plex Sans', sans-serif;
+  --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 }
 
@@ -117,6 +120,65 @@
       color 0.1s ease;
     font-family: var(--font-sans);
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100vh;
+    background-image:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-background) 98%, white 2%),
+        var(--color-background) 22%
+      ),
+      radial-gradient(
+        circle at 108% -10%,
+        color-mix(in srgb, var(--color-hr-primary) 3%, transparent),
+        transparent 28%
+      );
+  }
+
+  a,
+  button,
+  select {
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  /* This is a tap-driven dashboard, not an article: tapping a card, button,
+     chart or table row should act, not pop the iOS selection / copy / look-up
+     menu. Suppress the long-press callout, the grey tap-flash, and accidental
+     text selection on interactive chrome. */
+  a,
+  button,
+  select,
+  summary,
+  [role='button'],
+  [tabindex] {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 img::selection {
@@ -127,10 +189,34 @@ img::-moz-selection {
   background: transparent;
 }
 
+/* Recharts renders selectable SVG text; on touch a tap was selecting the whole
+   chart and popping the copy menu. Make the chart non-selectable. */
+.recharts-wrapper,
+.recharts-surface,
+.recharts-wrapper text {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* The chart is a passive readout — never show the focus box that recharts'
+   accessibility layer would otherwise draw when the surface is clicked. */
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-visible,
+.recharts-surface:focus,
+.recharts-surface:focus-visible {
+  outline: none;
+}
+
 body {
   text-rendering: optimizeLegibility;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-primary) 35%, transparent);
+  color: var(--color-background);
 }
 
 iframe {
@@ -150,8 +236,49 @@ hr {
   fill: var(--color-run-date);
 }
 
+.github-svg {
+  display: block;
+  overflow: hidden;
+  border-radius: 1.35rem;
+  background: transparent;
+}
+
+.github-svg text {
+  font-family: var(--font-sans) !important;
+}
+
+.github-svg text[style*='font-size:12px'] {
+  font-family: var(--font-display) !important;
+  font-size: 8.2px !important;
+  font-weight: 700 !important;
+}
+
+.github-svg text[style*='font-size:10.0px'] {
+  font-family: var(--font-display) !important;
+  font-size: 7.4px !important;
+}
+
+.github-svg text[style*='font-size:9px'] {
+  font-family: var(--font-display) !important;
+  font-size: 6.6px !important;
+}
+
+.github-svg text[style*='font-size:4px'],
+.github-svg text[style*='font-size:4.125px'] {
+  font-size: 3.35px !important;
+}
+
+.github-svg text[style*='font-size:3px'] {
+  font-size: 2.75px !important;
+}
+
+.github-svg > rect:first-child,
+.github-svg .svg-color-bg {
+  fill: transparent;
+}
+
 .svg-color-bg {
-  fill: var(--color-run-row-hover-background);
+  fill: transparent;
 }
 
 .svg-color-inactive-cell {
@@ -194,5 +321,9 @@ hr {
   /* Ensure mobile layout doesn't require min-width */
   body {
     overflow-x: hidden;
+  }
+
+  html {
+    font-size: 15px;
   }
 }
