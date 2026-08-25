@@ -13,6 +13,7 @@ interface PageHeaderProps {
   readonly selectedMonth: number | null;
   readonly onSelectYear: () => void;
   readonly onSelectMonth: () => void;
+  readonly onShare: () => void;
 }
 
 interface ContextStripProps {
@@ -38,6 +39,7 @@ export const PageHeader = ({
   selectedMonth,
   onSelectYear,
   onSelectMonth,
+  onShare,
 }: PageHeaderProps) => (
   <header className={styles.pageHeader}>
     <div>
@@ -51,6 +53,9 @@ export const PageHeader = ({
       <Link to="/" className={styles.homeLink}>
         返回首页
       </Link>
+      <button type="button" className={styles.shareLink} onClick={onShare}>
+        生成封面
+      </button>
       <div className={styles.viewSwitch} aria-label="视图切换">
         <button
           type="button"
