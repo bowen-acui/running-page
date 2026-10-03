@@ -165,8 +165,12 @@ const refreshYearSummary = async (year, stats) => {
   return false;
 };
 
-const refreshGithubTotal = async (totalStats, statsByYear) => {
-  const svgPath = resolve(rootDir, 'assets/github.svg');
+const refreshGithubTotal = async (
+  totalStats,
+  statsByYear,
+  filename = 'github.svg'
+) => {
+  const svgPath = resolve(rootDir, `assets/${filename}`);
   if (!existsSync(svgPath)) return false;
   let svg = await readFile(svgPath, 'utf8');
   const original = svg;
@@ -219,6 +223,12 @@ const main = async () => {
   }
   if (await refreshGithubTotal(computeStats(runs), statsByYear)) {
     updated.push('github.svg');
+  }
+  for (const [year, stats] of statsByYear) {
+    const filename = `github_${year}.svg`;
+    if (await refreshGithubTotal(stats, new Map([[year, stats]]), filename)) {
+      updated.push(filename);
+    }
   }
 
   console.log(
