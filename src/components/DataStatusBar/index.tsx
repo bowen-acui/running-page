@@ -21,19 +21,19 @@ const DataStatusBar = () => {
     <div className="mx-auto mt-4 max-w-screen-2xl px-4 lg:px-16">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-[color:var(--color-hr-primary)]/30 pb-3 text-sm text-[color:var(--color-run-date)]">
         <span>
-          历史数据来源{' '}
+          来源{' '}
           <strong className="font-semibold text-[color:var(--color-text-primary)]">
             {activitySource}
           </strong>
         </span>
         <span>
-          历史数据更新至{' '}
+          最近活动{' '}
           <strong className="font-semibold text-[color:var(--color-text-primary)]">
             {formatSyncTime(lastSyncedAt)}
           </strong>
         </span>
         <span>
-          历史记录{' '}
+          记录{' '}
           <strong className="font-semibold text-[color:var(--color-text-primary)]">
             {runCount}
           </strong>

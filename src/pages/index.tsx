@@ -564,25 +564,6 @@ const Index = () => {
           )}
         </section>
         <section className="min-w-0 space-y-4 sm:space-y-6" id="map-container">
-          <section className="home-strava-panel flex flex-col gap-4 overflow-hidden rounded-[1.75rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-3 sm:flex-row sm:justify-between sm:p-5">
-            <div className="min-w-0 flex-1">
-              <h2 className="text-lg font-black text-[color:var(--color-text-primary)]">
-                最新跑步
-              </h2>
-              <p className="mt-2 max-w-sm text-sm leading-relaxed text-[color:var(--color-run-date)]">
-                Strava
-                自动显示最新活动的路线缩略图与用时。下方互动地图和统计使用已导入的历史记录。
-              </p>
-            </div>
-            <iframe
-              title="Strava 最新跑步"
-              src="https://www.strava.com/athletes/1772770191/latest-rides/7d53adf5946a4c35ac1f3fef4712d2ae52d526c7"
-              width="300"
-              height="454"
-              loading="lazy"
-              className="mx-auto max-w-full shrink-0 border-0 sm:mx-0"
-            />
-          </section>
           <div
             ref={mapPanelRef}
             className={`home-map-panel map-shell ${isMapExpanded ? '' : 'map-shell-collapsed'} overflow-hidden rounded-[1.75rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-3`}

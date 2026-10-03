@@ -386,10 +386,6 @@ Google Maps` 的 [互动式多段线编码器实用程序](https://developers.go
 
 > 下载您的 Nike Run Club/Strava/Garmin/Garmin-cn/Keep 数据到本地，别忘了在 total 页面生成可视化 SVG
 
-### 最新跑步
-
-首页的 Strava 官方嵌入卡片会随 Strava 中的新活动自动更新，公开显示最近跑步的路线缩略图、距离和用时，无需每次导出文件。互动地图和统计仍读取 `src/static/activities.json`，不会随卡片自动更新。
-
 ### GPX
 
 <details>
