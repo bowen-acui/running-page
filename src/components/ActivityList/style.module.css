@@ -129,6 +129,34 @@
   outline: none;
 }
 
+/* Same pill as .homeLink, but filled — generating a cover is the one action
+   on this page worth pointing at. */
+.shareLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 92px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--journal-ink);
+  color: var(--journal-paper);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 720;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.shareLink:hover,
+.shareLink:focus-visible {
+  opacity: 0.86;
+  outline: none;
+}
+
 .viewSwitch {
   display: inline-flex;
   flex: 0 0 auto;

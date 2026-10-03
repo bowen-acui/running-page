@@ -1,6 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import styles from './style.module.css';
 import useActivities from '@/hooks/useActivities';
+import getSiteMetadata from '@/hooks/useSiteMetadata';
+import SharePoster from '@/components/SharePoster';
+import {
+  buildMonthPoster,
+  buildYearPoster,
+} from '@/components/SharePoster/content';
 import aiSummaryData from '@/static/ai-summary.json';
 import { ContextStrip, EmptyState, PageHeader } from './chrome';
 import {
@@ -40,6 +46,9 @@ import type {
 
 const ActivityList: React.FC = () => {
   const { activities } = useActivities();
+  const { siteTitle } = getSiteMetadata();
+  // "阿崔 Running" → "阿崔"; the cover signs with the name, not the site title.
+  const athlete = siteTitle.replace(/\s*Running\s*$/i, '').trim() || siteTitle;
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
 
   const yearRuns = useMemo(() => normalizeRuns(activities), [activities]);
@@ -150,6 +159,16 @@ const ActivityList: React.FC = () => {
   const [selectedDetail, setSelectedDetail] = useState<DetailCardData | null>(
     null
   );
+  const [isSharing, setIsSharing] = useState(false);
+  // The cover follows whatever the page is showing: a month view shares that
+  // month, the year view shares the year.
+  const posterContent = useMemo(
+    () =>
+      selectedMonth
+        ? buildMonthPoster(activities, year, selectedMonth, athlete)
+        : buildYearPoster(activities, year, athlete),
+    [activities, year, selectedMonth, athlete]
+  );
   const detailCard = selectedDetail ?? overviewDetail;
   const selectYearView = () => {
     setSelectedMonth(null);
@@ -207,6 +226,7 @@ const ActivityList: React.FC = () => {
         selectedMonth={selectedMonth}
         onSelectYear={selectYearView}
         onSelectMonth={selectMonthView}
+        onShare={() => setIsSharing(true)}
       />
 
       <ContextStrip
@@ -263,6 +283,13 @@ const ActivityList: React.FC = () => {
         aiSummaryMeta={aiSummaryMeta}
         selectedMonth={selectedMonth}
       />
+
+      {isSharing && (
+        <SharePoster
+          content={posterContent}
+          onClose={() => setIsSharing(false)}
+        />
+      )}
     </main>
   );
 };
