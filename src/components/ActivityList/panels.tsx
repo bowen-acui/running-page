@@ -21,7 +21,7 @@ interface DetailCardProps {
 
 interface FrequencyPanelProps {
   readonly selectedMonth: number | null;
-  readonly detailCard: DetailCardData;
+  readonly detailCard: DetailCardData | null;
   readonly dailyCells: readonly HeatmapCell[];
   readonly heatmapColumns: number;
   readonly onSelectDay: (cell: DailyCell) => void;
@@ -74,6 +74,7 @@ interface InsightPanelProps {
   readonly aiSummary: readonly string[];
   readonly aiSummaryMeta: StaticAiSummary;
   readonly selectedMonth: number | null;
+  readonly sourceLabel: string;
 }
 
 export const DetailCard = ({ detailCard }: DetailCardProps) => (
@@ -113,30 +114,54 @@ export const FrequencyPanel = ({
       </div>
       <span>点击任意格子可查看当天记录。</span>
     </div>
-    <DetailCard detailCard={detailCard} />
-    <div
-      className={`${styles.heatmapGrid} ${selectedMonth ? styles.monthHeatmapGrid : ''}`}
-      style={{
-        gridTemplateColumns: selectedMonth
-          ? `repeat(${dailyCells.length}, minmax(0, 1fr))`
-          : `repeat(${heatmapColumns}, minmax(0, 1fr))`,
-      }}
-      aria-label="跑步热力图"
-    >
-      {dailyCells.map((cell) =>
-        cell.kind === 'day' ? (
-          <button
-            key={cell.key}
-            type="button"
-            className={`${styles.heatCell} ${styles[`heatLevel${cell.level}`]}`}
-            title={cell.label}
-            aria-label={cell.label}
-            onClick={() => onSelectDay(cell)}
-          />
-        ) : (
-          <span key={cell.blankKey} className={styles.blankCell} />
-        )
-      )}
+    {detailCard && <DetailCard detailCard={detailCard} />}
+    <div className={styles.heatmapScroll}>
+      <div
+        className={styles.heatmapContent}
+        style={
+          {
+            '--heat-columns': selectedMonth
+              ? dailyCells.length
+              : heatmapColumns,
+          } as React.CSSProperties
+        }
+      >
+        {!selectedMonth && (
+          <div className={styles.heatmapMonths} aria-hidden="true">
+            {dailyCells.map((cell, index) =>
+              cell.kind === 'day' && cell.key.endsWith('-01') ? (
+                <span
+                  key={cell.key}
+                  style={{ gridColumn: Math.floor(index / 7) + 1 }}
+                >
+                  {Number(cell.key.slice(5, 7))}月
+                </span>
+              ) : null
+            )}
+          </div>
+        )}
+        <div
+          className={`${styles.heatmapGrid} ${selectedMonth ? styles.monthHeatmapGrid : ''}`}
+          aria-label="跑步热力图"
+        >
+          {dailyCells.map((cell) =>
+            cell.kind === 'day' ? (
+              <button
+                key={cell.key}
+                type="button"
+                className={`${styles.heatCell} ${styles[`heatLevel${cell.level}`]}`}
+                title={cell.label}
+                aria-label={cell.label}
+                onClick={() => onSelectDay(cell)}
+              >
+                {selectedMonth && Number(cell.key.slice(8))}
+              </button>
+            ) : (
+              <span key={cell.blankKey} className={styles.blankCell} />
+            )
+          )}
+        </div>
+      </div>
     </div>
     <div className={styles.legend}>
       <span>少</span>
@@ -371,6 +396,7 @@ export const InsightPanel = ({
   aiSummary,
   aiSummaryMeta,
   selectedMonth,
+  sourceLabel,
 }: InsightPanelProps) => (
   <section className={styles.insightPanel}>
     <div className={`${styles.panelHeader} ${styles.insightHeader}`}>
@@ -378,13 +404,7 @@ export const InsightPanel = ({
         <p>AI Summary</p>
         <h2>训练建议</h2>
       </div>
-      <span>
-        {aiSummaryMeta.source === 'deepseek'
-          ? `DeepSeek · ${aiSummaryMeta.model}`
-          : selectedMonth
-            ? '当前月份使用页面内本地洞察。'
-            : '本地规则生成，配置 DeepSeek 后会自动替换。'}
-      </span>
+      <span>{sourceLabel}</span>
     </div>
     <div className={styles.insightBody}>
       {aiSummary.map((item) => (

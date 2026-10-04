@@ -16,7 +16,7 @@ const SVGStat = () => {
 
   return (
     <div id="svgStat" className="mobile-heatmap">
-      <Suspense fallback={<div className="text-center">Loading...</div>}>
+      <Suspense fallback={<div className="text-center">加载中…</div>}>
         <GithubSvg className="github-svg h-auto w-full" />
       </Suspense>
     </div>

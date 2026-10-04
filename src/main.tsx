@@ -28,7 +28,7 @@ const RouteFallback = () => (
       fontWeight: 700,
     }}
   >
-    Loading view...
+    正在加载页面…
   </div>
 );
 

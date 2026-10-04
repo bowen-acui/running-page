@@ -1,3 +1,22 @@
+## 本地增量导入 GPX
+
+网站当前以 `src/static/activities.json` 为数据源。将新导出的 `.gpx` 文件放进单独目录，然后在仓库根目录执行：
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+pnpm data:import:gpx /path/to/new-gpx --dry-run
+pnpm data:import:gpx /path/to/new-gpx
+pnpm svg:refresh-stats
+```
+
+先核对预览中的旧活动数、新增数、重复数和冲突数，再执行实际导入。命令保留已有活动的全部字段，只追加新 ID；同一文件重复执行不会增加记录。空目录、坏文件、解析遗漏或疑似跨来源重复都会停止写入。疑似重复指同类型活动的开始时间相差不超过 60 秒，距离差不超过 100 米或原距离的 5%（取较大值）。有冲突时先核对原始记录，确认并移走冲突文件后重新预览。
+
+核对 `git diff -- src/static/activities.json assets`，运行项目检查后，只提交活动 JSON 与刷新后的 SVG；推送 `main` 后等待 GitHub Pages 工作流成功，再检查线上记录。原始 GPX、本地数据库、临时文件无需提交。不要用 `data:clean` 做日常同步，它会删除已有数据。
+
+这是无需账号授权的文件导入路径。网站按钮不能直接读取 Strava 账号；完全自动同步仍需要 Strava API 授权和服务端令牌管理。远程 `Run Data Sync` 在没有 GPX 输入时会明确失败，不会显示同步成功。
+
 ## Note
 
 1. clone or Fork before vercel 404 need to pull the latest code

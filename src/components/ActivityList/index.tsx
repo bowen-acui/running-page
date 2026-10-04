@@ -23,7 +23,6 @@ import {
   getLongestGap,
   getLongestStreak,
   getMonthSummaries,
-  getOverviewDetail,
   getTimeBandMatrix,
   normalizeRuns,
   summarizeRuns,
@@ -50,6 +49,9 @@ const ActivityList: React.FC = () => {
   // "阿崔 Running" → "阿崔"; the cover signs with the name, not the site title.
   const athlete = siteTitle.replace(/\s*Running\s*$/i, '').trim() || siteTitle;
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const [lastSelectedMonth, setLastSelectedMonth] = useState<number | null>(
+    null
+  );
 
   const yearRuns = useMemo(() => normalizeRuns(activities), [activities]);
   const year = yearRuns[0]?.date.getFullYear() ?? FALLBACK_YEAR;
@@ -108,38 +110,13 @@ const ActivityList: React.FC = () => {
     ...monthSummaries.map((item) => item.distance),
     1
   );
-  const peakMonth = useMemo(
-    () =>
-      monthSummaries.reduce((best, item) =>
-        item.distance > best.distance ? item : best
-      ).month,
-    [monthSummaries]
-  );
-  const overviewDetail = useMemo(
-    () =>
-      getOverviewDetail(
-        year,
-        selectedMonth,
-        visibleSummary,
-        derivedMetrics.longestStreak,
-        derivedMetrics.longestGap
-      ),
-    [
-      year,
-      selectedMonth,
-      visibleSummary,
-      derivedMetrics.longestStreak,
-      derivedMetrics.longestGap,
-    ]
+  const aiSummaryMeta = aiSummaryData as StaticAiSummary;
+  const usesStaticSummary = Boolean(
+    !selectedMonth && aiSummaryMeta.generatedAt && aiSummaryMeta.items.length
   );
   const aiSummary = useMemo(() => {
-    const staticSummary = aiSummaryData as StaticAiSummary;
-    if (
-      !selectedMonth &&
-      staticSummary.generatedAt &&
-      staticSummary.items.length
-    ) {
-      return staticSummary.items.slice(0, 3);
+    if (usesStaticSummary) {
+      return aiSummaryMeta.items.slice(0, 3);
     }
     return getAiSummary(
       year,
@@ -154,8 +131,14 @@ const ActivityList: React.FC = () => {
     derivedMetrics.insights,
     visibleSummary,
     derivedMetrics.longestStreak,
+    usesStaticSummary,
+    aiSummaryMeta.items,
   ]);
-  const aiSummaryMeta = aiSummaryData as StaticAiSummary;
+  const aiSummarySource = selectedMonth
+    ? '本月数据整理'
+    : usesStaticSummary && aiSummaryMeta.source === 'deepseek'
+      ? `DeepSeek · ${aiSummaryMeta.model}`
+      : '基于跑步记录生成';
   const [selectedDetail, setSelectedDetail] = useState<DetailCardData | null>(
     null
   );
@@ -169,13 +152,15 @@ const ActivityList: React.FC = () => {
         : buildYearPoster(activities, year, athlete),
     [activities, year, selectedMonth, athlete]
   );
-  const detailCard = selectedDetail ?? overviewDetail;
   const selectYearView = () => {
     setSelectedMonth(null);
     setSelectedDetail(null);
   };
   const selectMonthView = () => {
-    setSelectedMonth(selectedMonth ?? peakMonth);
+    const month = selectedMonth ?? lastSelectedMonth ?? yearRuns[0]?.month;
+    if (!month) return;
+    setSelectedMonth(month);
+    setLastSelectedMonth(month);
     setSelectedDetail(null);
   };
   const toggleMonth = (month: MonthSummary, isSelected: boolean) => {
@@ -184,6 +169,7 @@ const ActivityList: React.FC = () => {
       return;
     }
     setSelectedMonth(month.month);
+    setLastSelectedMonth(month.month);
     setSelectedDetail(
       buildMonthDetailCard(
         month,
@@ -239,7 +225,7 @@ const ActivityList: React.FC = () => {
 
       <FrequencyPanel
         selectedMonth={selectedMonth}
-        detailCard={detailCard}
+        detailCard={selectedDetail}
         dailyCells={dailyCells}
         heatmapColumns={heatmapColumns}
         onSelectDay={selectDay}
@@ -281,6 +267,7 @@ const ActivityList: React.FC = () => {
       <InsightPanel
         aiSummary={aiSummary}
         aiSummaryMeta={aiSummaryMeta}
+        sourceLabel={aiSummarySource}
         selectedMonth={selectedMonth}
       />
 

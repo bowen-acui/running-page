@@ -96,7 +96,7 @@ export default defineConfig({
             id.includes('react-map-gl') ||
             id.includes('@mapbox/mapbox-gl-language')
           ) {
-            return 'mapbox';
+            return;
           }
           if (id.includes('recharts')) {
             return 'charts';

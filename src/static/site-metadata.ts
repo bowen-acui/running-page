@@ -19,8 +19,8 @@ const data: ISiteMetadataResult = {
   siteTitle: '阿崔 Running',
   siteUrl: 'https://github.com/bowen-acui/running-page',
   logo: `${getBasePath()}/images/avatar.png`,
-  description: 'Personal site and blog',
-  activitySource: 'Garmin',
+  description: '阿崔的跑步记录、运动路线与训练统计',
+  activitySource: '导入的运动记录',
   navLinks: [
     {
       name: 'Summary',

@@ -1,0 +1,11 @@
+@media (max-width: 768px) {
+  .locationStat {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .total {
+    order: -1;
+  }
+}

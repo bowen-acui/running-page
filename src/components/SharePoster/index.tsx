@@ -26,6 +26,10 @@ const TONES: { value: PosterTone; label: string }[] = [
 
 const SharePoster = ({ content, onClose }: SharePosterProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
   const [ratio, setRatio] = useState<PosterRatio>('3:4');
   const [tone, setTone] = useState<PosterTone>('light');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -33,6 +37,10 @@ const SharePoster = ({ content, onClose }: SharePosterProps) => {
 
   // Preview is the same draw call as the export, just scaled — so what you
   // see is exactly what downloads.
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   useEffect(() => {
     let cancelled = false;
     const paint = async () => {
@@ -60,17 +68,51 @@ const SharePoster = ({ content, onClose }: SharePosterProps) => {
   }, [content, ratio, tone]);
 
   useEffect(() => {
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') {
+        onCloseRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = overlayRef.current?.querySelectorAll<HTMLElement>(
+        'button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+
+      if (
+        event.shiftKey &&
+        (active === first || !overlayRef.current?.contains(active))
+      ) {
+        event.preventDefault();
+        last.focus();
+      } else if (
+        !event.shiftKey &&
+        (active === last || !overlayRef.current?.contains(active))
+      ) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener('keydown', onKey);
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = previousOverflow;
+      if (previousFocusRef.current?.isConnected) {
+        previousFocusRef.current.focus();
+      }
     };
-  }, [onClose]);
+  }, []);
 
   useEffect(
     () => () => {
@@ -108,6 +150,7 @@ const SharePoster = ({ content, onClose }: SharePosterProps) => {
 
   return (
     <div
+      ref={overlayRef}
       className={styles.overlay}
       role="dialog"
       aria-modal="true"
@@ -122,7 +165,12 @@ const SharePoster = ({ content, onClose }: SharePosterProps) => {
             <p>Share</p>
             <h2>分享封面</h2>
           </div>
-          <button type="button" onClick={onClose} aria-label="关闭">
+          <button
+            ref={closeButtonRef}
+            type="button"
+            onClick={onClose}
+            aria-label="关闭"
+          >
             ✕
           </button>
         </header>

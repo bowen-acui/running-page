@@ -4,20 +4,23 @@ import useActivities from '@/hooks/useActivities';
 // only support China for now
 const LocationSummary = () => {
   const { years, countries, provinces, cities } = useActivities();
+  const cityCount = Object.keys(cities).length;
+  if (!countries.length && !provinces.length && !cityCount) return null;
+
   return (
     <div className="cursor-pointer">
       <section>
-        {years ? (
+        {years.length > 0 ? (
           <Stat value={`${years.length}`} description=" 年里我跑过" />
         ) : null}
-        {countries ? (
+        {countries.length > 0 ? (
           <Stat value={countries.length} description=" 个国家" />
         ) : null}
-        {provinces ? (
+        {provinces.length > 0 ? (
           <Stat value={provinces.length} description=" 个省份" />
         ) : null}
-        {cities ? (
-          <Stat value={Object.keys(cities).length} description=" 个城市" />
+        {cityCount > 0 ? (
+          <Stat value={cityCount} description=" 个城市" />
         ) : null}
       </section>
       <hr />

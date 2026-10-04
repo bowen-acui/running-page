@@ -28,10 +28,9 @@
     padding: 0.34rem 0.42rem;
   }
 
-  /* Keep the run name visible while the table scrolls horizontally */
   .runTable th:first-child,
   .runTable td:first-child {
-    min-width: 92px;
+    min-width: 112px;
     position: sticky;
     left: 0;
     z-index: 2;
@@ -236,6 +235,10 @@
   color: var(--color-run-date);
 }
 
+.mobileRunDate {
+  display: none;
+}
+
 .emptyState {
   display: grid;
   place-items: center;
@@ -252,6 +255,19 @@
 /* On phones every interactive element must give a >=44px touch target
    (sort headers and the show-all/collapse buttons measured 25-28px). */
 @media only screen and (max-width: 768px) {
+  .mobileRunDate {
+    display: block;
+    font-weight: 650;
+    line-height: 1.5;
+  }
+
+  .runName {
+    display: block;
+    color: var(--color-run-date);
+    font-size: 0.85em;
+    line-height: 1.5;
+  }
+
   .runTable th.sortableHeader button {
     padding-block: 1rem;
   }

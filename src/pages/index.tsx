@@ -532,7 +532,7 @@ const Index = () => {
   return (
     <Layout>
       <Helmet>
-        <html lang="en" data-theme={theme} />
+        <html lang="zh-CN" data-theme={theme} />
       </Helmet>
       <div className="grid w-full gap-3 sm:gap-5 lg:grid-cols-[minmax(18rem,23rem)_minmax(0,1fr)] lg:items-start lg:gap-5 xl:gap-6">
         <section className="w-full lg:sticky lg:top-8">

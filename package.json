@@ -29,6 +29,7 @@
   "scripts": {
     "data:clean": "rm -f run_page/data.db {GPX,TCX,FIT}_OUT/* activities/* src/static/activities.json",
     "data:download:garmin": "python3 run_page/garmin_sync.py",
+    "data:import:gpx": "python3 run_page/import_incremental_gpx.py",
     "data:analysis": "python3 run_page/gen_svg.py --from-db --type github --output assets/github.svg",
     "ai:summary": "node scripts/generate-ai-summary.mjs",
     "svg:refresh-stats": "node scripts/refresh-svg-stats.mjs",

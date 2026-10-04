@@ -15,6 +15,15 @@ const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const activitiesPath = resolve(rootDir, 'src/static/activities.json');
 
 const M_TO_DIST = 1000;
+const GITHUB_MIN_DISTANCE_METERS = 500;
+const YEAR_SUMMARY_MIN_DISTANCE_METERS = 1000;
+const SVG_COLORS = {
+  empty: '#444444',
+  dim: '#555555',
+  track: '#4DD2FF',
+  special: '#FFFF00',
+  special2: '#FF0000',
+};
 
 const formatPace = (metersPerSecond) => {
   if (!Number.isFinite(metersPerSecond) || metersPerSecond <= 0) return '0';
@@ -84,6 +93,101 @@ const computeStats = (runs) => {
       : '0.0',
     weekly: spanDays ? (runs.length / (spanDays / 7)).toFixed(1) : '0.0',
   };
+};
+
+const interpolateColor = (from, to, amount) => {
+  const color = (hex) =>
+    hex
+      .replace('#', '')
+      .match(/.{2}/g)
+      .map((part) => Number.parseInt(part, 16));
+  const start = color(from);
+  const end = color(to);
+  return `#${start
+    .map((value, index) =>
+      Math.round(value + (end[index] - value) * amount)
+        .toString(16)
+        .padStart(2, '0')
+    )
+    .join('')}`;
+};
+
+const replaceFill = (attributes, fill) => {
+  if (!/\bfill="[^"]*"/.test(attributes)) return attributes;
+  return attributes.replace(/\bfill="[^"]*"/, `fill="${fill}"`);
+};
+
+const refreshCalendarMarks = async (filename, dates, kind, runRange = null) => {
+  const svgPath = resolve(rootDir, `assets/${filename}`);
+  if (!existsSync(svgPath)) return false;
+
+  let svg = await readFile(svgPath, 'utf8');
+  const original = svg;
+  const expectedTag = kind === 'github' ? 'rect' : 'circle';
+  const distances = [...dates.values()];
+  const upper = Math.max(...distances, 0);
+  const lower = Math.min(...distances, upper);
+  const matchedDates = new Set();
+
+  svg = svg.replace(
+    new RegExp(
+      `<${expectedTag}\\b([^>]*)><title>(\\d{4}-\\d{2}-\\d{2})(?:[^<]*)<\\/title><\\/${expectedTag}>`,
+      'g'
+    ),
+    (match, attributes, date) => {
+      matchedDates.add(date);
+      const distance = dates.get(date) ?? 0;
+      let fill = kind === 'github' ? SVG_COLORS.empty : SVG_COLORS.dim;
+      let title = date;
+
+      if (kind === 'github') {
+        if (distance * M_TO_DIST >= GITHUB_MIN_DISTANCE_METERS) {
+          const hasSpecial = distance > 10 && distance < 20;
+          const firstColor = hasSpecial ? SVG_COLORS.special : SVG_COLORS.track;
+          const secondColor = hasSpecial
+            ? SVG_COLORS.special2
+            : SVG_COLORS.track;
+          fill =
+            !runRange || runRange.upper / M_TO_DIST < 20
+              ? firstColor
+              : interpolateColor(
+                  firstColor,
+                  secondColor,
+                  (distance - lower) / (upper - lower || 1)
+                );
+          if (distance >= 20) fill = SVG_COLORS.special2;
+          title = `${date} ${distance.toFixed(1)} km`;
+        }
+      } else if (distance * M_TO_DIST >= 100) {
+        fill =
+          distance >= 10
+            ? SVG_COLORS.special
+            : interpolateColor(
+                SVG_COLORS.dim,
+                SVG_COLORS.track,
+                Math.min(distance / 10, 1)
+              );
+        title = `${date}: ${distance >= 1 ? Math.floor(distance) : Number(distance.toFixed(1))} km`;
+      }
+
+      return `<${expectedTag}${replaceFill(attributes, fill)}><title>${title}</title></${expectedTag}>`;
+    }
+  );
+
+  const missingDates = [...dates.keys()].filter(
+    (date) => !matchedDates.has(date)
+  );
+  if (missingDates.length) {
+    throw new Error(
+      `${filename}: missing calendar marks for ${missingDates.join(', ')}`
+    );
+  }
+
+  if (svg !== original) {
+    await writeFile(svgPath, svg);
+    return true;
+  }
+  return false;
 };
 
 // Replace the text content of the <text> node that immediately follows the
@@ -206,10 +310,28 @@ const main = async () => {
   }
 
   const statsByYear = new Map();
+  const distancesByDate = new Map();
+  const githubDistancesByDate = new Map();
+  const runRange = { lower: Infinity, upper: 0 };
   for (const run of runs) {
     const year = run.start_date_local.slice(0, 4);
     if (!statsByYear.has(year)) statsByYear.set(year, []);
     statsByYear.get(year).push(run);
+    const date = run.start_date_local.slice(0, 10);
+    runRange.lower = Math.min(runRange.lower, run.distance || 0);
+    runRange.upper = Math.max(runRange.upper, run.distance || 0);
+    if ((run.distance || 0) >= YEAR_SUMMARY_MIN_DISTANCE_METERS) {
+      distancesByDate.set(
+        date,
+        (distancesByDate.get(date) ?? 0) + run.distance / M_TO_DIST
+      );
+    }
+    if ((run.distance || 0) >= GITHUB_MIN_DISTANCE_METERS) {
+      githubDistancesByDate.set(
+        date,
+        (githubDistancesByDate.get(date) ?? 0) + run.distance / M_TO_DIST
+      );
+    }
   }
   for (const [year, yearRuns] of statsByYear) {
     statsByYear.set(year, computeStats(yearRuns));
@@ -219,6 +341,42 @@ const main = async () => {
   for (const [year, stats] of statsByYear) {
     if (await refreshYearSummary(year, stats)) {
       updated.push(`year_summary_${year}.svg`);
+    }
+  }
+
+  if (
+    await refreshCalendarMarks(
+      'github.svg',
+      githubDistancesByDate,
+      'github',
+      runRange
+    )
+  ) {
+    updated.push('github.svg calendar');
+  }
+  for (const year of statsByYear.keys()) {
+    const githubFilename = `github_${year}.svg`;
+    const yearGithubDistances = new Map(
+      [...githubDistancesByDate].filter(([date]) => date.startsWith(`${year}-`))
+    );
+    if (
+      await refreshCalendarMarks(
+        githubFilename,
+        yearGithubDistances,
+        'github',
+        runRange
+      )
+    ) {
+      updated.push(`${githubFilename} calendar`);
+    }
+    const summaryFilename = `year_summary_${year}.svg`;
+    const yearDistances = new Map(
+      [...distancesByDate].filter(([date]) => date.startsWith(`${year}-`))
+    );
+    if (
+      await refreshCalendarMarks(summaryFilename, yearDistances, 'year-summary')
+    ) {
+      updated.push(`${summaryFilename} calendar`);
     }
   }
   if (await refreshGithubTotal(computeStats(runs), statsByYear)) {

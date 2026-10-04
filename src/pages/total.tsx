@@ -18,7 +18,7 @@ const HomePage = () => {
   return (
     <>
       <Helmet>
-        <html lang="en" data-theme={theme} />
+        <html lang="zh-CN" data-theme={theme} />
         <title>阿崔 Running Rhythm</title>
         <meta
           name="description"

@@ -49,6 +49,9 @@ jobs:
           cache: pip
           cache-dependency-path: 'requirements.txt'
 
+      - name: Preserve activity baseline
+        run: cp src/static/activities.json "$RUNNER_TEMP/activities-before.json"
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
@@ -154,7 +157,7 @@ jobs:
       - name: Run sync Only GPX script
         if: env.RUN_TYPE == 'only_gpx'
         run: |
-          python run_page/gpx_sync.py
+          python run_page/import_incremental_gpx.py GPX_OUT
 
       - name: Run sync Only FIT script
         if: env.RUN_TYPE == 'only_fit'
@@ -211,7 +214,7 @@ jobs:
           python run_page/db_updater.py
 
       - name: Make svg GitHub profile
-        if: env.RUN_TYPE != 'pass'
+        if: env.RUN_TYPE != 'pass' && env.RUN_TYPE != 'only_gpx'
         env:
           TITLE: ${{ env.TITLE }}
           TITLE_GRID: ${{ env.TITLE_GRID }}
@@ -227,7 +230,7 @@ jobs:
         # python run_page/gen_svg.py --from-db --title "${{ env.TITLE }}" --type github --github-style "align-monday" --athlete "${{ env.ATHLETE }}" --special-distance 10 --special-distance2 20 --special-color yellow --special-color2 red --output assets/github.svg --use-localtime --min-distance 0.5
         # python run_page/gen_svg.py --from-db --year $(date +"%Y")  --language zh_CN --title "$(date +"%Y") Running" --type github --github-style "align-monday" --athlete "${{ env.ATHLETE }}" --special-distance 10 --special-distance2 20 --special-color yellow --special-color2 red --output assets/github_$(date +"%Y").svg --use-localtime --min-distance 0.5
       - name: Make month of life
-        if: env.GENERATE_MONTH_OF_LIFE == 'true'
+        if: env.GENERATE_MONTH_OF_LIFE == 'true' && env.RUN_TYPE != 'only_gpx'
         env:
           BIRTHDAY_MONTH: ${{ env.BIRTHDAY_MONTH }}
         run: |
@@ -240,9 +243,36 @@ jobs:
           python run_page/gen_svg.py --from-db --type monthoflife --birth "${{env.BIRTHDAY_MONTH}}" --special-color "#f9d367"  --special-color2 "#f0a1a8" --output assets/mol_skiing.svg --use-localtime --athlete "${{env.ATHLETE}}" --title "Skier Month of Life" --sport-type skiing
 
       - name: Make year summary
-        if: env.GENERATE_MONTH_OF_LIFE == 'true'
+        if: env.GENERATE_MONTH_OF_LIFE == 'true' && env.RUN_TYPE != 'only_gpx'
         run: |
           python run_page/gen_svg.py --from-db --type year_summary --output assets/year_summary.svg --athlete "${{ env.ATHLETE }}"
+
+      - name: Refresh GPX summaries from merged activities
+        if: env.RUN_TYPE == 'only_gpx'
+        run: node scripts/refresh-svg-stats.mjs
+
+      - name: Validate activity preservation
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          before = json.loads((Path(os.environ['RUNNER_TEMP']) / 'activities-before.json').read_text())
+          after = json.loads(Path('src/static/activities.json').read_text())
+          if not isinstance(after, list) or not after:
+              raise SystemExit('::error::Activities must remain a nonempty array')
+          by_id = {str(row['run_id']): row for row in after}
+          if len(by_id) != len(after):
+              raise SystemExit('::error::Duplicate activity IDs')
+          if sum(row['type'] == 'Run' for row in after) < sum(row['type'] == 'Run' for row in before):
+              raise SystemExit('::error::Run count decreased; publication stopped')
+          for row in before:
+              preserved = by_id.get(str(row['run_id']))
+              if preserved is None or (os.environ['RUN_TYPE'] == 'only_gpx' and preserved != row):
+                  raise SystemExit(f"::error::Existing activity lost or changed: {row['run_id']}")
+          print(f'Activities preserved: {len(before)} -> {len(after)}')
+          PY
 
       - name: Save data to parqent
         if: env.SAVE_TO_PARQENT == 'true'
@@ -260,9 +290,12 @@ jobs:
         run: |
           git config --local user.email 'action@github.com'
           git config --local user.name 'GitHub Action'
-          git add .
-          git commit -m 'update new runs' || echo 'nothing to commit'
-          git push || echo 'nothing to push'
+          git add src/static/activities.json
+          find assets -maxdepth 1 -type f -name '*.svg' -print0 | xargs -0 -r git add --
+          if ! git diff --cached --quiet; then
+            git commit -m 'update new runs'
+            git push
+          fi
 
       - name: Set Output
         id: set_output
