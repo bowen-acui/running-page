@@ -37,8 +37,7 @@ const RunTable = ({
 }: IRunTableProperties) => {
   const [sortState, setSortState] = useState<SortState | null>(null);
   const [showAllForKey, setShowAllForKey] = useState<string | null>(null);
-  const [month, setMonth] = useState('');
-  const filterKey = `${runs.length}:${runs[0]?.run_id ?? ''}:${runs.at(-1)?.run_id ?? ''}:${month}`;
+  const filterKey = `${runs.length}:${runs[0]?.run_id ?? ''}:${runs.at(-1)?.run_id ?? ''}`;
   const showAllRows = showAllForKey === filterKey;
 
   const sortKeys = useMemo(() => {
@@ -80,27 +79,18 @@ const RunTable = ({
     []
   );
 
-  const filteredRuns = useMemo(
-    () =>
-      runs.filter((run) => {
-        const date = run.start_date_local.slice(0, 10);
-        return !month || date.slice(5, 7) === month;
-      }),
-    [month, runs]
-  );
-
   const sortedRuns = useMemo(() => {
     const sortedRuns = (() => {
-      if (!sortState) return filteredRuns;
+      if (!sortState) return runs;
 
       const sortFunction = getSortFunction(sortState.key, sortState.direction);
-      if (!sortFunction) return filteredRuns;
+      if (!sortFunction) return runs;
 
-      return filteredRuns.slice().sort(sortFunction);
+      return runs.slice().sort(sortFunction);
     })();
 
     return sortedRuns;
-  }, [filteredRuns, getSortFunction, sortState]);
+  }, [runs, getSortFunction, sortState]);
 
   const displayedRuns = useMemo(
     () =>
@@ -138,25 +128,6 @@ const RunTable = ({
 
   return (
     <div className={styles.tableContainer}>
-      <div className={styles.tableFilters}>
-        <label>
-          月份
-          <select
-            value={month}
-            onChange={(event) => setMonth(event.target.value)}
-          >
-            <option value="">全年</option>
-            {[...new Set(runs.map((run) => run.start_date_local.slice(5, 7)))]
-              .sort()
-              .map((value) => (
-                <option key={value} value={value}>
-                  {Number(value)} 月
-                </option>
-              ))}
-          </select>
-        </label>
-        <span>当前 {sortedRuns.length} 条</span>
-      </div>
       <table className={styles.runTable} cellSpacing="0" cellPadding="0">
         <thead>
           <tr>
@@ -202,27 +173,18 @@ const RunTable = ({
       </table>
       {sortedRuns.length === 0 && (
         <div className={styles.emptyState}>
-          <span>没有符合条件的跑步记录</span>
-          {month && (
-            <button type="button" onClick={() => setMonth('')}>
-              清空月份筛选
-            </button>
-          )}
+          <span>暂无跑步记录</span>
         </div>
       )}
       {hiddenRunCount > 0 && (
         <div className={styles.tableHint}>
-          <span>
-            仅显示前 {DEFAULT_VISIBLE_ROWS} 条 / 共 {sortedRuns.length} 条
-          </span>
           <button type="button" onClick={() => setShowAllForKey(filterKey)}>
-            显示全部
+            显示更多
           </button>
         </div>
       )}
       {showAllRows && sortedRuns.length > DEFAULT_VISIBLE_ROWS && (
         <div className={styles.tableHint}>
-          <span>已显示全部 {sortedRuns.length} 条</span>
           <button type="button" onClick={() => setShowAllForKey(null)}>
             收起
           </button>

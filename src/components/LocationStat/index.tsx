@@ -19,7 +19,7 @@ const LocationStat = ({
   const { cities } = useActivities();
 
   return (
-    <div className={`${styles.locationStat} w-full pb-10 lg:pr-8`}>
+    <div className={`${styles.locationStat} w-full lg:pr-6`}>
       <div>
         <LocationSummary />
         {Object.keys(cities).length > 0 && <CitiesStat onClick={changeCity} />}

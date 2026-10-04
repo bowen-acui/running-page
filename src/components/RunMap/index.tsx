@@ -33,15 +33,7 @@ import {
 } from '@/utils/const';
 import { geoJsonForMap, getMapStyle, isTouchDevice } from '@/utils/geoUtils';
 import type { Coordinate, IViewState } from '@/utils/mapTypes';
-import {
-  Activity,
-  DIST_UNIT,
-  formatPace,
-  formatRunTime,
-  M_TO_DIST,
-  prefersReducedMotion,
-  RunIds,
-} from '@/utils/utils';
+import { prefersReducedMotion, RunIds } from '@/utils/utils';
 import { RouteAnimator } from '@/utils/routeAnimation';
 import RunMarker from './RunMarker';
 import RunMapButtons from './RunMapButtons';
@@ -61,11 +53,8 @@ interface IRunMapProps {
   changeYear: (_year: string) => void;
   geoData: FeatureCollection<RPGeometry>;
   thisYear: string;
-  navigationRuns: readonly Activity[];
-  selectedRun?: Activity | null;
   animationTrigger?: number; // Optional trigger to force animation replay
   locateActivity?: (_runIds: RunIds) => void;
-  onReturnToRunList: () => void;
 }
 
 type MapStyleLayer = {
@@ -81,11 +70,8 @@ const RunMap = ({
   changeYear,
   geoData,
   thisYear,
-  navigationRuns,
-  selectedRun,
   animationTrigger,
   locateActivity,
-  onReturnToRunList,
 }: IRunMapProps) => {
   const { countries, provinces } = useActivities();
   const mapRef = useRef<MapRef>(null);
@@ -497,22 +483,6 @@ const RunMap = ({
     [isSingleRun, startRouteAnimation, locateActivity]
   );
 
-  const selectedRunSummary = useMemo(() => {
-    if (!selectedRun) return null;
-
-    return {
-      date: selectedRun.start_date_local.slice(0, 10),
-      distance: (selectedRun.distance / M_TO_DIST).toFixed(2),
-      pace: formatPace(selectedRun.average_speed),
-      time: formatRunTime(selectedRun.moving_time),
-      name: selectedRun.name,
-      heartRate: selectedRun.average_heartrate,
-      index: navigationRuns.findIndex(
-        (run) => run.run_id === selectedRun.run_id
-      ),
-    };
-  }, [navigationRuns, selectedRun]);
-
   return (
     <Map
       {...viewState}
@@ -635,76 +605,8 @@ const RunMap = ({
           endLon={endLon}
         />
       )}
-      {selectedRunSummary ? (
-        <aside
-          className={styles.runSummary}
-          aria-label="单次跑步信息与记录切换"
-        >
-          <div className={styles.runSummaryHeader}>
-            <time>{selectedRunSummary.date}</time>
-            <strong>{selectedRunSummary.name}</strong>
-          </div>
-          <dl className={styles.runSummaryMetrics}>
-            <div>
-              <dt>{DIST_UNIT}</dt>
-              <dd>{selectedRunSummary.distance}</dd>
-            </div>
-            <div>
-              <dt>配速</dt>
-              <dd>{selectedRunSummary.pace}</dd>
-            </div>
-            <div>
-              <dt>时长</dt>
-              <dd>{selectedRunSummary.time}</dd>
-            </div>
-            <div>
-              <dt>心率</dt>
-              <dd>
-                {selectedRunSummary.heartRate
-                  ? `${Math.round(selectedRunSummary.heartRate)} bpm`
-                  : '未记录'}
-              </dd>
-            </div>
-          </dl>
-          <div className={styles.runSummaryActions}>
-            <button
-              type="button"
-              className={styles.runSummaryButton}
-              onClick={onReturnToRunList}
-            >
-              返回跑步记录
-            </button>
-            <button
-              type="button"
-              disabled={
-                selectedRunSummary.index < 0 ||
-                selectedRunSummary.index >= navigationRuns.length - 1
-              }
-              className={styles.runSummaryButton}
-              aria-label="查看更早一条跑步"
-              onClick={() => {
-                const previous = navigationRuns[selectedRunSummary.index + 1];
-                if (previous) locateActivity?.([previous.run_id]);
-              }}
-            >
-              更早一条
-            </button>
-            <button
-              type="button"
-              disabled={selectedRunSummary.index <= 0}
-              className={styles.runSummaryButton}
-              aria-label="查看更新一条跑步"
-              onClick={() => {
-                const next = navigationRuns[selectedRunSummary.index - 1];
-                if (next) locateActivity?.([next.run_id]);
-              }}
-            >
-              更新一条
-            </button>
-          </div>
-        </aside>
-      ) : (
-        title && <span className={styles.runTitle}>{title}</span>
+      {!isSingleRun && title && (
+        <span className={styles.runTitle}>{title}</span>
       )}
       <FullscreenControl style={fullscreenButton} />
       {!PRIVACY_MODE && <LightsControl setLights={setLights} lights={lights} />}

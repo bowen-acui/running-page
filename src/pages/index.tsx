@@ -142,7 +142,6 @@ const Index = () => {
   );
   const [runIndex, setRunIndex] = useState(-1);
   const [title, setTitle] = useState('');
-  const [selectedRun, setSelectedRun] = useState<Activity | null>(null);
   // Animation states for replacing intervalIdRef
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentAnimationIndex, setCurrentAnimationIndex] = useState(0);
@@ -290,14 +289,13 @@ const Index = () => {
       }
       setCurrentFilter({ item, func });
       setRunIndex(-1);
-      setSelectedRun(null);
       setIsAnimating(false);
       setTitle(`${item} ${name} Running Heatmap`);
       // Reflect the filter in the URL so the view is shareable; this also
       // resets any single-run state since the hash no longer starts with run_
       setFilterHash(name.toLowerCase(), item);
     },
-    [thisYear, setYear, setCurrentFilter, setRunIndex, setSelectedRun, setTitle]
+    [thisYear, setYear, setCurrentFilter, setRunIndex, setTitle]
   );
 
   const changeYear = useCallback(
@@ -348,10 +346,8 @@ const Index = () => {
         const runId = runIds[0];
         const runIdx = runs.findIndex((run) => run.run_id === runId);
         setRunIndex(runIdx);
-        setSelectedRun(runs[runIdx] ?? null);
       } else {
         setRunIndex(-1);
-        setSelectedRun(null);
       }
 
       // Update URL hash when a single run is located
@@ -392,7 +388,6 @@ const Index = () => {
       loadGeoUtils,
       runs,
       setRunIndex,
-      setSelectedRun,
       setIsAnimating,
       setAnimatedGeoData,
       setAnimationTrigger,
@@ -400,21 +395,6 @@ const Index = () => {
       setTitle,
     ]
   );
-
-  const returnToRunList = useCallback(() => {
-    locateRequestRef.current += 1;
-    setRunIndex(-1);
-    setSelectedRun(null);
-    setTitle('');
-    setAnimatedGeoData(EMPTY_GEO_DATA);
-    clearRunHash();
-    requestAnimationFrame(() => {
-      document.querySelector('.runTable')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
-  }, [setAnimatedGeoData, setRunIndex, setSelectedRun, setTitle]);
 
   // Auto locate activity when singleRunId is set and activities are loaded
   // First, detect the run's year and switch to it if needed
@@ -513,14 +493,11 @@ const Index = () => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Keep the table highlight and the map readout card in sync with the URL:
-  // when the run hash clears (e.g. the browser Back button or an edited hash),
-  // drop the selected-run state so a stale row stays highlighted no longer.
+  // Drop the table highlight when the run hash clears.
   useEffect(() => {
     if (singleRunId === null) {
       const frameId = requestAnimationFrame(() => {
         setRunIndex(-1);
-        setSelectedRun(null);
       });
       return () => cancelAnimationFrame(frameId);
     }
@@ -612,8 +589,10 @@ const Index = () => {
           ) : (
             <YearsStat year={year} onClick={changeYear} />
           )}
-          <section className="mt-3 rounded-2xl border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-3 text-[color:var(--color-run-date)] sm:mt-4 sm:p-4">
-            <p className="text-xs font-semibold tracking-wide">近期跑步</p>
+          <section className="mt-2 rounded-[1.7rem] border border-[color:var(--color-primary)]/10 bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-run-row-hover-background)_46%,white_18%),color-mix(in_srgb,var(--color-background)_88%,transparent))] p-3 text-[color:var(--color-run-date)] shadow-[0_16px_46px_rgba(7,54,76,0.055)] sm:p-3.5 lg:mr-6">
+            <p className="text-[0.58rem] font-semibold tracking-[0.12em] uppercase">
+              近期跑步
+            </p>
             <p className="mt-1 text-sm">
               本周 {recentSummary.thisWeekRuns.length}/2 次 ·{' '}
               {recentSummary.weekDays.size} 个跑步日 ·{' '}
@@ -702,11 +681,8 @@ const Index = () => {
                   setViewState={setViewState}
                   changeYear={changeYear}
                   thisYear={year}
-                  navigationRuns={runs}
                   animationTrigger={animationTrigger}
-                  selectedRun={selectedRun}
                   locateActivity={locateActivity}
-                  onReturnToRunList={returnToRunList}
                 />
               </Suspense>
             ) : (
