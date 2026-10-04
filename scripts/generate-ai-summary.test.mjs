@@ -65,6 +65,16 @@ test('buildFallbackSummary returns concise static advice', () => {
   assert.match(fallback.items[2], /心率记录不足/);
 });
 
+test('summary metadata records the latest run and count used to generate it', () => {
+  const summary = summarizeActivities(sampleActivities);
+  const fallback = buildFallbackSummary(summary);
+
+  assert.equal(summary.sourceRunCount, 2);
+  assert.equal(summary.sourceLatestRunId, 3);
+  assert.equal(fallback.sourceRunCount, 2);
+  assert.equal(fallback.sourceLatestRunId, 3);
+});
+
 test('normalizeDeepSeekSummary keeps at most three useful lines', () => {
   const normalized = normalizeDeepSeekSummary(
     '1. 第一条建议\n2. 第二条建议\n3. 第三条建议\n4. 第四条建议'
@@ -84,5 +94,6 @@ test('buildPrompt constrains DeepSeek to data-backed short advice', () => {
   assert.match(prompt, /下一步行动/);
   assert.match(prompt, /不要建议追求速度/);
   assert.match(prompt, /heartRateSampleSize < 3/);
+  assert.match(prompt, /不得仅根据绝对平均心率判断强度高低/);
   assert.match(prompt, /不要标题/);
 });

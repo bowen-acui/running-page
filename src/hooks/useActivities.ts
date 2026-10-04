@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { Activity } from '@/utils/utils';
-import { locationForRun, titleForRun } from '@/utils/utils';
+import { isRunActivity, locationForRun, titleForRun } from '@/utils/utils';
 import activitiesUrl from '@/static/activities.json?url';
 import { COUNTRY_STANDARDIZATION } from '@/static/city';
 
@@ -54,6 +54,13 @@ const getActivityData = () => {
   throw loadActivityData();
 };
 
+export const resetActivityData = () => {
+  activityDataCache = null;
+  activityDataError = null;
+  activityDataPromise = null;
+  processedActivitiesCache = null;
+};
+
 const processActivities = (activityData: Activity[]): ProcessedActivities => {
   const cities: Record<string, number> = {};
   const runPeriod: Record<string, number> = {};
@@ -61,7 +68,7 @@ const processActivities = (activityData: Activity[]): ProcessedActivities => {
   const countries: Set<string> = new Set();
   const years: Set<string> = new Set();
 
-  activityData.forEach((run) => {
+  activityData.filter(isRunActivity).forEach((run) => {
     const location = locationForRun(run);
 
     const periodName = titleForRun(run);

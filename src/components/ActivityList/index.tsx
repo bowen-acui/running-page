@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import styles from './style.module.css';
 import useActivities from '@/hooks/useActivities';
 import getSiteMetadata from '@/hooks/useSiteMetadata';
@@ -48,13 +49,33 @@ const ActivityList: React.FC = () => {
   const { siteTitle } = getSiteMetadata();
   // "阿崔 Running" → "阿崔"; the cover signs with the name, not the site title.
   const athlete = siteTitle.replace(/\s*Running\s*$/i, '').trim() || siteTitle;
-  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
-  const [lastSelectedMonth, setLastSelectedMonth] = useState<number | null>(
-    null
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const yearRuns = useMemo(() => normalizeRuns(activities), [activities]);
-  const year = yearRuns[0]?.date.getFullYear() ?? FALLBACK_YEAR;
+  const allRuns = useMemo(() => normalizeRuns(activities), [activities]);
+  const years = useMemo(
+    () => [...new Set(allRuns.map((run) => run.date.getFullYear()))],
+    [allRuns]
+  );
+  const latestYear = years[0] ?? FALLBACK_YEAR;
+  const requestedYear = Number(searchParams.get('year'));
+  const year = years.includes(requestedYear) ? requestedYear : latestYear;
+  const requestedMonth = Number(searchParams.get('month'));
+  const selectedMonth =
+    requestedMonth >= 1 && requestedMonth <= 12 ? requestedMonth : null;
+  useEffect(() => {
+    const validMonth = requestedMonth >= 1 && requestedMonth <= 12;
+    if (requestedYear === year && (!searchParams.has('month') || validMonth)) {
+      return;
+    }
+    const next = new URLSearchParams(searchParams);
+    next.set('year', String(year));
+    if (!validMonth) next.delete('month');
+    setSearchParams(next, { replace: true });
+  }, [requestedMonth, requestedYear, searchParams, setSearchParams, year]);
+  const yearRuns = useMemo(
+    () => allRuns.filter((run) => run.date.getFullYear() === year),
+    [allRuns, year]
+  );
   const runsByMonth = useMemo(() => {
     const monthMap = new Map<number, RunPoint[]>();
     yearRuns.forEach((run) => {
@@ -100,11 +121,11 @@ const ActivityList: React.FC = () => {
       heartRuns,
       habitMatrix: getHabitMatrix(visibleRuns),
       timeBandMatrix: getTimeBandMatrix(visibleRuns),
-      insights: getInsights(visibleRuns, monthSummaries),
+      insights: getInsights(visibleRuns),
       longestGap: getLongestGap(visibleRuns),
       longestStreak: getLongestStreak(visibleRuns),
     };
-  }, [visibleRuns, monthSummaries]);
+  }, [visibleRuns]);
   const heatmapColumns = Math.ceil(dailyCells.length / 7);
   const maxMonthDistance = Math.max(
     ...monthSummaries.map((item) => item.distance),
@@ -112,7 +133,13 @@ const ActivityList: React.FC = () => {
   );
   const aiSummaryMeta = aiSummaryData as StaticAiSummary;
   const usesStaticSummary = Boolean(
-    !selectedMonth && aiSummaryMeta.generatedAt && aiSummaryMeta.items.length
+    !selectedMonth &&
+    year === latestYear &&
+    aiSummaryMeta.generatedAt &&
+    aiSummaryMeta.items.length &&
+    aiSummaryMeta.sourceRunCount === yearRuns.length &&
+    String(aiSummaryMeta.sourceLatestRunId ?? '') ===
+      String(yearRuns[0]?.id ?? '')
   );
   const aiSummary = useMemo(() => {
     if (usesStaticSummary) {
@@ -122,15 +149,13 @@ const ActivityList: React.FC = () => {
       year,
       selectedMonth,
       derivedMetrics.insights,
-      visibleSummary,
-      derivedMetrics.longestStreak
+      visibleSummary
     );
   }, [
     year,
     selectedMonth,
     derivedMetrics.insights,
     visibleSummary,
-    derivedMetrics.longestStreak,
     usesStaticSummary,
     aiSummaryMeta.items,
   ]);
@@ -153,14 +178,21 @@ const ActivityList: React.FC = () => {
     [activities, year, selectedMonth, athlete]
   );
   const selectYearView = () => {
-    setSelectedMonth(null);
+    setSearchParams({ year: String(year) });
+    setSelectedDetail(null);
+  };
+  const selectYearValue = (nextYear: number) => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set('year', String(nextYear));
+      return next;
+    });
     setSelectedDetail(null);
   };
   const selectMonthView = () => {
-    const month = selectedMonth ?? lastSelectedMonth ?? yearRuns[0]?.month;
+    const month = selectedMonth ?? yearRuns[0]?.month;
     if (!month) return;
-    setSelectedMonth(month);
-    setLastSelectedMonth(month);
+    setSearchParams({ year: String(year), month: String(month) });
     setSelectedDetail(null);
   };
   const toggleMonth = (month: MonthSummary, isSelected: boolean) => {
@@ -168,8 +200,7 @@ const ActivityList: React.FC = () => {
       selectYearView();
       return;
     }
-    setSelectedMonth(month.month);
-    setLastSelectedMonth(month.month);
+    setSearchParams({ year: String(year), month: String(month.month) });
     setSelectedDetail(
       buildMonthDetailCard(
         month,
@@ -209,7 +240,9 @@ const ActivityList: React.FC = () => {
     <main className={styles.activityList}>
       <PageHeader
         year={year}
+        years={years}
         selectedMonth={selectedMonth}
+        onSelectYearValue={selectYearValue}
         onSelectYear={selectYearView}
         onSelectMonth={selectMonthView}
         onShare={() => setIsSharing(true)}
@@ -221,6 +254,7 @@ const ActivityList: React.FC = () => {
         distance={visibleSummary.distance}
         averagePaceSeconds={visibleSummary.averagePaceSeconds}
         averageHeartRate={visibleSummary.averageHeartRate}
+        heartRateSampleSize={visibleSummary.heartRateSampleSize}
       />
 
       <FrequencyPanel

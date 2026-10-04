@@ -1,5 +1,5 @@
 import { TIME_BAND_LABELS, WEEKDAY_LABELS } from './types';
-import type { InsightSummary, MonthSummary, RunPoint, TimeBand } from './types';
+import type { InsightSummary, RunPoint, TimeBand } from './types';
 
 const getAverage = (values: readonly number[]) =>
   values.length
@@ -33,20 +33,7 @@ export const getTimeBandMatrix = (runs: readonly RunPoint[]) => {
   }));
 };
 
-export const getInsights = (
-  runs: readonly RunPoint[],
-  months: readonly MonthSummary[]
-): InsightSummary => {
-  const activeMonths = months.filter((month) => month.count > 0);
-  const stableMonth =
-    activeMonths.length > 0
-      ? activeMonths.reduce((best, month) => {
-          const bestAverage = best.distance / best.count;
-          const currentAverage = month.distance / month.count;
-          return currentAverage > bestAverage ? month : best;
-        }).month
-      : null;
-
+export const getInsights = (runs: readonly RunPoint[]): InsightSummary => {
   const weekdayCounts = getHabitMatrix(runs);
   const maxWeekdayCount = Math.max(
     ...weekdayCounts.map((item) => item.count),
@@ -64,31 +51,26 @@ export const getInsights = (
     .slice(0, 2)
     .map((item) => item.label);
 
-  const recent = runs.slice(0, Math.min(6, runs.length));
-  const early = [...runs].slice(-Math.min(6, runs.length));
-  const recentPace = getAverage(recent.map((run) => run.paceSeconds));
-  const earlyPace = getAverage(early.map((run) => run.paceSeconds));
-  const paceLabel =
-    runs.length < 4
-      ? '样本较少，暂不判断配速稳定性。'
-      : recentPace && earlyPace && Math.abs(recentPace - earlyPace) < 15
-        ? '最近配速较稳定。'
-        : recentPace && earlyPace && recentPace < earlyPace
-          ? '最近配速略有提升。'
-          : '最近配速波动略大。';
+  const paceLabel = (() => {
+    const paceRuns = runs.filter((run) => run.paceSeconds > 0);
+    if (paceRuns.length < 12) return '样本不足 12 次，暂不比较配速变化。';
+    const recentPace = getAverage(
+      paceRuns.slice(0, 6).map((run) => run.paceSeconds)
+    );
+    const earlierPace = getAverage(
+      paceRuns.slice(6, 12).map((run) => run.paceSeconds)
+    );
+    return `最近 6 次与更早 6 次平均配速相差 ${Math.round(Math.abs(recentPace - earlierPace))} 秒/公里。`;
+  })();
 
   const heartRates = runs
     .map((run) => run.heartRate)
     .filter((rate): rate is number => rate !== null);
-  const heartRateLabel =
-    heartRates.length < 3
-      ? null
-      : getAverage(heartRates) >= 170
-        ? '有心率记录的跑步强度略高。'
-        : '有心率记录的跑步强度较克制。';
+  const heartRateLabel = heartRates.length
+    ? `心率记录 ${heartRates.length}/${runs.length} 次，平均 ${Math.round(getAverage(heartRates))} bpm；未设个人基线，不判断强度。`
+    : null;
 
   return {
-    stableMonth,
     highFrequencyDays,
     highFrequencyBands,
     paceLabel,

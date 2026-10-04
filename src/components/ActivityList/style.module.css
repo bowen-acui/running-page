@@ -309,7 +309,8 @@
 
 .monthHeatmapGrid {
   grid-auto-flow: row;
-  grid-template-rows: 1fr;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: auto;
   justify-content: stretch;
   align-items: center;
   width: 100%;
@@ -612,10 +613,6 @@
   min-height: 12px;
   border-radius: 999px 999px 4px 4px;
   background: var(--journal-level-1);
-}
-
-.heartChart .highHeartBar i {
-  background: var(--journal-level-2);
 }
 
 .heartChart button:hover i,

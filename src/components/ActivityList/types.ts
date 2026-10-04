@@ -20,6 +20,7 @@ export interface MonthSummary {
   readonly count: number;
   readonly averagePaceSeconds: number;
   readonly averageHeartRate: number | null;
+  readonly heartRateSampleSize: number;
 }
 
 export interface DailyCell {
@@ -39,7 +40,6 @@ export interface BlankCell {
 export type HeatmapCell = DailyCell | BlankCell;
 
 export interface InsightSummary {
-  readonly stableMonth: number | null;
   readonly highFrequencyDays: readonly string[];
   readonly highFrequencyBands: readonly string[];
   readonly paceLabel: string;
@@ -64,6 +64,8 @@ export interface StaticAiSummary {
   readonly model: string;
   readonly fallbackReason: string | null;
   readonly trainingGoal?: string;
+  readonly sourceRunCount?: number;
+  readonly sourceLatestRunId?: string | number | null;
   readonly items: readonly string[];
 }
 

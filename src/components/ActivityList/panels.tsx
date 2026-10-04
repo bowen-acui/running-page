@@ -120,9 +120,7 @@ export const FrequencyPanel = ({
         className={styles.heatmapContent}
         style={
           {
-            '--heat-columns': selectedMonth
-              ? dailyCells.length
-              : heatmapColumns,
+            '--heat-columns': selectedMonth ? 7 : heatmapColumns,
           } as React.CSSProperties
         }
       >
@@ -290,7 +288,7 @@ export const HeartPanel = ({
     <div className={styles.panelHeader}>
       <div>
         <p>Heart Rate</p>
-        <h2>心率强度</h2>
+        <h2>心率记录</h2>
       </div>
       <span>{heartRateLabel ?? '心率记录不足'}</span>
     </div>
@@ -303,7 +301,6 @@ export const HeartPanel = ({
             <button
               key={run.id}
               type="button"
-              className={rate >= 170 ? styles.highHeartBar : ''}
               title={`${formatShortDate(run.date)} · ${Math.round(rate)} bpm`}
               aria-label={`${formatShortDate(run.date)} · ${Math.round(rate)} bpm`}
               onClick={() => onSelectHeartRun(run, rate)}

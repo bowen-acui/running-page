@@ -36,7 +36,11 @@ const RunTable = ({
   setRunIndex,
 }: IRunTableProperties) => {
   const [sortState, setSortState] = useState<SortState | null>(null);
-  const [showAllRows, setShowAllRows] = useState(false);
+  const [showAllForKey, setShowAllForKey] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [month, setMonth] = useState('');
+  const filterKey = `${runs.length}:${runs[0]?.run_id ?? ''}:${runs.at(-1)?.run_id ?? ''}:${search}:${month}`;
+  const showAllRows = showAllForKey === filterKey;
 
   const sortKeys = useMemo(() => {
     const keys = [DIST_UNIT, 'Elev', 'Pace', 'BPM', 'Time', 'Date'];
@@ -77,18 +81,33 @@ const RunTable = ({
     []
   );
 
+  const filteredRuns = useMemo(
+    () =>
+      runs.filter((run) => {
+        const date = run.start_date_local.slice(0, 10);
+        return (
+          (!month || date.slice(5, 7) === month) &&
+          (!search ||
+            `${run.name} ${date}`
+              .toLowerCase()
+              .includes(search.trim().toLowerCase()))
+        );
+      }),
+    [month, runs, search]
+  );
+
   const sortedRuns = useMemo(() => {
     const sortedRuns = (() => {
-      if (!sortState) return runs;
+      if (!sortState) return filteredRuns;
 
       const sortFunction = getSortFunction(sortState.key, sortState.direction);
-      if (!sortFunction) return runs;
+      if (!sortFunction) return filteredRuns;
 
-      return runs.slice().sort(sortFunction);
+      return filteredRuns.slice().sort(sortFunction);
     })();
 
     return sortedRuns;
-  }, [getSortFunction, runs, sortState]);
+  }, [filteredRuns, getSortFunction, sortState]);
 
   const displayedRuns = useMemo(
     () =>
@@ -126,6 +145,34 @@ const RunTable = ({
 
   return (
     <div className={styles.tableContainer}>
+      <div className={styles.tableFilters}>
+        <label>
+          搜索跑步
+          <input
+            type="search"
+            value={search}
+            placeholder="名称或日期"
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        </label>
+        <label>
+          月份
+          <select
+            value={month}
+            onChange={(event) => setMonth(event.target.value)}
+          >
+            <option value="">全年</option>
+            {[...new Set(runs.map((run) => run.start_date_local.slice(5, 7)))]
+              .sort()
+              .map((value) => (
+                <option key={value} value={value}>
+                  {Number(value)} 月
+                </option>
+              ))}
+          </select>
+        </label>
+        <span>当前 {sortedRuns.length} 条</span>
+      </div>
       <table className={styles.runTable} cellSpacing="0" cellPadding="0">
         <thead>
           <tr>
@@ -171,7 +218,18 @@ const RunTable = ({
       </table>
       {sortedRuns.length === 0 && (
         <div className={styles.emptyState}>
-          <span>暂无符合条件的跑步记录</span>
+          <span>没有符合条件的跑步记录</span>
+          {(search || month) && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearch('');
+                setMonth('');
+              }}
+            >
+              清空搜索和筛选
+            </button>
+          )}
         </div>
       )}
       {hiddenRunCount > 0 && (
@@ -179,7 +237,7 @@ const RunTable = ({
           <span>
             仅显示前 {DEFAULT_VISIBLE_ROWS} 条 / 共 {sortedRuns.length} 条
           </span>
-          <button type="button" onClick={() => setShowAllRows(true)}>
+          <button type="button" onClick={() => setShowAllForKey(filterKey)}>
             显示全部
           </button>
         </div>
@@ -187,7 +245,7 @@ const RunTable = ({
       {showAllRows && sortedRuns.length > DEFAULT_VISIBLE_ROWS && (
         <div className={styles.tableHint}>
           <span>已显示全部 {sortedRuns.length} 条</span>
-          <button type="button" onClick={() => setShowAllRows(false)}>
+          <button type="button" onClick={() => setShowAllForKey(null)}>
             收起
           </button>
         </div>

@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 // is edited without re-running that pipeline, those baked-in numbers go stale
 // and contradict the live numbers the frontend derives from activities.json.
 // This script rewrites the stat texts from activities.json — with the same
-// filter (type === 'Run') and the same pace formula as the frontend — right
+// activity type filter and the same pace formula as the frontend — right
 // before the site is built, so both surfaces always agree.
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -303,7 +303,7 @@ const refreshGithubTotal = async (
 
 const main = async () => {
   const activities = JSON.parse(await readFile(activitiesPath, 'utf8'));
-  const runs = activities.filter((a) => a.type === 'Run');
+  const runs = activities.filter((a) => a.type === 'Run' || a.type === 'running');
   if (!runs.length) {
     console.log('refresh-svg-stats: no runs in activities.json, skipped');
     return;

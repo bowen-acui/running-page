@@ -8,6 +8,7 @@ import {
 } from './utils/analytics';
 import '@/styles/index.css';
 import { withOptionalGAPageTracking } from './utils/trackRoute';
+import { resetActivityData } from '@/hooks/useActivities';
 
 const Index = lazy(() => import('./pages'));
 const HomePage = lazy(() => import('@/pages/total'));
@@ -32,6 +33,33 @@ const RouteFallback = () => (
   </div>
 );
 
+const RouteError = () => (
+  <main
+    style={{
+      minHeight: '100vh',
+      display: 'grid',
+      placeContent: 'center',
+      gap: '0.75rem',
+      padding: '2rem',
+      color: 'var(--color-run-date)',
+      textAlign: 'center',
+      fontFamily: 'var(--font-sans)',
+    }}
+  >
+    <h1>跑步记录暂时无法加载</h1>
+    <p>请检查网络连接后重试。</p>
+    <button
+      type="button"
+      onClick={() => {
+        resetActivityData();
+        window.location.reload();
+      }}
+    >
+      重试
+    </button>
+  </main>
+);
+
 const createRouteElement = (element: React.ReactElement) =>
   withOptionalGAPageTracking(
     <Suspense fallback={<RouteFallback />}>{element}</Suspense>
@@ -46,18 +74,22 @@ const routes = createBrowserRouter(
     {
       path: '/',
       element: createRouteElement(<Index />),
+      errorElement: <RouteError />,
     },
     {
       path: 'summary',
       element: createRouteElement(<HomePage />),
+      errorElement: <RouteError />,
     },
     {
       path: 'total',
       element: createRouteElement(<HomePage />),
+      errorElement: <RouteError />,
     },
     {
       path: '*',
       element: createRouteElement(<NotFound />),
+      errorElement: <RouteError />,
     },
   ],
   { basename: import.meta.env.BASE_URL }

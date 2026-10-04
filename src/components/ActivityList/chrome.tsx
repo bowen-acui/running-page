@@ -10,7 +10,9 @@ interface EmptyStateProps {
 
 interface PageHeaderProps {
   readonly year: number;
+  readonly years: readonly number[];
   readonly selectedMonth: number | null;
+  readonly onSelectYearValue: (year: number) => void;
   readonly onSelectYear: () => void;
   readonly onSelectMonth: () => void;
   readonly onShare: () => void;
@@ -22,6 +24,7 @@ interface ContextStripProps {
   readonly distance: number;
   readonly averagePaceSeconds: number;
   readonly averageHeartRate: number | null;
+  readonly heartRateSampleSize: number;
 }
 
 export const EmptyState = ({ title, subtitle }: EmptyStateProps) => (
@@ -36,7 +39,9 @@ export const EmptyState = ({ title, subtitle }: EmptyStateProps) => (
 
 export const PageHeader = ({
   year,
+  years,
   selectedMonth,
+  onSelectYearValue,
   onSelectYear,
   onSelectMonth,
   onShare,
@@ -46,7 +51,19 @@ export const PageHeader = ({
       <p>Running Journal</p>
       <h1>跑步节奏</h1>
       <span>
-        {year} · {selectedMonth ? `${selectedMonth} 月洞察` : '训练洞察'}
+        <select
+          aria-label="选择年份"
+          value={year}
+          onChange={(event) => onSelectYearValue(Number(event.target.value))}
+        >
+          {years.map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
+        {' · '}
+        {selectedMonth ? `${selectedMonth} 月洞察` : '训练洞察'}
       </span>
     </div>
     <div className={styles.headerActions}>
@@ -84,6 +101,7 @@ export const ContextStrip = ({
   distance,
   averagePaceSeconds,
   averageHeartRate,
+  heartRateSampleSize,
 }: ContextStripProps) => (
   <section className={styles.contextStrip} aria-label="当前视图摘要">
     <span>{selectedMonth ? `${selectedMonth} 月` : '全年'}</span>
@@ -92,7 +110,7 @@ export const ContextStrip = ({
     <span>{formatPace(averagePaceSeconds)}</span>
     <span>
       {averageHeartRate !== null
-        ? `${Math.round(averageHeartRate)} bpm`
+        ? `${Math.round(averageHeartRate)} bpm · ${heartRateSampleSize}/${count}`
         : '心率不足'}
     </span>
   </section>

@@ -208,6 +208,32 @@
   overflow-x: auto;
 }
 
+.tableFilters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+  color: var(--color-run-date);
+  font-size: 0.75rem;
+}
+
+.tableFilters label {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.tableFilters input,
+.tableFilters select {
+  min-height: 2.25rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+  border-radius: 0.7rem;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  padding: 0.35rem 0.65rem;
+  font: inherit;
+}
+
 .tableHint {
   margin: 0.45rem 0 0.1rem;
   display: flex;

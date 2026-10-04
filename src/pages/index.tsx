@@ -23,10 +23,14 @@ import { useInterval } from '@/hooks/useInterval';
 import { IS_CHINESE } from '@/utils/const';
 import {
   Activity,
+  convertMovingTime2Sec,
+  DIST_UNIT,
   filterAndSortRuns,
   filterCityRuns,
   filterTitleRuns,
   filterYearRuns,
+  isRunActivity,
+  M_TO_DIST,
   prefersReducedMotion,
   scrollToMap,
   sortDateFunc,
@@ -182,6 +186,40 @@ const Index = () => {
       sortDateFunc
     );
   }, [activities, currentFilter.item, currentFilter.func]);
+
+  const recentSummary = useMemo(() => {
+    const runActivities = activities
+      .filter(isRunActivity)
+      .slice()
+      .sort(sortDateFunc);
+    const latest = runActivities[0] ?? null;
+    const now = new Date();
+    const currentWeek = new Date(now);
+    currentWeek.setHours(0, 0, 0, 0);
+    currentWeek.setDate(
+      currentWeek.getDate() - ((currentWeek.getDay() + 6) % 7)
+    );
+    const weeks = Array.from({ length: 4 }, (_, index) => {
+      const start = new Date(currentWeek);
+      start.setDate(start.getDate() - (3 - index) * 7);
+      const next = new Date(start);
+      next.setDate(next.getDate() + 7);
+      const weekRuns = runActivities.filter((run) => {
+        const date = new Date(run.start_date_local.replace(' ', 'T'));
+        return date >= start && date < next;
+      });
+      return { start, runs: weekRuns };
+    });
+    const thisWeekRuns = weeks[3].runs;
+    const weekDays = new Set(
+      thisWeekRuns.map((run) => run.start_date_local.slice(0, 10))
+    );
+    const seconds = thisWeekRuns.reduce(
+      (sum, run) => sum + convertMovingTime2Sec(run.moving_time),
+      0
+    );
+    return { latest, weeks, thisWeekRuns, weekDays, seconds };
+  }, [activities]);
 
   const loadGeoUtils = useCallback(() => {
     geoUtilsRef.current ??= import('@/utils/geoUtils');
@@ -365,6 +403,21 @@ const Index = () => {
       setTitle,
     ]
   );
+
+  const returnToRunList = useCallback(() => {
+    locateRequestRef.current += 1;
+    setRunIndex(-1);
+    setSelectedRun(null);
+    setTitle('');
+    setAnimatedGeoData(EMPTY_GEO_DATA);
+    clearRunHash();
+    requestAnimationFrame(() => {
+      document.querySelector('.runTable')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  }, [setAnimatedGeoData, setRunIndex, setSelectedRun, setTitle]);
 
   // Auto locate activity when singleRunId is set and activities are loaded
   // First, detect the run's year and switch to it if needed
@@ -562,6 +615,60 @@ const Index = () => {
           ) : (
             <YearsStat year={year} onClick={changeYear} />
           )}
+          <section className="mt-3 rounded-2xl border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-3 text-[color:var(--color-run-date)] sm:mt-4 sm:p-4">
+            <p className="text-xs font-semibold tracking-wide">近期跑步</p>
+            <p className="mt-1 text-sm">
+              本周 {recentSummary.thisWeekRuns.length}/2 次 ·{' '}
+              {recentSummary.weekDays.size} 个跑步日 ·{' '}
+              {Math.floor(recentSummary.seconds / 60)} 分钟
+            </p>
+            <div
+              className="mt-3 flex items-end gap-2"
+              aria-label="最近四周每周跑步次数"
+            >
+              {recentSummary.weeks.map((week) => (
+                <span
+                  key={week.start.toISOString()}
+                  className="flex flex-1 flex-col items-center gap-1 text-[0.65rem]"
+                >
+                  <span>{week.runs.length}</span>
+                  <i
+                    aria-hidden="true"
+                    className="w-full rounded-full bg-[color:var(--color-primary)]/50"
+                    style={{ height: `${Math.max(4, week.runs.length * 7)}px` }}
+                  />
+                  <span>
+                    {week.start.toLocaleDateString('zh-CN', {
+                      month: 'numeric',
+                      day: 'numeric',
+                    })}
+                  </span>
+                </span>
+              ))}
+            </div>
+            {recentSummary.latest && (
+              <button
+                type="button"
+                className="mt-3 min-h-10 rounded-full border border-[color:var(--color-primary)]/16 px-3 text-xs font-semibold text-[color:var(--color-text-primary)] hover:bg-[color:var(--color-background)]/50"
+                onClick={() => {
+                  setIsMapCollapsed(false);
+                  setShouldRenderMap(true);
+                  const latestYear =
+                    recentSummary.latest!.start_date_local.slice(0, 4);
+                  setYear(latestYear);
+                  setCurrentFilter({ item: latestYear, func: filterYearRuns });
+                  setRunHash(recentSummary.latest!.run_id);
+                }}
+              >
+                最近一次 {recentSummary.latest.start_date_local.slice(0, 10)} ·{' '}
+                {(recentSummary.latest.distance / M_TO_DIST).toFixed(1)}{' '}
+                {DIST_UNIT}
+                {recentSummary.latest.summary_polyline
+                  ? ' · 查看路线'
+                  : ' · 暂无路线'}
+              </button>
+            )}
+          </section>
         </section>
         <section className="min-w-0 space-y-4 sm:space-y-6" id="map-container">
           <div
@@ -620,9 +727,11 @@ const Index = () => {
                   setViewState={setViewState}
                   changeYear={changeYear}
                   thisYear={year}
+                  navigationRuns={runs}
                   animationTrigger={animationTrigger}
                   selectedRun={selectedRun}
                   locateActivity={locateActivity}
+                  onReturnToRunList={returnToRunList}
                 />
               </Suspense>
             ) : (

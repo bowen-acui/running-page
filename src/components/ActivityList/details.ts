@@ -32,6 +32,10 @@ export const getOverviewDetail = (
     { label: '总距离', value: formatDistance(summary.distance) },
     { label: '平均配速', value: formatPace(summary.averagePaceSeconds) },
     { label: '平均心率', value: formatHeartRate(summary.averageHeartRate) },
+    {
+      label: '心率样本',
+      value: `${summary.heartRateSampleSize}/${summary.count} 次`,
+    },
     { label: '最长连续', value: `${longestStreak} 天` },
     { label: '最长断档', value: `${longestGap} 天` },
   ],
@@ -41,16 +45,17 @@ export const getAiSummary = (
   year: number,
   selectedMonth: number | null,
   insights: InsightSummary,
-  summary: ReturnType<typeof summarizeRuns>,
-  longestStreak: number
+  summary: ReturnType<typeof summarizeRuns>
 ) => {
   const scopeLabel = selectedMonth ? `${selectedMonth} 月` : `${year} 年`;
   return [
     `${scopeLabel}共完成 ${summary.count} 次跑步，累计 ${formatDistance(summary.distance)}。`,
-    insights.stableMonth
-      ? `节奏最稳定的月份是 ${insights.stableMonth} 月，连续性最高达到 ${longestStreak} 天。`
-      : `当前样本里还没有形成特别稳定的月份，最长连续跑步为 ${longestStreak} 天。`,
-    insights.heartRateLabel ?? insights.paceLabel,
+    insights.highFrequencyDays.length
+      ? `这段记录中较常在 ${insights.highFrequencyDays.join('、')} 跑步。`
+      : '这段记录还没有足够的跑步日数据。',
+    summary.heartRateSampleSize
+      ? `心率记录 ${summary.heartRateSampleSize}/${summary.count} 次，平均 ${formatHeartRate(summary.averageHeartRate)}；未设个人基线，不判断强度。`
+      : '心率记录不足，暂不判断强度。',
   ];
 };
 
@@ -92,6 +97,10 @@ export const buildMonthDetailCard = (
       label: '平均心率',
       value: formatHeartRate(month.averageHeartRate),
     },
+    {
+      label: '心率样本',
+      value: `${month.heartRateSampleSize}/${month.count} 次`,
+    },
   ],
 });
 
@@ -118,7 +127,7 @@ export const buildHeartDetailCard = (
 ): DetailCardData => ({
   eyebrow: 'Heart Note',
   title: formatShortDate(run.date),
-  subtitle: heartRate >= 170 ? '这次强度偏高一些。' : '这次心率相对克制。',
+  subtitle: '仅呈现设备记录；没有个人心率基线，不作强度判断。',
   rows: [
     { label: '平均心率', value: `${Math.round(heartRate)} bpm` },
     { label: '距离', value: formatDistance(run.distance) },

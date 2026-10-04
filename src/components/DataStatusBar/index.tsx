@@ -1,6 +1,7 @@
 import useActivities from '@/hooks/useActivities';
 import getSiteMetadata from '@/hooks/useSiteMetadata';
 import { isRunActivity } from '@/utils/utils';
+import importStatus from '@/static/data-status.json';
 
 const formatSyncTime = (value: string | null) => {
   if (!value) return '未获取';
@@ -16,6 +17,11 @@ const DataStatusBar = () => {
   const { lastSyncedAt, activities } = useActivities();
   const { activitySource } = getSiteMetadata();
   const runCount = activities.filter(isRunActivity).length;
+  const status = importStatus as {
+    lastImportAt: string | null;
+    addedCount: number;
+    source: string | null;
+  };
 
   return (
     <div className="mx-auto mt-4 max-w-screen-2xl px-4 lg:px-16">
@@ -32,6 +38,22 @@ const DataStatusBar = () => {
             {formatSyncTime(lastSyncedAt)}
           </strong>
         </span>
+        <span>
+          最近导入{' '}
+          <strong className="font-semibold text-[color:var(--color-text-primary)]">
+            {status.lastImportAt
+              ? formatSyncTime(status.lastImportAt)
+              : '暂无导入记录'}
+          </strong>
+        </span>
+        {status.lastImportAt && (
+          <span>
+            新增{' '}
+            <strong className="font-semibold text-[color:var(--color-text-primary)]">
+              {status.addedCount} 条 {status.source ?? ''}
+            </strong>
+          </span>
+        )}
         <span>
           记录{' '}
           <strong className="font-semibold text-[color:var(--color-text-primary)]">

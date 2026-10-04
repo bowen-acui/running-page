@@ -1,11 +1,8 @@
-import { DIST_UNIT, M_TO_DIST } from '@/utils/utils';
+import { DIST_UNIT, isRunActivity, M_TO_DIST } from '@/utils/utils';
 import type { Activity } from '@/utils/utils';
 import { formatShortDate, toDateKey } from './formatters';
-import { FALLBACK_YEAR, MONTH_LABELS } from './types';
+import { MONTH_LABELS } from './types';
 import type { HeatmapCell, MonthSummary, RunPoint, TimeBand } from './types';
-
-const isRunningActivity = (activity: Activity) =>
-  activity.type === 'Run' || activity.type === 'running';
 
 const toSeconds = (movingTime: string): number => {
   if (!movingTime) return 0;
@@ -37,7 +34,7 @@ const getAverageNullable = (values: ReadonlyArray<number | null>) => {
 
 export const normalizeRuns = (activities: Activity[]): RunPoint[] => {
   const runs = activities
-    .filter(isRunningActivity)
+    .filter(isRunActivity)
     .map((activity) => {
       const date = new Date(activity.start_date_local.replace(' ', 'T'));
       const distance = toDistance(activity);
@@ -62,8 +59,7 @@ export const normalizeRuns = (activities: Activity[]): RunPoint[] => {
     })
     .sort((a, b) => b.date.getTime() - a.date.getTime());
 
-  const latestYear = runs[0]?.date.getFullYear() ?? FALLBACK_YEAR;
-  return runs.filter((run) => run.date.getFullYear() === latestYear);
+  return runs;
 };
 
 export const summarizeRuns = (runs: readonly RunPoint[]) => {
@@ -74,6 +70,7 @@ export const summarizeRuns = (runs: readonly RunPoint[]) => {
     distance,
     averagePaceSeconds: distance > 0 ? seconds / distance : 0,
     averageHeartRate: getAverageNullable(runs.map((run) => run.heartRate)),
+    heartRateSampleSize: runs.filter((run) => run.heartRate !== null).length,
   };
 };
 
@@ -110,6 +107,7 @@ export const getMonthSummaries = (
       bucket.heartRateCount > 0
         ? bucket.heartRateTotal / bucket.heartRateCount
         : null,
+    heartRateSampleSize: bucket.heartRateCount,
   }));
 };
 
@@ -139,14 +137,12 @@ export const getDailyCells = (
   });
 
   const days = getDaysInRange(year, month);
-  const leadingBlanks = month
-    ? []
-    : Array.from({
-        length: getMondayFirstWeekday(days[0]),
-      }).map((_, blankIndex) => ({
-        kind: 'blank' as const,
-        blankKey: `blank-${year}-${month ?? 'year'}-${blankIndex}`,
-      }));
+  const leadingBlanks = Array.from({
+    length: getMondayFirstWeekday(days[0]),
+  }).map((_, blankIndex) => ({
+    kind: 'blank' as const,
+    blankKey: `blank-${year}-${month ?? 'year'}-${blankIndex}`,
+  }));
 
   const cells = days.map((date) => {
     const key = toDateKey(date);

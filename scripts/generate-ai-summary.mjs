@@ -7,7 +7,7 @@ const activitiesPath = resolve(rootDir, 'src/static/activities.json');
 const outputPath = resolve(rootDir, 'src/static/ai-summary.json');
 const deepSeekUrl = 'https://api.deepseek.com/chat/completions';
 const defaultTrainingGoal =
-  '为了健康体态和长期体能维护而跑步：不追求成绩、距离或提速，优先关注心率是否过高、恢复是否充分、跑步是否轻松可持续。';
+  '为了健康体态和长期体能维护而跑步：不追求成绩、距离或提速，优先关注跑步是否轻松可持续、恢复是否充分；有个人心率基线时再参考心率。';
 
 const toSeconds = (movingTime) => {
   if (!movingTime) return 0;
@@ -107,6 +107,7 @@ export const summarizeActivities = (activities) => {
       const distanceKm = activity.distance / 1000;
       const seconds = toSeconds(activity.moving_time);
       return {
+        id: activity.run_id,
         date,
         dateKey: activity.start_date_local.slice(0, 10),
         distanceKm,
@@ -187,6 +188,8 @@ export const summarizeActivities = (activities) => {
     heartRateCoverage: yearRuns.length
       ? Number((heartRates.length / yearRuns.length).toFixed(2))
       : 0,
+    sourceRunCount: yearRuns.length,
+    sourceLatestRunId: yearRuns[0]?.id ?? null,
     longestStreak: getLongestStreak(yearRuns),
     longestGap: getLongestGap(yearRuns),
     peakMonth: peakMonth.count ? peakMonth.label : null,
@@ -218,7 +221,7 @@ export const buildFallbackSummary = (
       ? `连续跑最长 ${summary.longestStreak} 天，不需要补跑；跑后舒服比连续天数更重要。`
       : `连续跑已有 ${summary.longestStreak} 天，留出恢复日比继续叠加更健康。`,
     hasHeartRateSignal
-      ? `心率样本覆盖 ${Math.round(summary.heartRateCoverage * 100)}%，若跑后疲劳明显，下次主动放慢。`
+      ? `心率记录覆盖 ${Math.round(summary.heartRateCoverage * 100)}%，只呈现记录，不据平均值判断强度。`
       : `心率记录不足；优先观察跑后恢复感和第二天是否疲劳。`,
   ];
 
@@ -228,6 +231,8 @@ export const buildFallbackSummary = (
     model: 'rule-based',
     fallbackReason,
     trainingGoal,
+    sourceRunCount: summary.sourceRunCount,
+    sourceLatestRunId: summary.sourceLatestRunId,
     items: items.slice(0, 3),
   };
 };
@@ -245,10 +250,10 @@ export const buildPrompt = (summary, trainingGoal = defaultTrainingGoal) =>
     `用户目标：${trainingGoal}`,
     '请只根据给定 JSON 生成 3 条以内中文短句，每条 18-42 个汉字。',
     '每条必须包含：数据依据 + 下一步行动。不要只复述数据。',
-    '优先建议：心率是否偏高、跑后恢复、轻松跑比例、是否需要降强度、是否需要休息。',
+    '优先呈现用户实际提供的数据，不要从未提供的信息推断跑后感受、恢复情况或训练强度。',
     '不要建议追求速度、PB、配速进步、距离增长、训练计划升级或比赛目标。',
-    '心率规则：heartRateSampleSize < 3 时必须写“心率记录不足”，不得判断强度；样本不足或覆盖率低时只能弱提示。',
-    '如果 averageHeartRate 偏高，只能建议放慢、缩短、改走跑结合或增加恢复日，不要医疗诊断。',
+    '心率规则：heartRateSampleSize < 3 时必须写“心率记录不足”，不得判断强度。用户没有提供个人心率区间和最大心率时，不得仅根据绝对平均心率判断强度高低。',
+    '心率只可陈述平均值、记录次数和覆盖率；不作医疗判断或强度建议。',
     '禁止：鸡汤、医疗诊断、夸张警告、排行榜语气、空泛鼓励、重复首页总距离/总次数。',
     '风格：安静、具体、像年度跑步手账。只输出短句，不要标题。',
     `数据：${JSON.stringify(summary)}`,
@@ -296,6 +301,8 @@ const requestDeepSeekSummary = async (apiKey, summary, trainingGoal) => {
     model: payload?.model || process.env.DEEPSEEK_MODEL || 'deepseek-chat',
     fallbackReason: null,
     trainingGoal,
+    sourceRunCount: summary.sourceRunCount,
+    sourceLatestRunId: summary.sourceLatestRunId,
     items,
   };
 };

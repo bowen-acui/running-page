@@ -80,7 +80,7 @@ def parse_directory(directory, temporary):
             raise ValueError(
                 f"解析结果缺少路线或距离无效: {expected[str(row['run_id'])].name}"
             )
-    return rows
+    return rows, expected
 
 
 def merge(existing, parsed):
@@ -127,6 +127,33 @@ def merge(existing, parsed):
     return merged, added, duplicates, conflicts
 
 
+def write_import_status(merged, added):
+    if not added:
+        return
+    path = Path(__file__).resolve().parent.parent / "src/static/data-status.json"
+    status = {
+        "lastImportAt": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "addedCount": len(added),
+        "source": "GPX",
+        "dataVersion": max(row["run_id"] for row in added),
+        "latestActivityAt": merged[-1]["start_date_local"],
+    }
+    temporary_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", dir=path.parent, delete=False
+        ) as stream:
+            temporary_path = Path(stream.name)
+            json.dump(status, stream, ensure_ascii=False, indent=2)
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary_path, path)
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", type=Path, help="只包含待导入 .gpx 文件的目录")
@@ -138,11 +165,23 @@ def main():
     if not args.directory.is_dir():
         raise ValueError(f"目录不存在: {args.directory}")
     with tempfile.TemporaryDirectory(prefix="running-import-") as directory:
-        parsed = parse_directory(args.directory.resolve(), Path(directory))
+        parsed, source_files = parse_directory(
+            args.directory.resolve(), Path(directory)
+        )
     merged, added, duplicates, conflicts = merge(existing, parsed)
     print(
         f"旧活动数 {len(existing)} / 解析数 {len(parsed)} / 新增数 {len(added)} / 重复数 {duplicates} / 冲突数 {len(conflicts)} / 新活动数 {len(merged)}"
     )
+    for row in added:
+        activity_id = str(row["run_id"])
+        date = row["start_date_local"]
+        distance_km = float(row["distance"]) / 1000
+        print(
+            f"新增预览 {date[:16]} / {distance_km:.2f} km / "
+            f"{source_files[activity_id].name}"
+        )
+    if duplicates:
+        print(f"重复文件 {duplicates} 条，不会重复写入")
     if conflicts:
         raise ValueError(
             "疑似跨来源重复，请核对后重试；未写入任何活动:\n" + "\n".join(conflicts)
@@ -165,6 +204,7 @@ def main():
     finally:
         if temporary_path is not None:
             temporary_path.unlink(missing_ok=True)
+    write_import_status(merged, added)
     print(f"已追加 {len(added)} 条活动: {destination}")
 
 

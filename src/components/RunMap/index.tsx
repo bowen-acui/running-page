@@ -61,9 +61,11 @@ interface IRunMapProps {
   changeYear: (_year: string) => void;
   geoData: FeatureCollection<RPGeometry>;
   thisYear: string;
+  navigationRuns: readonly Activity[];
   selectedRun?: Activity | null;
   animationTrigger?: number; // Optional trigger to force animation replay
   locateActivity?: (_runIds: RunIds) => void;
+  onReturnToRunList: () => void;
 }
 
 type MapStyleLayer = {
@@ -79,9 +81,11 @@ const RunMap = ({
   changeYear,
   geoData,
   thisYear,
+  navigationRuns,
   selectedRun,
   animationTrigger,
   locateActivity,
+  onReturnToRunList,
 }: IRunMapProps) => {
   const { countries, provinces } = useActivities();
   const mapRef = useRef<MapRef>(null);
@@ -501,8 +505,13 @@ const RunMap = ({
       distance: (selectedRun.distance / M_TO_DIST).toFixed(2),
       pace: formatPace(selectedRun.average_speed),
       time: formatRunTime(selectedRun.moving_time),
+      name: selectedRun.name,
+      heartRate: selectedRun.average_heartrate,
+      index: navigationRuns.findIndex(
+        (run) => run.run_id === selectedRun.run_id
+      ),
     };
-  }, [selectedRun]);
+  }, [navigationRuns, selectedRun]);
 
   return (
     <Map
@@ -627,9 +636,10 @@ const RunMap = ({
         />
       )}
       {selectedRunSummary ? (
-        <aside className={styles.runSummary} aria-label="Selected run summary">
+        <aside className={styles.runSummary} aria-label="单次跑步摘要">
           <div className={styles.runSummaryHeader}>
             <time>{selectedRunSummary.date}</time>
+            <strong>{selectedRunSummary.name}</strong>
           </div>
           <dl className={styles.runSummaryMetrics}>
             <div>
@@ -644,7 +654,51 @@ const RunMap = ({
               <dt>Time</dt>
               <dd>{selectedRunSummary.time}</dd>
             </div>
+            <div>
+              <dt>心率</dt>
+              <dd>
+                {selectedRunSummary.heartRate
+                  ? `${Math.round(selectedRunSummary.heartRate)} bpm`
+                  : '未记录'}
+              </dd>
+            </div>
           </dl>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="pointer-events-auto rounded-full border border-[color:var(--color-primary)]/20 bg-[color:var(--color-background)]/75 px-2.5 py-1 text-[0.65rem] font-semibold"
+              onClick={onReturnToRunList}
+            >
+              返回跑步记录
+            </button>
+            <button
+              type="button"
+              disabled={
+                selectedRunSummary.index < 0 ||
+                selectedRunSummary.index >= navigationRuns.length - 1
+              }
+              className="pointer-events-auto rounded-full border border-[color:var(--color-primary)]/20 bg-[color:var(--color-background)]/75 px-2.5 py-1 text-[0.65rem] font-semibold disabled:opacity-40"
+              aria-label="查看更早一条跑步"
+              onClick={() => {
+                const previous = navigationRuns[selectedRunSummary.index + 1];
+                if (previous) locateActivity?.([previous.run_id]);
+              }}
+            >
+              更早一条
+            </button>
+            <button
+              type="button"
+              disabled={selectedRunSummary.index <= 0}
+              className="pointer-events-auto rounded-full border border-[color:var(--color-primary)]/20 bg-[color:var(--color-background)]/75 px-2.5 py-1 text-[0.65rem] font-semibold disabled:opacity-40"
+              aria-label="查看更新一条跑步"
+              onClick={() => {
+                const next = navigationRuns[selectedRunSummary.index - 1];
+                if (next) locateActivity?.([next.run_id]);
+              }}
+            >
+              更新一条
+            </button>
+          </div>
         </aside>
       ) : (
         title && <span className={styles.runTitle}>{title}</span>

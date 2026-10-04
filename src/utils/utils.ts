@@ -278,7 +278,8 @@ const filterCityRuns = (run: Activity, city: string) => {
 const filterTitleRuns = (run: Activity, title: string) =>
   titleForRun(run) === title;
 
-const isRunActivity = (activity: Activity) => activity.type === 'Run';
+const isRunActivity = (activity: Activity) =>
+  activity.type === 'Run' || activity.type === 'running';
 
 const filterAndSortRuns = (
   activities: Activity[],
