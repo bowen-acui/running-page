@@ -636,7 +636,10 @@ const RunMap = ({
         />
       )}
       {selectedRunSummary ? (
-        <aside className={styles.runSummary} aria-label="单次跑步摘要">
+        <aside
+          className={styles.runSummary}
+          aria-label="单次跑步信息与记录切换"
+        >
           <div className={styles.runSummaryHeader}>
             <time>{selectedRunSummary.date}</time>
             <strong>{selectedRunSummary.name}</strong>
@@ -647,11 +650,11 @@ const RunMap = ({
               <dd>{selectedRunSummary.distance}</dd>
             </div>
             <div>
-              <dt>Pace</dt>
+              <dt>配速</dt>
               <dd>{selectedRunSummary.pace}</dd>
             </div>
             <div>
-              <dt>Time</dt>
+              <dt>时长</dt>
               <dd>{selectedRunSummary.time}</dd>
             </div>
             <div>
@@ -663,10 +666,10 @@ const RunMap = ({
               </dd>
             </div>
           </dl>
-          <div className="flex gap-2">
+          <div className={styles.runSummaryActions}>
             <button
               type="button"
-              className="pointer-events-auto rounded-full border border-[color:var(--color-primary)]/20 bg-[color:var(--color-background)]/75 px-2.5 py-1 text-[0.65rem] font-semibold"
+              className={styles.runSummaryButton}
               onClick={onReturnToRunList}
             >
               返回跑步记录
@@ -677,7 +680,7 @@ const RunMap = ({
                 selectedRunSummary.index < 0 ||
                 selectedRunSummary.index >= navigationRuns.length - 1
               }
-              className="pointer-events-auto rounded-full border border-[color:var(--color-primary)]/20 bg-[color:var(--color-background)]/75 px-2.5 py-1 text-[0.65rem] font-semibold disabled:opacity-40"
+              className={styles.runSummaryButton}
               aria-label="查看更早一条跑步"
               onClick={() => {
                 const previous = navigationRuns[selectedRunSummary.index + 1];
@@ -689,7 +692,7 @@ const RunMap = ({
             <button
               type="button"
               disabled={selectedRunSummary.index <= 0}
-              className="pointer-events-auto rounded-full border border-[color:var(--color-primary)]/20 bg-[color:var(--color-background)]/75 px-2.5 py-1 text-[0.65rem] font-semibold disabled:opacity-40"
+              className={styles.runSummaryButton}
               aria-label="查看更新一条跑步"
               onClick={() => {
                 const next = navigationRuns[selectedRunSummary.index - 1];

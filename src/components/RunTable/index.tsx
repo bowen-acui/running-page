@@ -37,9 +37,8 @@ const RunTable = ({
 }: IRunTableProperties) => {
   const [sortState, setSortState] = useState<SortState | null>(null);
   const [showAllForKey, setShowAllForKey] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
   const [month, setMonth] = useState('');
-  const filterKey = `${runs.length}:${runs[0]?.run_id ?? ''}:${runs.at(-1)?.run_id ?? ''}:${search}:${month}`;
+  const filterKey = `${runs.length}:${runs[0]?.run_id ?? ''}:${runs.at(-1)?.run_id ?? ''}:${month}`;
   const showAllRows = showAllForKey === filterKey;
 
   const sortKeys = useMemo(() => {
@@ -85,15 +84,9 @@ const RunTable = ({
     () =>
       runs.filter((run) => {
         const date = run.start_date_local.slice(0, 10);
-        return (
-          (!month || date.slice(5, 7) === month) &&
-          (!search ||
-            `${run.name} ${date}`
-              .toLowerCase()
-              .includes(search.trim().toLowerCase()))
-        );
+        return !month || date.slice(5, 7) === month;
       }),
-    [month, runs, search]
+    [month, runs]
   );
 
   const sortedRuns = useMemo(() => {
@@ -146,15 +139,6 @@ const RunTable = ({
   return (
     <div className={styles.tableContainer}>
       <div className={styles.tableFilters}>
-        <label>
-          搜索跑步
-          <input
-            type="search"
-            value={search}
-            placeholder="名称或日期"
-            onChange={(event) => setSearch(event.target.value)}
-          />
-        </label>
         <label>
           月份
           <select
@@ -219,15 +203,9 @@ const RunTable = ({
       {sortedRuns.length === 0 && (
         <div className={styles.emptyState}>
           <span>没有符合条件的跑步记录</span>
-          {(search || month) && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearch('');
-                setMonth('');
-              }}
-            >
-              清空搜索和筛选
+          {month && (
+            <button type="button" onClick={() => setMonth('')}>
+              清空月份筛选
             </button>
           )}
         </div>

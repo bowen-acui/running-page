@@ -24,13 +24,11 @@ import { IS_CHINESE } from '@/utils/const';
 import {
   Activity,
   convertMovingTime2Sec,
-  DIST_UNIT,
   filterAndSortRuns,
   filterCityRuns,
   filterTitleRuns,
   filterYearRuns,
   isRunActivity,
-  M_TO_DIST,
   prefersReducedMotion,
   scrollToMap,
   sortDateFunc,
@@ -192,7 +190,6 @@ const Index = () => {
       .filter(isRunActivity)
       .slice()
       .sort(sortDateFunc);
-    const latest = runActivities[0] ?? null;
     const now = new Date();
     const currentWeek = new Date(now);
     currentWeek.setHours(0, 0, 0, 0);
@@ -218,7 +215,7 @@ const Index = () => {
       (sum, run) => sum + convertMovingTime2Sec(run.moving_time),
       0
     );
-    return { latest, weeks, thisWeekRuns, weekDays, seconds };
+    return { weeks, thisWeekRuns, weekDays, seconds };
   }, [activities]);
 
   const loadGeoUtils = useCallback(() => {
@@ -646,28 +643,6 @@ const Index = () => {
                 </span>
               ))}
             </div>
-            {recentSummary.latest && (
-              <button
-                type="button"
-                className="mt-3 min-h-10 rounded-full border border-[color:var(--color-primary)]/16 px-3 text-xs font-semibold text-[color:var(--color-text-primary)] hover:bg-[color:var(--color-background)]/50"
-                onClick={() => {
-                  setIsMapCollapsed(false);
-                  setShouldRenderMap(true);
-                  const latestYear =
-                    recentSummary.latest!.start_date_local.slice(0, 4);
-                  setYear(latestYear);
-                  setCurrentFilter({ item: latestYear, func: filterYearRuns });
-                  setRunHash(recentSummary.latest!.run_id);
-                }}
-              >
-                最近一次 {recentSummary.latest.start_date_local.slice(0, 10)} ·{' '}
-                {(recentSummary.latest.distance / M_TO_DIST).toFixed(1)}{' '}
-                {DIST_UNIT}
-                {recentSummary.latest.summary_polyline
-                  ? ' · 查看路线'
-                  : ' · 暂无路线'}
-              </button>
-            )}
           </section>
         </section>
         <section className="min-w-0 space-y-4 sm:space-y-6" id="map-container">
