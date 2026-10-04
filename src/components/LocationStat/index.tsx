@@ -20,7 +20,7 @@ const LocationStat = ({
 
   return (
     <div className={`${styles.locationStat} w-full lg:pr-6`}>
-      <div>
+      <div className={styles.details}>
         <LocationSummary />
         {Object.keys(cities).length > 0 && <CitiesStat onClick={changeCity} />}
         <PeriodStat onClick={changeTitle} />

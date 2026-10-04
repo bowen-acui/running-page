@@ -1,4 +1,8 @@
 @media (max-width: 768px) {
+  .details {
+    display: none;
+  }
+
   .locationStat {
     display: flex;
     flex-direction: column;

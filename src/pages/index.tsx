@@ -572,6 +572,60 @@ const Index = () => {
 
   const { theme } = useTheme();
   const summaryLink = navLinks.find((link) => link.name === 'Summary');
+  const recentRunsCard = (
+    <section className="mt-2 rounded-[1.7rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-background)]/60 p-4 text-[color:var(--color-text-primary)] lg:mr-6">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="text-[0.72rem] font-semibold tracking-[0.04em]">
+          近期跑步
+        </h2>
+        <span className="text-[0.68rem] text-[color:var(--color-run-date)]/65">
+          累计 {recentSummary.runCount} 次
+        </span>
+      </div>
+      <p className="mt-2 flex items-baseline gap-1.5">
+        <span className="text-xs text-[color:var(--color-run-date)]/75">
+          本周
+        </span>
+        <strong className="text-[1.7rem] leading-none font-[family:var(--font-display)] font-semibold tabular-nums">
+          {recentSummary.thisWeekRuns.length}
+        </strong>
+        <span className="text-xs text-[color:var(--color-run-date)]/75">
+          / 2 次
+        </span>
+      </p>
+      <p className="mt-1 text-[0.72rem] text-[color:var(--color-run-date)]/75">
+        {recentSummary.weekDays.size} 个跑步日 ·{' '}
+        {Math.floor(recentSummary.seconds / 60)} 分钟
+      </p>
+      <div className="mt-4 grid grid-cols-4" aria-label="最近四周每周跑步次数">
+        {recentSummary.weeks.map((week) => (
+          <span
+            key={week.start.toISOString()}
+            className="flex flex-col items-center gap-0.5 border-r border-[color:var(--color-primary)]/8 last:border-r-0"
+          >
+            <strong className="text-lg leading-none font-[family:var(--font-display)] font-medium tabular-nums">
+              {week.runs.length}
+            </strong>
+            <span className="text-[0.65rem] text-[color:var(--color-run-date)]/60">
+              {week.start.toLocaleDateString('zh-CN', {
+                month: 'numeric',
+                day: 'numeric',
+              })}
+            </span>
+          </span>
+        ))}
+      </div>
+      <p className="mt-4 border-t border-[color:var(--color-primary)]/8 pt-3 text-[0.68rem] text-[color:var(--color-run-date)]/65">
+        最近活动{' '}
+        <time
+          dateTime={lastSyncedAt?.replace(' ', 'T')}
+          className="font-medium text-[color:var(--color-text-primary)]"
+        >
+          {formatActivityTime(lastSyncedAt)}
+        </time>
+      </p>
+    </section>
+  );
   return (
     <Layout>
       <Helmet>
@@ -605,61 +659,7 @@ const Index = () => {
           ) : (
             <YearsStat year={year} onClick={changeYear} />
           )}
-          <section className="mt-2 rounded-[1.7rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-background)]/60 p-4 text-[color:var(--color-text-primary)] lg:mr-6">
-            <div className="flex items-baseline justify-between gap-3">
-              <h2 className="text-[0.72rem] font-semibold tracking-[0.04em]">
-                近期跑步
-              </h2>
-              <span className="text-[0.68rem] text-[color:var(--color-run-date)]/65">
-                累计 {recentSummary.runCount} 次
-              </span>
-            </div>
-            <p className="mt-2 flex items-baseline gap-1.5">
-              <span className="text-xs text-[color:var(--color-run-date)]/75">
-                本周
-              </span>
-              <strong className="text-[1.7rem] leading-none font-[family:var(--font-display)] font-semibold tabular-nums">
-                {recentSummary.thisWeekRuns.length}
-              </strong>
-              <span className="text-xs text-[color:var(--color-run-date)]/75">
-                / 2 次
-              </span>
-            </p>
-            <p className="mt-1 text-[0.72rem] text-[color:var(--color-run-date)]/75">
-              {recentSummary.weekDays.size} 个跑步日 ·{' '}
-              {Math.floor(recentSummary.seconds / 60)} 分钟
-            </p>
-            <div
-              className="mt-4 grid grid-cols-4"
-              aria-label="最近四周每周跑步次数"
-            >
-              {recentSummary.weeks.map((week) => (
-                <span
-                  key={week.start.toISOString()}
-                  className="flex flex-col items-center gap-0.5 border-r border-[color:var(--color-primary)]/8 last:border-r-0"
-                >
-                  <strong className="text-lg leading-none font-[family:var(--font-display)] font-medium tabular-nums">
-                    {week.runs.length}
-                  </strong>
-                  <span className="text-[0.65rem] text-[color:var(--color-run-date)]/60">
-                    {week.start.toLocaleDateString('zh-CN', {
-                      month: 'numeric',
-                      day: 'numeric',
-                    })}
-                  </span>
-                </span>
-              ))}
-            </div>
-            <p className="mt-4 border-t border-[color:var(--color-primary)]/8 pt-3 text-[0.68rem] text-[color:var(--color-run-date)]/65">
-              最近活动{' '}
-              <time
-                dateTime={lastSyncedAt?.replace(' ', 'T')}
-                className="font-medium text-[color:var(--color-text-primary)]"
-              >
-                {formatActivityTime(lastSyncedAt)}
-              </time>
-            </p>
-          </section>
+          <div className="hidden min-[769px]:block">{recentRunsCard}</div>
         </section>
         <section className="min-w-0 space-y-4 sm:space-y-6" id="map-container">
           <div
@@ -746,6 +746,7 @@ const Index = () => {
             )}
           </div>
         </section>
+        <div className="min-[769px]:hidden">{recentRunsCard}</div>
       </div>
       {import.meta.env.VERCEL && <Analytics />}
     </Layout>
