@@ -146,7 +146,7 @@
 - [x] **Step 1：每个阶段提交前看 diff。** `git diff --check`、`git diff --stat`、`git status --short`；特别确认没有把 GPX 原始轨迹、`run_page/data.db`、临时目录或密钥加入版本库。
 - [x] **Step 2：运行仓库现有检查。** `pnpm run check`、`pnpm run lint`、`pnpm run build`；发布前运行现有 `pnpm test:smoke`。如果 Python CI 仍失败，单独记录原因，不用 Pages 构建成功代替整套 CI 结果。
 - [x] **Step 3：逐条人工验收。** 桌面和 390px 手机检查：首页首屏、同名跑步日期、点选路线、年／月切换、单日详情、分享弹窗焦点、中文文案、空 GPX 保护以及数据条数。深色主题检查一次。首页和 `/summary` 的跑步次数、里程必须相同；显示最近活动日期的地方都与 JSON 最新记录一致。
-- [ ] **Step 4：有发布授权时再推送。** `main` 推送后等待 GitHub Pages 完成，并实际打开线上首页和 `/summary` 核对同样的数字与交互；记录部署的提交 SHA。仅本地构建成功不算线上完成。
+- [x] **Step 4：有发布授权时再推送。** `main` 推送后等待 GitHub Pages 完成，并实际打开线上首页和 `/summary` 核对同样的数字与交互；记录部署的提交 SHA。仅本地构建成功不算线上完成。
 
 ## 最终完成标准
 
@@ -155,6 +155,14 @@
 3. 390px 手机首屏可见跑步总览，活动日期无需横向滚动即可识别；点击记录能看到对应路线。
 4. 月视图首次打开是最近有记录的月份，热力图可点；月度本地建议不标作 DeepSeek。
 5. 分享弹窗键盘焦点正确，中文页面使用 `zh-CN`，地图包仍只在需要时加载。
+
+## 执行与发布记录
+
+- 提交：`eda4972485d5b23344cad86f2f4294d60170f77c`。
+- GitHub Pages 工作流：[运行 #32](https://github.com/bowen-acui/running-page/actions/runs/37172016213)，结论 `success`。
+- 线上首页与 `/summary` 均显示 62 次、203.6 km，最近活动为 2026-09-28；线上切换到 9 月并选择 9 月 28 日后显示 2.7 km。
+- 本地 `pnpm` 为 11.19.0，与仓库声明的 9.15.9 不一致，尝试运行时会在无交互终端中止依赖目录清理。改用 `node_modules/.bin/prettier`、`eslint`、`vite` 和 `node scripts/smoke-test.mjs` 执行对应检查，均通过。
+- 4G 模拟（100 ms RTT、1.6 Mbps 下行）下，首页表格可操作时间约 6.36 秒；展开地图后画布约 3.92 秒出现。Mapbox 首屏请求为 0，展开后请求 1 次。
 
 ## 不在本计划内的后续选择
 
