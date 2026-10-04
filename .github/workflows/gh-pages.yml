@@ -11,6 +11,7 @@ on:
       - 'index.html'
       - 'package.json'
       - 'pnpm-lock.yaml'
+      - 'public/**'
       - 'scripts/generate-ai-summary.mjs'
       - 'scripts/refresh-svg-stats.mjs'
       - 'src/**'
