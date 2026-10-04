@@ -62,6 +62,16 @@ const DEFAULT_VIEW_STATE: IViewState = {
   zoom: 3,
 };
 
+const formatActivityTime = (value: string | null) => {
+  if (!value) return '未获取';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('zh-CN', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date);
+};
+
 // Parse a shareable filter hash like #year_2025 / #city_上海 / #title_晨跑
 const getFilterFromHash = (): { kind: FilterKind; value: string } | null => {
   if (typeof window === 'undefined') return null;
@@ -133,7 +143,7 @@ const useRunHashId = () =>
 
 const Index = () => {
   const { siteTitle, navLinks } = getSiteMetadata();
-  const { activities, thisYear } = useActivities();
+  const { activities, thisYear, lastSyncedAt } = useActivities();
   const themeChangeCounter = useThemeChangeCounter();
   // Restore a shared filter from the URL hash on first load
   const [initialFilter] = useState(getFilterFromHash);
@@ -214,7 +224,13 @@ const Index = () => {
       (sum, run) => sum + convertMovingTime2Sec(run.moving_time),
       0
     );
-    return { weeks, thisWeekRuns, weekDays, seconds };
+    return {
+      weeks,
+      thisWeekRuns,
+      weekDays,
+      seconds,
+      runCount: runActivities.length,
+    };
   }, [activities]);
 
   const loadGeoUtils = useCallback(() => {
@@ -589,31 +605,43 @@ const Index = () => {
           ) : (
             <YearsStat year={year} onClick={changeYear} />
           )}
-          <section className="mt-2 rounded-[1.7rem] border border-[color:var(--color-primary)]/10 bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-run-row-hover-background)_46%,white_18%),color-mix(in_srgb,var(--color-background)_88%,transparent))] p-3 text-[color:var(--color-run-date)] shadow-[0_16px_46px_rgba(7,54,76,0.055)] sm:p-3.5 lg:mr-6">
-            <p className="text-[0.58rem] font-semibold tracking-[0.12em] uppercase">
-              近期跑步
+          <section className="mt-2 rounded-[1.7rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-background)]/60 p-4 text-[color:var(--color-text-primary)] lg:mr-6">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="text-[0.72rem] font-semibold tracking-[0.04em]">
+                近期跑步
+              </h2>
+              <span className="text-[0.68rem] text-[color:var(--color-run-date)]/65">
+                累计 {recentSummary.runCount} 次
+              </span>
+            </div>
+            <p className="mt-2 flex items-baseline gap-1.5">
+              <span className="text-xs text-[color:var(--color-run-date)]/75">
+                本周
+              </span>
+              <strong className="text-[1.7rem] leading-none font-[family:var(--font-display)] font-semibold tabular-nums">
+                {recentSummary.thisWeekRuns.length}
+              </strong>
+              <span className="text-xs text-[color:var(--color-run-date)]/75">
+                / 2 次
+              </span>
             </p>
-            <p className="mt-1 text-sm">
-              本周 {recentSummary.thisWeekRuns.length}/2 次 ·{' '}
+            <p className="mt-1 text-[0.72rem] text-[color:var(--color-run-date)]/75">
               {recentSummary.weekDays.size} 个跑步日 ·{' '}
               {Math.floor(recentSummary.seconds / 60)} 分钟
             </p>
             <div
-              className="mt-3 flex items-end gap-2"
+              className="mt-4 grid grid-cols-4"
               aria-label="最近四周每周跑步次数"
             >
               {recentSummary.weeks.map((week) => (
                 <span
                   key={week.start.toISOString()}
-                  className="flex flex-1 flex-col items-center gap-1 text-[0.65rem]"
+                  className="flex flex-col items-center gap-0.5 border-r border-[color:var(--color-primary)]/8 last:border-r-0"
                 >
-                  <span>{week.runs.length}</span>
-                  <i
-                    aria-hidden="true"
-                    className="w-full rounded-full bg-[color:var(--color-primary)]/50"
-                    style={{ height: `${Math.max(4, week.runs.length * 7)}px` }}
-                  />
-                  <span>
+                  <strong className="text-lg leading-none font-[family:var(--font-display)] font-medium tabular-nums">
+                    {week.runs.length}
+                  </strong>
+                  <span className="text-[0.65rem] text-[color:var(--color-run-date)]/60">
                     {week.start.toLocaleDateString('zh-CN', {
                       month: 'numeric',
                       day: 'numeric',
@@ -622,6 +650,15 @@ const Index = () => {
                 </span>
               ))}
             </div>
+            <p className="mt-4 border-t border-[color:var(--color-primary)]/8 pt-3 text-[0.68rem] text-[color:var(--color-run-date)]/65">
+              最近活动{' '}
+              <time
+                dateTime={lastSyncedAt?.replace(' ', 'T')}
+                className="font-medium text-[color:var(--color-text-primary)]"
+              >
+                {formatActivityTime(lastSyncedAt)}
+              </time>
+            </p>
           </section>
         </section>
         <section className="min-w-0 space-y-4 sm:space-y-6" id="map-container">
