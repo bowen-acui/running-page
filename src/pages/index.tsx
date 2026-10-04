@@ -23,7 +23,6 @@ import { useInterval } from '@/hooks/useInterval';
 import { IS_CHINESE } from '@/utils/const';
 import {
   Activity,
-  convertMovingTime2Sec,
   filterAndSortRuns,
   filterCityRuns,
   filterTitleRuns,
@@ -194,43 +193,20 @@ const Index = () => {
     );
   }, [activities, currentFilter.item, currentFilter.func]);
 
-  const recentSummary = useMemo(() => {
-    const runActivities = activities
-      .filter(isRunActivity)
-      .slice()
-      .sort(sortDateFunc);
+  const thisWeekRunCount = useMemo(() => {
     const now = new Date();
     const currentWeek = new Date(now);
     currentWeek.setHours(0, 0, 0, 0);
     currentWeek.setDate(
       currentWeek.getDate() - ((currentWeek.getDay() + 6) % 7)
     );
-    const weeks = Array.from({ length: 4 }, (_, index) => {
-      const start = new Date(currentWeek);
-      start.setDate(start.getDate() - (3 - index) * 7);
-      const next = new Date(start);
-      next.setDate(next.getDate() + 7);
-      const weekRuns = runActivities.filter((run) => {
-        const date = new Date(run.start_date_local.replace(' ', 'T'));
-        return date >= start && date < next;
-      });
-      return { start, runs: weekRuns };
-    });
-    const thisWeekRuns = weeks[3].runs;
-    const weekDays = new Set(
-      thisWeekRuns.map((run) => run.start_date_local.slice(0, 10))
-    );
-    const seconds = thisWeekRuns.reduce(
-      (sum, run) => sum + convertMovingTime2Sec(run.moving_time),
-      0
-    );
-    return {
-      weeks,
-      thisWeekRuns,
-      weekDays,
-      seconds,
-      runCount: runActivities.length,
-    };
+    const nextWeek = new Date(currentWeek);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    return activities.filter((run) => {
+      if (!isRunActivity(run)) return false;
+      const date = new Date(run.start_date_local.replace(' ', 'T'));
+      return date >= currentWeek && date < nextWeek;
+    }).length;
   }, [activities]);
 
   const loadGeoUtils = useCallback(() => {
@@ -573,57 +549,36 @@ const Index = () => {
   const { theme } = useTheme();
   const summaryLink = navLinks.find((link) => link.name === 'Summary');
   const recentRunsCard = (
-    <section className="mt-2 rounded-[1.7rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-background)]/60 p-4 text-[color:var(--color-text-primary)] lg:mr-6">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-[0.72rem] font-semibold tracking-[0.04em]">
-          近期跑步
-        </h2>
-        <span className="text-[0.68rem] text-[color:var(--color-run-date)]/65">
-          累计 {recentSummary.runCount} 次
-        </span>
-      </div>
-      <p className="mt-2 flex items-baseline gap-1.5">
-        <span className="text-xs text-[color:var(--color-run-date)]/75">
-          本周
-        </span>
-        <strong className="text-[1.7rem] leading-none font-[family:var(--font-display)] font-semibold tabular-nums">
-          {recentSummary.thisWeekRuns.length}
-        </strong>
-        <span className="text-xs text-[color:var(--color-run-date)]/75">
-          / 2 次
-        </span>
-      </p>
-      <p className="mt-1 text-[0.72rem] text-[color:var(--color-run-date)]/75">
-        {recentSummary.weekDays.size} 个跑步日 ·{' '}
-        {Math.floor(recentSummary.seconds / 60)} 分钟
-      </p>
-      <div className="mt-4 grid grid-cols-4" aria-label="最近四周每周跑步次数">
-        {recentSummary.weeks.map((week) => (
-          <span
-            key={week.start.toISOString()}
-            className="flex flex-col items-center gap-0.5 border-r border-[color:var(--color-primary)]/8 last:border-r-0"
-          >
-            <strong className="text-lg leading-none font-[family:var(--font-display)] font-medium tabular-nums">
-              {week.runs.length}
+    <section className="mt-2 rounded-[1.7rem] border border-[color:var(--color-primary)]/10 bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-run-row-hover-background)_46%,white_18%),color-mix(in_srgb,var(--color-background)_88%,transparent))] p-3 text-[color:var(--color-text-primary)] shadow-[0_16px_46px_rgba(7,54,76,0.055)] sm:p-3.5 lg:mr-6">
+      <h2 className="text-[0.72rem] font-semibold tracking-[0.04em]">
+        近期跑步
+      </h2>
+      <div className="mt-3 flex items-end justify-between gap-3">
+        <div>
+          <p className="text-[0.62rem] text-[color:var(--color-run-date)]/65">
+            本周
+          </p>
+          <p className="mt-1 flex items-baseline gap-1">
+            <strong className="text-[1.8rem] leading-none font-[family:var(--font-display)] font-semibold tabular-nums">
+              {thisWeekRunCount}
             </strong>
-            <span className="text-[0.65rem] text-[color:var(--color-run-date)]/60">
-              {week.start.toLocaleDateString('zh-CN', {
-                month: 'numeric',
-                day: 'numeric',
-              })}
+            <span className="text-[0.7rem] text-[color:var(--color-run-date)]/70">
+              次
             </span>
-          </span>
-        ))}
+          </p>
+        </div>
+        <div className="min-w-0 text-right">
+          <p className="text-[0.62rem] text-[color:var(--color-run-date)]/65">
+            最近活动
+          </p>
+          <time
+            dateTime={lastSyncedAt?.replace(' ', 'T')}
+            className="mt-1 block text-[0.74rem] font-medium whitespace-nowrap"
+          >
+            {formatActivityTime(lastSyncedAt)}
+          </time>
+        </div>
       </div>
-      <p className="mt-4 border-t border-[color:var(--color-primary)]/8 pt-3 text-[0.68rem] text-[color:var(--color-run-date)]/65">
-        最近活动{' '}
-        <time
-          dateTime={lastSyncedAt?.replace(' ', 'T')}
-          className="font-medium text-[color:var(--color-text-primary)]"
-        >
-          {formatActivityTime(lastSyncedAt)}
-        </time>
-      </p>
     </section>
   );
   return (
