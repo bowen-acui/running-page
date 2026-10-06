@@ -43,8 +43,12 @@
     --svg-color-active-cell: #40c9f4;
     --svg-special-color: #dfff35;
     --svg-special-color2: #ff684d;
-    --font-sans: 'IBM Plex Sans', sans-serif;
-    --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
+    --font-sans:
+      'IBM Plex Sans', 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei',
+      sans-serif;
+    --font-display:
+      'IBM Plex Sans Condensed', 'IBM Plex Sans', 'PingFang SC',
+      'Noto Sans CJK SC', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
   }
 }
@@ -64,8 +68,12 @@
     --svg-color-active-cell: #4dd2ff;
     --svg-special-color: #c6cf6f;
     --svg-special-color2: #d46a5f;
-    --font-sans: 'IBM Plex Sans', sans-serif;
-    --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
+    --font-sans:
+      'IBM Plex Sans', 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei',
+      sans-serif;
+    --font-display:
+      'IBM Plex Sans Condensed', 'IBM Plex Sans', 'PingFang SC',
+      'Noto Sans CJK SC', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
   }
 }
@@ -86,8 +94,12 @@
   --svg-color-active-cell: #40c9f4;
   --svg-special-color: #dfff35;
   --svg-special-color2: #ff684d;
-  --font-sans: 'IBM Plex Sans', sans-serif;
-  --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
+  --font-sans:
+    'IBM Plex Sans', 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei',
+    sans-serif;
+  --font-display:
+    'IBM Plex Sans Condensed', 'IBM Plex Sans', 'PingFang SC',
+    'Noto Sans CJK SC', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 }
 
@@ -105,8 +117,12 @@
   --svg-color-active-cell: #4dd2ff;
   --svg-special-color: #c6cf6f;
   --svg-special-color2: #d46a5f;
-  --font-sans: 'IBM Plex Sans', sans-serif;
-  --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
+  --font-sans:
+    'IBM Plex Sans', 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei',
+    sans-serif;
+  --font-display:
+    'IBM Plex Sans Condensed', 'IBM Plex Sans', 'PingFang SC',
+    'Noto Sans CJK SC', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 }
 
@@ -127,6 +143,7 @@
 
   body {
     min-height: 100vh;
+    font-variant-numeric: lining-nums tabular-nums;
     background-image:
       linear-gradient(
         180deg,

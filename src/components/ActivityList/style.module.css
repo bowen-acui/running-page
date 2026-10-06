@@ -73,7 +73,7 @@
   margin: 0 0 7px;
   color: var(--journal-muted);
   font-family: var(--font-mono), monospace;
-  font-size: clamp(0.66rem, 1.3vw, 0.76rem);
+  font-size: clamp(0.75rem, 1.3vw, 0.82rem);
   font-weight: 760;
   letter-spacing: 0.18em;
   line-height: 1.2;
@@ -83,10 +83,10 @@
 .pageHeader h1 {
   margin: 0;
   font-family: var(--font-display), var(--font-sans), sans-serif;
-  font-size: clamp(2.2rem, 6vw, 5.2rem);
+  font-size: clamp(2.5rem, 6vw, 3.5rem);
   font-weight: 760;
-  letter-spacing: -0.06em;
-  line-height: 1.03;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
 }
 
 .pageHeader span {
@@ -200,21 +200,62 @@
 }
 
 .contextStrip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: minmax(150px, 0.8fr) minmax(0, 2fr);
+  align-items: center;
+  gap: clamp(16px, 3vw, 32px);
   margin: clamp(18px, 3vw, 28px) 0;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--journal-line);
 }
 
-.contextStrip span {
-  padding: 7px 11px;
-  border: 1px solid var(--journal-line);
-  border-radius: 999px;
+.contextPrimary > span,
+.contextMetrics > div > span {
+  display: block;
   color: var(--journal-muted);
-  font-family: var(--font-mono), monospace;
   font-size: 0.78rem;
-  font-weight: 720;
-  line-height: 1;
+  font-weight: 600;
+}
+
+.contextPrimary strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--journal-ink);
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(1.9rem, 4.4vw, 2.65rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.contextMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.contextMetrics > div {
+  min-width: 0;
+}
+
+.contextMetrics strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--journal-ink);
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(0.95rem, 1.8vw, 1.2rem);
+  font-weight: 650;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+.contextMetrics small {
+  display: block;
+  margin-top: 3px;
+  color: var(--journal-muted);
+  font-size: 0.75rem;
+  line-height: 1.35;
 }
 
 .panel,
@@ -224,8 +265,8 @@
   border-radius: clamp(22px, 3vw, 30px);
   background: color-mix(
     in srgb,
-    var(--color-background) 72%,
-    var(--color-run-row-hover-background) 28%
+    var(--color-background) 92%,
+    var(--color-run-row-hover-background) 8%
   );
 }
 
@@ -280,7 +321,7 @@
   gap: var(--heat-gap);
   padding: 0 16px 8px;
   color: var(--journal-muted);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   white-space: nowrap;
 }
 
@@ -331,7 +372,7 @@
   cursor: pointer;
   padding: 0;
   color: var(--journal-ink);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   transition:
     transform 140ms ease,
     opacity 140ms ease;
@@ -383,7 +424,7 @@
   gap: 7px;
   margin-top: 16px;
   color: var(--journal-muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .legend i {
@@ -416,9 +457,9 @@
   margin: 0;
   color: var(--journal-muted);
   font-family: var(--font-mono), monospace;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 720;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.02em;
   line-height: 1.35;
   text-transform: uppercase;
 }
@@ -496,7 +537,7 @@
   color: var(--journal-muted);
   cursor: pointer;
   font-family: var(--font-mono), monospace;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 720;
 }
 
@@ -542,11 +583,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 17px;
-  border: 1px solid var(--journal-line);
-  border-radius: 7px;
-  font-size: 0.56rem;
+  min-width: 20px;
+  min-height: 18px;
+  font-size: 0.75rem;
   line-height: 1;
 }
 
@@ -653,7 +692,7 @@
   background: transparent;
   color: var(--journal-muted);
   cursor: pointer;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
@@ -696,10 +735,10 @@
   padding-left: 2px;
   margin-bottom: 8px;
   overflow: visible;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-sans), sans-serif;
   font-style: normal;
   line-height: 1.3;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.02em;
   white-space: nowrap;
 }
 
@@ -830,7 +869,7 @@
   }
 
   .pageHeader h1 {
-    font-size: 2.35rem;
+    font-size: 2.25rem;
     letter-spacing: -0.04em;
   }
 
@@ -848,7 +887,7 @@
   .homeLink {
     min-width: 82px;
     padding: 0 12px;
-    font-size: 0.74rem;
+    font-size: 0.8rem;
   }
 
   .viewSwitch {
@@ -872,7 +911,7 @@
 
   .panelHeader > span {
     max-width: none;
-    font-size: 0.76rem;
+    font-size: 0.8rem;
     text-align: left;
   }
 
@@ -883,7 +922,7 @@
 
   .insightHeader p {
     margin-bottom: 6px;
-    font-size: 0.64rem;
+    font-size: 0.75rem;
     line-height: 1.35;
     letter-spacing: 0.15em;
   }
@@ -895,7 +934,7 @@
 
   .insightHeader > span {
     max-width: none;
-    font-size: 0.74rem;
+    font-size: 0.8rem;
     line-height: 1.55;
     text-align: left;
   }
@@ -923,13 +962,34 @@
   }
 
   .contextStrip {
-    gap: 6px;
+    grid-template-columns: 1fr;
+    gap: 14px;
     margin: 14px 0;
+    padding: 14px 0;
   }
 
-  .contextStrip span {
-    padding: 6px 8px;
-    font-size: 0.7rem;
+  .contextPrimary {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .contextPrimary strong {
+    margin-top: 0;
+    font-size: clamp(1.75rem, 8vw, 2.2rem);
+  }
+
+  .contextMetrics {
+    gap: 8px;
+  }
+
+  .contextMetrics strong {
+    font-size: 0.9rem;
+  }
+
+  .contextMetrics small {
+    font-size: 0.75rem;
   }
 
   .panel,
@@ -977,10 +1037,8 @@
   }
 
   .monthBar span {
-    width: 16px;
-    height: 15px;
-    border-radius: 6px;
-    font-size: 0.5rem;
+    min-width: 18px;
+    min-height: 18px;
   }
 
   .lineChart svg {
@@ -1022,21 +1080,15 @@
   }
 
   .monthBar {
-    font-size: 0.62rem;
+    font-size: 0.75rem;
   }
 
   .monthBar span {
-    width: 15px;
-    height: 14px;
-    border-radius: 5px;
-    font-size: 0.48rem;
+    min-width: 18px;
+    min-height: 18px;
   }
 
   .detailGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .contextStrip span {
-    padding: 6px 8px;
   }
 }

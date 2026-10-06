@@ -48,7 +48,7 @@ const YearsStat = ({
       {YearSummarySVG && (
         <section className={styles.sidebarHeatmap}>
           <div className={styles.heatmapHeader}>
-            <span>Year Heatmap</span>
+            <span>跑步日历</span>
             <strong>{heatmapYear}</strong>
           </div>
           <div className={styles.heatmapViewport}>

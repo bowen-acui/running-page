@@ -61,12 +61,15 @@ const YearCompareChart = ({ year }: { year: string }) => {
   if (!hasData) return null;
 
   return (
-    <section className="mb-4 rounded-2xl border border-[color:var(--color-primary)]/8 bg-[color:var(--color-background)]/26 px-3 pt-3 pb-1 sm:px-4">
-      <div className="mb-1 flex items-center justify-between px-1">
-        <span className="text-[0.6rem] font-bold tracking-[0.14em] text-[color:var(--color-run-date)]/66 uppercase">
-          Cumulative Distance ({DIST_UNIT})
+    <section className="mb-5 border-b border-[color:var(--color-hr-primary)]/70 px-1 pb-4 sm:mb-6 sm:px-2">
+      <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+        <span className="text-sm font-semibold text-[color:var(--color-text-primary)]">
+          累计距离
+          <span className="ml-1.5 text-xs font-medium text-[color:var(--color-run-date)]/72">
+            {DIST_UNIT}
+          </span>
         </span>
-        <span className="flex items-center gap-3 text-[0.62rem] font-semibold text-[color:var(--color-run-date)]/72">
+        <span className="flex items-center gap-3 text-xs font-medium text-[color:var(--color-run-date)]/78">
           <span className="flex items-center gap-1">
             <i className="inline-block h-[2px] w-4 bg-[color:var(--color-primary)]" />
             {year}
@@ -87,19 +90,19 @@ const YearCompareChart = ({ year }: { year: string }) => {
         >
           <CartesianGrid
             stroke="var(--color-hr-primary)"
-            strokeOpacity={0.45}
+            strokeOpacity={0.32}
             vertical={false}
           />
           <XAxis
             dataKey="month"
             tickFormatter={(m: number) => `${m}月`}
-            tick={{ fill: 'var(--color-run-date)', fontSize: 10 }}
+            tick={{ fill: 'var(--color-run-date)', fontSize: 12 }}
             tickLine={false}
             axisLine={false}
             interval={1}
           />
           <YAxis
-            tick={{ fill: 'var(--color-run-date)', fontSize: 10 }}
+            tick={{ fill: 'var(--color-run-date)', fontSize: 12 }}
             tickLine={false}
             axisLine={false}
             width={44}

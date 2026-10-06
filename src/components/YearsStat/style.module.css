@@ -8,13 +8,12 @@
     overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--color-primary) 8%, transparent);
     border-radius: 1.7rem;
-    background: linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--color-run-row-hover-background) 38%, white 12%),
-      color-mix(in srgb, var(--color-background) 92%, transparent)
+    background: color-mix(
+      in srgb,
+      var(--color-background) 92%,
+      var(--color-run-row-hover-background) 8%
     );
-    box-shadow: 0 16px 46px rgba(7, 54, 76, 0.045);
-    padding: 0.75rem;
+    padding: 1rem;
   }
 }
 
@@ -25,16 +24,15 @@
   margin-bottom: 0.65rem;
   padding: 0 0.2rem;
   color: color-mix(in srgb, var(--color-text-primary) 64%, transparent);
-  font-size: 0.64rem;
+  font-size: 0.75rem;
   font-weight: 750;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .heatmapHeader strong {
   color: var(--color-primary);
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
 }
 
 .heatmapViewport {

@@ -31,12 +31,6 @@ interface YearStatSummary {
   totalElevationGain: string;
 }
 
-interface MetricProps {
-  label: string;
-  unit?: string;
-  value: number | string;
-}
-
 const createAccumulator = (): YearStatAccumulator => ({
   averageHeartRateTotal: 0,
   heartRateNullCount: 0,
@@ -122,24 +116,6 @@ const getYearStatSummaries = (activityData: Activity[]) => {
   return summaries;
 };
 
-const Metric = ({ label, unit, value }: MetricProps) => (
-  <div className="flex min-h-[4.1rem] flex-col justify-between rounded-2xl border border-[color:var(--color-primary)]/8 bg-[color:var(--color-background)]/38 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] sm:min-h-[4.55rem]">
-    <span className="text-[0.58rem] font-semibold tracking-[0.1em] text-[color:var(--color-run-date)]/66 uppercase not-italic">
-      {label}
-    </span>
-    <div className="flex items-baseline gap-1.5 font-[family:var(--font-display)] whitespace-nowrap">
-      <span className="text-[clamp(1.18rem,4.6vw,1.74rem)] leading-none font-semibold tracking-[-0.018em] text-[color:var(--color-text-primary)] not-italic">
-        {intComma(value.toString())}
-      </span>
-      {unit && (
-        <span className="text-[0.62rem] font-medium tracking-[0.01em] text-[color:var(--color-text-primary)]/55 uppercase sm:text-[0.7rem]">
-          {unit}
-        </span>
-      )}
-    </div>
-  </div>
-);
-
 const YearStat = ({
   year,
   onClick,
@@ -151,17 +127,17 @@ const YearStat = ({
 }) => {
   const { activities } = useActivities();
   const summary = getYearStatSummaries(activities).get(year);
-  const titleLabel = year === 'Total' ? 'All Time' : 'Journey';
+  const titleLabel = year === 'Total' ? '全部跑步' : '年度跑步';
 
   if (!summary) return null;
 
   const selectedClass = selected
-    ? 'border-[color:var(--color-primary)]/32 ring-1 ring-[color:var(--color-primary)]/22'
-    : 'border-[color:var(--color-primary)]/10';
+    ? 'border-[color:var(--color-primary)]/18'
+    : 'border-[color:var(--color-primary)]/8';
 
   return (
     <div
-      className={`cursor-pointer overflow-hidden rounded-[1.7rem] border ${selectedClass} bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-run-row-hover-background)_46%,white_18%),color-mix(in_srgb,var(--color-background)_88%,transparent))] p-3 shadow-[0_16px_46px_rgba(7,54,76,0.055)] transition-transform duration-200 hover:-translate-y-0.5 sm:p-3.5`}
+      className={`cursor-pointer overflow-hidden rounded-[1.7rem] border ${selectedClass} bg-[color-mix(in_srgb,var(--color-background)_92%,var(--color-run-row-hover-background)_8%)] p-4 transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--color-background)_86%,var(--color-run-row-hover-background)_14%)] sm:p-5`}
       onClick={() => onClick(year)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -173,47 +149,79 @@ const YearStat = ({
       tabIndex={0}
       aria-pressed={selected}
     >
-      <section className="space-y-2.5">
-        <div className="flex items-start justify-between gap-4 rounded-2xl bg-[color:var(--color-background)]/26 px-3 py-2.5">
-          <div>
-            <p className="text-[0.58rem] font-semibold tracking-[0.12em] text-[color:var(--color-run-date)]/66 uppercase">
+      <section className="space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-[color:var(--color-run-date)]/72">
               {titleLabel}
             </p>
-            <h2 className="text-[clamp(1.45rem,5.5vw,2.2rem)] leading-none font-[family:var(--font-display)] font-semibold tracking-[-0.026em] text-[color:var(--color-text-primary)]">
+            <h2 className="mt-1 text-[clamp(1.6rem,5.5vw,2.2rem)] leading-none font-[family:var(--font-display)] font-semibold tracking-[-0.026em] text-[color:var(--color-text-primary)] tabular-nums">
               {year}
             </h2>
           </div>
-          <div className="flex flex-col items-end px-0.5 py-0.5 text-right">
-            <p className="text-[0.56rem] font-semibold tracking-[0.12em] text-[color:var(--color-run-date)]/66 uppercase">
-              Runs
+          <div className="flex flex-col items-end text-right">
+            <p className="text-xs font-medium text-[color:var(--color-run-date)]/72">
+              跑步次数
             </p>
-            <p className="text-[clamp(1.18rem,4.8vw,1.76rem)] leading-none font-[family:var(--font-display)] font-semibold tracking-[-0.018em] text-[color:var(--color-text-primary)]">
+            <p className="mt-1 text-[clamp(1.35rem,4.8vw,1.7rem)] leading-none font-[family:var(--font-display)] font-semibold tracking-[-0.018em] text-[color:var(--color-text-primary)] tabular-nums">
               {intComma(summary.runCount.toString())}
             </p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <Metric
-            value={summary.totalDistance}
-            unit={DIST_UNIT}
-            label="Distance"
-          />
-          <Metric
-            value={summary.averagePace}
-            unit={`/${DIST_UNIT}`}
-            label="Avg Pace"
-          />
-          <Metric value={summary.streak} unit="day" label="Streak" />
-          {summary.hasHeartRate && (
-            <Metric
-              value={summary.averageHeartRate}
-              unit="bpm"
-              label="Avg HR"
-            />
+        <div className="flex items-end justify-between gap-4 border-t border-[color:var(--color-hr-primary)]/65 pt-3">
+          <div>
+            <span className="text-xs font-medium text-[color:var(--color-run-date)]/72">
+              累计距离
+            </span>
+            <p className="mt-1 flex items-baseline gap-1.5 font-[family:var(--font-display)]">
+              <strong
+                className={`text-[clamp(1.7rem,5vw,2rem)] leading-none font-semibold tracking-[-0.04em] text-[color:var(--color-text-primary)] tabular-nums ${selected ? 'sm:text-[clamp(2rem,7vw,2.8rem)]' : ''}`}
+              >
+                {intComma(summary.totalDistance.toString())}
+              </strong>
+              <span className="text-sm font-medium text-[color:var(--color-text-primary)]/65">
+                {DIST_UNIT}
+              </span>
+            </p>
+          </div>
+          {selected && (
+            <p className="pb-1 text-sm text-[color:var(--color-run-date)]/74">
+              平均配速{' '}
+              <strong className="font-[family:var(--font-display)] font-semibold text-[color:var(--color-text-primary)] tabular-nums">
+                {summary.averagePace}
+              </strong>
+              <span className="ml-1">/{DIST_UNIT}</span>
+            </p>
           )}
         </div>
-        {SHOW_ELEVATION_GAIN && (
-          <Metric value={summary.totalElevationGain} label="Elevation" />
+        {selected && (
+          <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-[color:var(--color-hr-primary)]/65 pt-3 text-sm text-[color:var(--color-run-date)]/76">
+            <span>
+              连续跑步{' '}
+              <strong className="font-[family:var(--font-display)] font-semibold text-[color:var(--color-text-primary)] tabular-nums">
+                {summary.streak}
+              </strong>{' '}
+              天
+            </span>
+            {summary.hasHeartRate && (
+              <span>
+                平均心率{' '}
+                <strong className="font-[family:var(--font-display)] font-semibold text-[color:var(--color-text-primary)] tabular-nums">
+                  {summary.averageHeartRate}
+                </strong>{' '}
+                bpm
+              </span>
+            )}
+            {SHOW_ELEVATION_GAIN && (
+              <span>
+                累计爬升{' '}
+                <strong className="font-[family:var(--font-display)] font-semibold text-[color:var(--color-text-primary)] tabular-nums">
+                  {summary.totalElevationGain}
+                </strong>{' '}
+                m
+              </span>
+            )}
+          </div>
         )}
       </section>
     </div>

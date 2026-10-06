@@ -107,7 +107,7 @@ export const FrequencyPanel = ({
   <section className={styles.panel}>
     <div className={styles.panelHeader}>
       <div>
-        <p>Frequency</p>
+        <p>跑步频率</p>
         <h2>
           {selectedMonth ? `${selectedMonth} 月跑步热力` : '全年跑步热力图'}
         </h2>
@@ -181,7 +181,7 @@ export const MonthlyVolumePanel = ({
   <article className={styles.panel}>
     <div className={styles.panelHeader}>
       <div>
-        <p>Monthly Volume</p>
+        <p>月跑量</p>
         <h2>月度跑量</h2>
       </div>
       <span>点击月份可切到该月并查看摘要。</span>
@@ -224,7 +224,7 @@ export const PacePanel = ({
   <article className={styles.panel}>
     <div className={styles.panelHeader}>
       <div>
-        <p>Pace Stability</p>
+        <p>配速变化</p>
         <h2>配速趋势</h2>
       </div>
       <span>{paceRuns.length ? paceLabel : '数据不足'}</span>
@@ -287,7 +287,7 @@ export const HeartPanel = ({
   <article className={styles.panel}>
     <div className={styles.panelHeader}>
       <div>
-        <p>Heart Rate</p>
+        <p>心率记录</p>
         <h2>心率记录</h2>
       </div>
       <span>{heartRateLabel ?? '心率记录不足'}</span>
@@ -327,7 +327,7 @@ export const HabitPanel = ({
   <article className={styles.panel}>
     <div className={styles.panelHeader}>
       <div>
-        <p>Habit Rhythm</p>
+        <p>跑步习惯</p>
         <h2>习惯节奏</h2>
       </div>
       <span>
@@ -398,7 +398,7 @@ export const InsightPanel = ({
   <section className={styles.insightPanel}>
     <div className={`${styles.panelHeader} ${styles.insightHeader}`}>
       <div>
-        <p>AI Summary</p>
+        <p>训练洞察</p>
         <h2>训练建议</h2>
       </div>
       <span>{sourceLabel}</span>

@@ -44,6 +44,14 @@ const RunTable = ({
     const keys = [DIST_UNIT, 'Elev', 'Pace', 'BPM', 'Time', 'Date'];
     return SHOW_ELEVATION_GAIN ? keys : keys.filter((key) => key !== 'Elev');
   }, []);
+  const sortLabels: Record<string, string> = {
+    [DIST_UNIT]: `距离 (${DIST_UNIT})`,
+    Elev: '爬升 (m)',
+    Pace: `配速 /${DIST_UNIT}`,
+    BPM: '心率 (bpm)',
+    Time: '时长',
+    Date: '日期',
+  };
 
   const getSortFunction = useCallback(
     (key: string, direction: SortDirection): SortFunc | undefined => {
@@ -141,7 +149,7 @@ const RunTable = ({
                   className={styles.sortableHeader}
                 >
                   <button type="button" onClick={() => handleClick(k)}>
-                    {k}
+                    {sortLabels[k]}
                     <span className={styles.sortIndicator} aria-hidden="true">
                       {isActiveSort
                         ? sortState.direction === 'ascending'

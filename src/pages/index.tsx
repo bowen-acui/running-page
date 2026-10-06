@@ -549,31 +549,27 @@ const Index = () => {
   const { theme } = useTheme();
   const summaryLink = navLinks.find((link) => link.name === 'Summary');
   const recentRunsCard = (
-    <section className="mt-2 rounded-[1.7rem] border border-[color:var(--color-primary)]/10 bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-run-row-hover-background)_46%,white_18%),color-mix(in_srgb,var(--color-background)_88%,transparent))] p-3 text-[color:var(--color-text-primary)] shadow-[0_16px_46px_rgba(7,54,76,0.055)] sm:p-3.5 lg:mr-6">
-      <h2 className="text-[0.72rem] font-semibold tracking-[0.04em]">
-        近期跑步
-      </h2>
-      <div className="mt-3 flex items-end justify-between gap-3">
+    <section className="mt-2 rounded-[1.7rem] border border-[color:var(--color-primary)]/8 bg-[color-mix(in_srgb,var(--color-background)_92%,var(--color-run-row-hover-background)_8%)] p-4 text-[color:var(--color-text-primary)] sm:p-5 lg:mr-6">
+      <h2 className="text-sm font-semibold tracking-[0.02em]">近期跑步</h2>
+      <div className="mt-4 flex items-end justify-between gap-3">
         <div>
-          <p className="text-[0.62rem] text-[color:var(--color-run-date)]/65">
-            本周
-          </p>
+          <p className="text-xs text-[color:var(--color-run-date)]/72">本周</p>
           <p className="mt-1 flex items-baseline gap-1">
-            <strong className="text-[1.8rem] leading-none font-[family:var(--font-display)] font-semibold tabular-nums">
+            <strong className="text-[2rem] leading-none font-[family:var(--font-display)] font-semibold tabular-nums">
               {thisWeekRunCount}
             </strong>
-            <span className="text-[0.7rem] text-[color:var(--color-run-date)]/70">
+            <span className="text-sm text-[color:var(--color-run-date)]/76">
               次
             </span>
           </p>
         </div>
         <div className="min-w-0 text-right">
-          <p className="text-[0.62rem] text-[color:var(--color-run-date)]/65">
+          <p className="text-xs text-[color:var(--color-run-date)]/72">
             最近活动
           </p>
           <time
             dateTime={lastSyncedAt?.replace(' ', 'T')}
-            className="mt-1 block text-[0.74rem] font-medium whitespace-nowrap"
+            className="mt-1 block text-sm font-medium whitespace-nowrap tabular-nums"
           >
             {formatActivityTime(lastSyncedAt)}
           </time>
@@ -589,7 +585,7 @@ const Index = () => {
       <div className="grid w-full gap-3 sm:gap-5 lg:grid-cols-[minmax(18rem,23rem)_minmax(0,1fr)] lg:items-start lg:gap-5 xl:gap-6">
         <section className="w-full lg:sticky lg:top-8">
           <div className="mb-2 grid min-h-8 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 pt-0.5 sm:mb-2.5 sm:px-3.5 lg:mr-6">
-            <h1 className="min-w-0 overflow-visible pt-[0.06em] text-[clamp(0.86rem,3.5vw,1rem)] leading-none sm:text-[1.14rem]">
+            <h1 className="min-w-0 overflow-visible pt-[0.06em] text-[clamp(1rem,3.5vw,1.14rem)] leading-tight">
               <BrandTitle
                 title={siteTitle}
                 prefixClassName="font-black tracking-[0.004em]"
@@ -598,10 +594,10 @@ const Index = () => {
             </h1>
             {summaryLink && (
               <a
-                className="relative inline-flex h-7 shrink-0 items-center justify-center rounded-full border border-[color:var(--color-primary)]/8 bg-[color:var(--color-background)]/30 px-3 text-[0.54rem] font-semibold tracking-[0.1em] text-[color:var(--color-run-date)]/64 uppercase transition-colors before:absolute before:inset-x-0 before:-inset-y-2.5 before:content-[''] hover:border-[color:var(--color-primary)]/14 hover:text-[color:var(--color-text-primary)]"
+                className="relative inline-flex min-h-9 shrink-0 items-center justify-center rounded-full border border-[color:var(--color-primary)]/10 bg-[color:var(--color-background)]/30 px-3.5 text-xs font-semibold tracking-[0.01em] text-[color:var(--color-run-date)]/80 transition-colors before:absolute before:inset-x-0 before:-inset-y-2.5 before:content-[''] hover:border-[color:var(--color-primary)]/16 hover:text-[color:var(--color-text-primary)]"
                 href={summaryLink.url}
               >
-                {summaryLink.name}
+                训练分析
               </a>
             )}
           </div>
@@ -619,7 +615,7 @@ const Index = () => {
         <section className="min-w-0 space-y-4 sm:space-y-6" id="map-container">
           <div
             ref={mapPanelRef}
-            className={`home-map-panel map-shell ${isMapExpanded ? '' : 'map-shell-collapsed'} overflow-hidden rounded-[1.75rem] border border-[color:var(--color-primary)]/10 bg-[color:var(--color-run-row-hover-background)]/14 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-3`}
+            className={`home-map-panel map-shell ${isMapExpanded ? '' : 'map-shell-collapsed'} overflow-hidden rounded-[1.75rem] border border-[color:var(--color-primary)]/8 bg-[color:var(--color-background)]/12 p-1.5 sm:p-2`}
           >
             {!isMapExpanded ? (
               <button
@@ -629,14 +625,14 @@ const Index = () => {
               >
                 <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,color-mix(in_srgb,var(--color-primary)_9%,transparent),transparent_32%)]" />
                 <span className="relative z-10 min-w-0">
-                  <span className="block text-[0.68rem] font-semibold tracking-[0.18em] text-[color:var(--color-run-date)]/70 uppercase">
-                    Route Map
+                  <span className="block text-xs font-medium tracking-[0.02em] text-[color:var(--color-run-date)]/76">
+                    跑步路线
                   </span>
-                  <strong className="mt-1 block text-[1.05rem] leading-tight font-black text-[color:var(--color-text-primary)]">
+                  <strong className="mt-1 block text-lg leading-tight font-semibold text-[color:var(--color-text-primary)]">
                     查看路线地图
                   </strong>
-                  <span className="mt-1.5 block text-[0.78rem] leading-snug text-[color:var(--color-run-date)]/78">
-                    加载完整路线和缩放控件
+                  <span className="mt-1.5 block text-sm leading-snug text-[color:var(--color-run-date)]/78">
+                    展开后可切换年份并查看轨迹
                   </span>
                 </span>
                 <span className="relative z-10 flex h-20 w-24 shrink-0 items-center justify-center rounded-2xl bg-[color:var(--color-run-row-hover-background)]/28 ring-1 ring-[color:var(--color-primary)]/8">

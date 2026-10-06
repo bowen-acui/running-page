@@ -13,31 +13,22 @@ const RunMapButtons = ({
   yearsButtons.push('Total');
 
   return (
-    <ul className={styles.buttons}>
+    <div className={styles.buttons} role="group" aria-label="选择地图年份">
       {yearsButtons.map((year) => {
         const isSelected = year === thisYear;
         return (
-          <li
+          <button
             key={`${year}button`}
+            type="button"
             className={styles.button + ` ${isSelected ? styles.selected : ''}`}
-            role="button"
-            tabIndex={0}
             aria-pressed={isSelected}
-            onClick={() => {
-              changeYear(year);
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                changeYear(year);
-              }
-            }}
+            onClick={() => changeYear(year)}
           >
             {year}
-          </li>
+          </button>
         );
       })}
-    </ul>
+    </div>
   );
 };
 

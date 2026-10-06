@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './style.module.css';
 import { formatDistance, formatPace } from './model';
+import { DIST_UNIT } from '@/utils/utils';
 
 interface EmptyStateProps {
   readonly title: string;
@@ -30,7 +31,7 @@ interface ContextStripProps {
 export const EmptyState = ({ title, subtitle }: EmptyStateProps) => (
   <section className={styles.activityList}>
     <section className={styles.emptyState}>
-      <p>Running Journal</p>
+      <p>年度回顾</p>
       <h1>{title}</h1>
       <span>{subtitle}</span>
     </section>
@@ -48,7 +49,7 @@ export const PageHeader = ({
 }: PageHeaderProps) => (
   <header className={styles.pageHeader}>
     <div>
-      <p>Running Journal</p>
+      <p>年度回顾</p>
       <h1>跑步节奏</h1>
       <span>
         <select
@@ -104,14 +105,34 @@ export const ContextStrip = ({
   heartRateSampleSize,
 }: ContextStripProps) => (
   <section className={styles.contextStrip} aria-label="当前视图摘要">
-    <span>{selectedMonth ? `${selectedMonth} 月` : '全年'}</span>
-    <span>{count} 次</span>
-    <span>{formatDistance(distance)}</span>
-    <span>{formatPace(averagePaceSeconds)}</span>
-    <span>
-      {averageHeartRate !== null
-        ? `${Math.round(averageHeartRate)} bpm · ${heartRateSampleSize}/${count}`
-        : '心率不足'}
-    </span>
+    <div className={styles.contextPrimary}>
+      <span>{selectedMonth ? '本月跑量' : '全年跑量'}</span>
+      <strong>{formatDistance(distance)}</strong>
+    </div>
+    <div className={styles.contextMetrics}>
+      <div>
+        <span>跑步次数</span>
+        <strong>{count} 次</strong>
+      </div>
+      <div>
+        <span>平均配速</span>
+        <strong>
+          {formatPace(averagePaceSeconds)} /{DIST_UNIT}
+        </strong>
+      </div>
+      <div>
+        <span>平均心率</span>
+        <strong>
+          {averageHeartRate !== null
+            ? `${Math.round(averageHeartRate)} bpm`
+            : '暂无数据'}
+        </strong>
+        <small>
+          {averageHeartRate !== null
+            ? `覆盖 ${heartRateSampleSize}/${count} 次`
+            : '记录不足'}
+        </small>
+      </div>
+    </div>
   </section>
 );
