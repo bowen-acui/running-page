@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { Activity } from '@/utils/utils';
+import { buildRunPoster } from './content';
 import styles from './style.module.css';
 import {
   drawPoster,
@@ -11,6 +13,9 @@ import {
 
 interface SharePosterProps {
   readonly content: PosterContent;
+  readonly runs: readonly Activity[];
+  readonly athlete: string;
+  readonly periodLabel: string;
   readonly onClose: () => void;
 }
 
@@ -24,7 +29,13 @@ const TONES: { value: PosterTone; label: string }[] = [
   { value: 'dark', label: '深色' },
 ];
 
-const SharePoster = ({ content, onClose }: SharePosterProps) => {
+const SharePoster = ({
+  content,
+  runs,
+  athlete,
+  periodLabel,
+  onClose,
+}: SharePosterProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -32,8 +43,19 @@ const SharePoster = ({ content, onClose }: SharePosterProps) => {
   const onCloseRef = useRef(onClose);
   const [ratio, setRatio] = useState<PosterRatio>('3:4');
   const [tone, setTone] = useState<PosterTone>('light');
+  const [scope, setScope] = useState<'period' | 'run'>('period');
+  const [selectedRunId, setSelectedRunId] = useState(runs[0]?.run_id ?? 0);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const selectedRun =
+    runs.find((run) => run.run_id === selectedRunId) ?? runs[0];
+  const activeContent = useMemo(
+    () =>
+      scope === 'run' && selectedRun
+        ? buildRunPoster(selectedRun, athlete)
+        : content,
+    [scope, selectedRun, athlete, content]
+  );
 
   // Preview is the same draw call as the export, just scaled — so what you
   // see is exactly what downloads.
@@ -59,13 +81,13 @@ const SharePoster = ({ content, onClose }: SharePosterProps) => {
       canvas.height = height;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
-      drawPoster(ctx, content, ratio, tone);
+      drawPoster(ctx, activeContent, ratio, tone);
     };
     void paint();
     return () => {
       cancelled = true;
     };
-  }, [content, ratio, tone]);
+  }, [activeContent, ratio, tone]);
 
   useEffect(() => {
     previousFocusRef.current =
@@ -124,7 +146,7 @@ const SharePoster = ({ content, onClose }: SharePosterProps) => {
   const buildImage = useCallback(async () => {
     setBusy(true);
     try {
-      const blob = await posterToBlob(content, ratio, tone);
+      const blob = await posterToBlob(activeContent, ratio, tone);
       if (!blob) return null;
       const url = URL.createObjectURL(blob);
       setImageUrl((previous) => {
@@ -135,18 +157,19 @@ const SharePoster = ({ content, onClose }: SharePosterProps) => {
     } finally {
       setBusy(false);
     }
-  }, [content, ratio, tone]);
+  }, [activeContent, ratio, tone]);
 
   const handleSave = useCallback(async () => {
     const made = await buildImage();
     if (!made) return;
     const link = document.createElement('a');
     link.href = made.url;
-    link.download = `running-${content.dateLine.replace(/[^\d]+/g, '')}-${ratio.replace(':', 'x')}.png`;
+    const suffix = scope === 'run' ? `-${selectedRun?.run_id}` : '';
+    link.download = `running-${activeContent.dateLine.replace(/[^\d]+/g, '')}${suffix}-${ratio.replace(':', 'x')}.png`;
     document.body.appendChild(link);
     link.click();
     link.remove();
-  }, [buildImage, content.dateLine, ratio]);
+  }, [buildImage, activeContent.dateLine, ratio, scope, selectedRun]);
 
   return (
     <div
@@ -186,6 +209,53 @@ const SharePoster = ({ content, onClose }: SharePosterProps) => {
         </div>
 
         <div className={styles.controls}>
+          <div className={styles.scopeControls}>
+            <div className={styles.group} role="group" aria-label="封面范围">
+              <button
+                type="button"
+                aria-pressed={scope === 'period'}
+                className={scope === 'period' ? styles.active : ''}
+                onClick={() => {
+                  setScope('period');
+                  setImageUrl(null);
+                }}
+                disabled={busy}
+              >
+                {periodLabel}
+              </button>
+              <button
+                type="button"
+                aria-pressed={scope === 'run'}
+                className={scope === 'run' ? styles.active : ''}
+                onClick={() => {
+                  setScope('run');
+                  setImageUrl(null);
+                }}
+                disabled={busy}
+              >
+                单次跑步
+              </button>
+            </div>
+            {scope === 'run' && (
+              <select
+                className={styles.runSelect}
+                aria-label="选择单次跑步"
+                value={selectedRun?.run_id ?? ''}
+                onChange={(event) => {
+                  setSelectedRunId(Number(event.target.value));
+                  setImageUrl(null);
+                }}
+                disabled={busy}
+              >
+                {runs.map((run) => (
+                  <option key={run.run_id} value={run.run_id}>
+                    {run.start_date_local.slice(0, 16)} · {run.name || '跑步'} ·{' '}
+                    {(run.distance / 1000).toFixed(2)} km
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
           <div className={styles.group} role="group" aria-label="比例">
             {RATIOS.map((item) => (
               <button
@@ -197,6 +267,7 @@ const SharePoster = ({ content, onClose }: SharePosterProps) => {
                   setRatio(item.value);
                   setImageUrl(null);
                 }}
+                disabled={busy}
               >
                 {item.label}
                 <small>{item.hint}</small>
@@ -214,6 +285,7 @@ const SharePoster = ({ content, onClose }: SharePosterProps) => {
                   setTone(item.value);
                   setImageUrl(null);
                 }}
+                disabled={busy}
               >
                 {item.label}
               </button>

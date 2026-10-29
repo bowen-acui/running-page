@@ -4,6 +4,7 @@ import styles from './style.module.css';
 import useActivities from '@/hooks/useActivities';
 import getSiteMetadata from '@/hooks/useSiteMetadata';
 import SharePoster from '@/components/SharePoster';
+import { isRunActivity } from '@/utils/utils';
 import {
   buildMonthPoster,
   buildYearPoster,
@@ -177,6 +178,14 @@ const ActivityList: React.FC = () => {
         : buildYearPoster(activities, year, athlete),
     [activities, year, selectedMonth, athlete]
   );
+  const posterRuns = useMemo(() => {
+    const visibleIds = new Set(visibleRuns.map((run) => run.id));
+    return activities
+      .filter(
+        (activity) => isRunActivity(activity) && visibleIds.has(activity.run_id)
+      )
+      .sort((a, b) => b.start_date_local.localeCompare(a.start_date_local));
+  }, [activities, visibleRuns]);
   const selectYearView = () => {
     setSearchParams({ year: String(year) });
     setSelectedDetail(null);
@@ -308,6 +317,9 @@ const ActivityList: React.FC = () => {
       {isSharing && (
         <SharePoster
           content={posterContent}
+          runs={posterRuns}
+          athlete={athlete}
+          periodLabel={selectedMonth ? '本月' : '全年'}
           onClose={() => setIsSharing(false)}
         />
       )}

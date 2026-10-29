@@ -92,6 +92,24 @@
   gap: 10px;
 }
 
+.scopeControls {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.runSelect {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, transparent);
+  border-radius: 12px;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.82rem;
+}
+
 .group {
   display: inline-flex;
   flex: 1 1 auto;
@@ -134,6 +152,12 @@
 .group button.active {
   background: var(--color-primary);
   color: var(--color-background);
+}
+
+.group button:disabled,
+.runSelect:disabled {
+  opacity: 0.55;
+  cursor: progress;
 }
 
 .actions {
